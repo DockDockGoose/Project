@@ -26,7 +26,23 @@ Technologies (Bolded are our choices)
 
 
 ### Setup Information
+ [I followed these instructions to set up Django](https://docs.djangoproject.com/en/3.1/topics/install/#installing-official-release)
+ Make sure you have [pip](https://pip.pypa.io/en/stable/) installed.
+I created a project in the stocksite folder. 
+Before running a local instance, you have to run 
 
+```
+django-project\Scripts\activate
+```
+
+then you can go into 
+```
+stocksite/dir
+```
+and run 
+```
+python manage.py runserver
+```
 
 ### Tasks
  [ ] Workgenerator -- Dianna  
