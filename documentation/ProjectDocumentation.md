@@ -1,6 +1,6 @@
 #  Project Documentation
-#### DockDockGoose - Team 4
-Milestone 1 - January 31st
+<em> DockDockGoose - Team 4  
+Milestone 1 - January 31st</em>
 
 ## 1.0 Initial Requirements
 These initial requirements are derived from the specification document CourseProject.pdf.

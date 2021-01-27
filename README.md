@@ -1,29 +1,8 @@
 # "DayTrading Distributed System Project" 
+<em>University Of Victoria  
+SENG 468 - Software Scalability</em> 
 
-### School: University Of Victoria  
-### Class: SENG 468 Software Scalability 
-
-___
-
-Technologies (Bolded are our choices)
-#### Web Framework
- * **DJango**
- * Flask
-
-#### Containerization  
- * **Docker**
-
-#### DataBase Management 
- * **PostGres**
- * MongoDB
-#### Languages
- * **Python**
- * Java
- * Go
-
-#### Libraries
- * **WSGI**
-
+## [Project Documentation](https://github.com/DockDockGoose/Project/blob/main/documentation/ProjectDocumentation.md)
 
 ## Setup Information
  [Follow these instructions to set up Django](https://docs.djangoproject.com/en/3.1/topics/install/#installing-official-release)
@@ -64,12 +43,3 @@ To run using a specific workload file (eg. WL_2_USER.txt):
 ```
 python3 workload_gen.py ../workloads/WL_2_USER.txt
 ```
-
-
-## Tasks
-- [x] Frontend setup (Django)
-- [ ] Backend setup (wsgi/apache?)
-- [x] Workgenerator -- Dianna  
-- [ ] Server -- Damon/Daniel
-- [ ] Data Base Querying.  -- Daniel
-- [ ] Database Schema  - Sam
