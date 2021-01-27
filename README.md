@@ -1,12 +1,12 @@
 # "DayTrading Distributed System Project" 
 
-## School: University Of Victoria  
-## Class: SENG 468 Software Scalability 
+### School: University Of Victoria  
+### Class: SENG 468 Software Scalability 
 
 ___
 
 Technologies (Bolded are our choices)
-### Web Framework
+#### Web Framework
  * **DJango**
  * Flask
 
@@ -24,7 +24,6 @@ Technologies (Bolded are our choices)
 #### Libraries
  * **WSGI**
 
-___
 
 ## Setup Information
  [Follow these instructions to set up Django](https://docs.djangoproject.com/en/3.1/topics/install/#installing-official-release)
@@ -48,7 +47,6 @@ and run
 python manage.py runserver
 ```
 
-___
 
 ## Workload Generator
 Takes workload input file and partitions commands per user, retaining transaction number, 
@@ -67,11 +65,10 @@ To run using a specific workload file (eg. WL_2_USER.txt):
 python3 workload_gen.py ../workloads/WL_2_USER.txt
 ```
 
-___
 
 ## Tasks
 - [x] Frontend setup (Django)
-- [] Backend setup (wsgi/apache?)
+- [ ] Backend setup (wsgi/apache?)
 - [x] Workgenerator -- Dianna  
 - [ ] Server -- Damon/Daniel
 - [ ] Data Base Querying.  -- Daniel
