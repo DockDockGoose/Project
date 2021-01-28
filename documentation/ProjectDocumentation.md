@@ -66,7 +66,7 @@ The technology stack for our prototype day trading system are outlined below.
  * **Docker**
 
 #### DataBase Management 
- * **PostGres**
+ * **PostgreSQL**
  * MongoDB
 #### Languages
  * **Python**

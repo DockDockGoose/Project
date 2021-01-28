@@ -25,7 +25,24 @@ and run
 ```
 python manage.py runserver
 ```
+##  Setup Stock Site on Docker
 
+If you would like to run the application on Docker follow these steps. Please note, before starting make sure you have [docker compose](https://docs.docker.com/compose/install/) installed. 
+
+Go into stocksite directory and run the application:
+```
+cd stocksite
+docker-compose up
+```
+
+Head to http://localhost:8000/ to see application running 🎉
+
+To view web and db containers:
+```
+docker ps
+```
+
+Shutdown containers using `Ctrl-c` or `docker-compose down`.
 
 ## Workload Generator
 Takes workload input file and partitions commands per user, retaining transaction number, 
