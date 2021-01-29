@@ -42,6 +42,11 @@ To view web and db containers:
 docker ps
 ```
 
+To get into database container:
+```
+docker-compose run db bash
+```
+
 Shutdown containers using `Ctrl-c` or `docker-compose down`.
 
 ## Workload Generator
