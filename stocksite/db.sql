@@ -13,7 +13,7 @@ CREATE TABLE accounts (
 CREATE TABLE stocks (
     userid varchar(50) REFERENCES accounts(userid),
     stockSymbol varchar(20),
-    amount integer check,
+    amount integer,
     PRIMARY KEY (userid, stockSymbol)
 );
 
@@ -21,6 +21,7 @@ CREATE TABLE stocks (
 CREATE TABLE buy_triggers (
     userid varchar(50) REFERENCES accounts(userid),
     stockSymbol varchar(10),
+    amount integer,
     price integer,
     PRIMARY KEY (userid, stockSymbol, amount)
 );
