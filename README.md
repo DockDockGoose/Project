@@ -19,7 +19,7 @@ django-project\Scripts\activate
 
 then you can go into 
 ```
-stocksite/dir
+stocksite/
 ```
 and run 
 ```
