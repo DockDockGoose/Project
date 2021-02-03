@@ -5,7 +5,6 @@
     Reads [user].txt to parse and send requested commands in JSON format to specified server.   """
 
 """ TODO: 
-        - Create logging (to specified xml schema)
         - Modify/Improve command requesting (sends DUMPLOG not last)     """ 
 
 import sys
@@ -95,10 +94,16 @@ class WorkloadGenerator:
 
 
     def workloadHandler(self, pid):
-        while True:
-            user = userQ.get()
-            self.sendWorkload(user, pid)
-            userQ.task_done()
+        #TODO: is this an okay end loop condition?  -damon
+        while True: 
+
+            try: 
+                user = userQ.get()
+                self.sendWorkload(user, pid)
+                userQ.task_done()
+            except:
+                break
+
 
 
     def sendWorkload(self, user, pid):
@@ -164,7 +169,7 @@ class WorkloadGenerator:
             elif command == COMMIT_SELL:
                 self.performRequest(pid, transactionNumber, command, user)
 
-            elif command == CANCEL_SELL :
+            elif command == CANCEL_SELL:
                 self.performRequest(pid, transactionNumber, command, user)
 
             elif command == DISPLAY_SUMMARY:
