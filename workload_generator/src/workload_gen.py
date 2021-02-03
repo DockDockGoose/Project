@@ -16,8 +16,8 @@ import queue
 from threading import Thread
 
 defaultTestFile = "../workloads/WL_1_USER.txt"
-serverAddress = "localhost"
-defaultPort = 44444
+serverAddress   = "localhost"
+serverPort      = 65432
 
 ADD = "ADD"
 QUOTE = "QUOTE"
@@ -198,11 +198,9 @@ class WorkloadGenerator:
             request['filename'] = filename
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        userPort = defaultPort + pid
-        
+                
         try:
-            s.bind((serverAddress, userPort))
-            s.connect((serverAddress, userPort))
+            s.connect((serverAddress, serverPort))
             s.sendall(str(request).encode())
             # print(str(request).encode())          # Uncomment this to see the raw requests being sent.
             # response = s.recv(4096)               # Wait for response, if we need.
