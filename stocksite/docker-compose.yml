@@ -2,11 +2,12 @@ version: "3.9"
    
 services:
   db:
-    image: postgres
+    image: mongo
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=dockdockgoose
-      - POSTGRES_PASSWORD=dockdockgoose
+      MONGO_INITDB_ROOT_USERNAME: dockdockgoose
+      MONGO_INITDB_ROOT_PASSWORD: dockdockgoose
+    ports: 
+      - 27017:27017
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000

@@ -75,12 +75,15 @@ WSGI_APPLICATION = 'stocksite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'ENGINE': 'djongo',
+        'NAME': 'mongo',
         'USER': 'dockdockgoose',
         'PASSWORD': 'dockdockgoose',
-        'HOST': 'db',
-        'PORT': 5432,
+        'CLIENT': {
+            'host': 'db',
+            'port': 27017,
+        },
+
     }
 }
 
