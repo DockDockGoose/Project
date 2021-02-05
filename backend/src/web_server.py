@@ -66,6 +66,7 @@ class webServer():
         except socket.error as err:
             pass
 
+# Change to create thread per user (currently recieves commands out of order)
     def listen(self):
         """ Listens to the socket for incoming packets. When a incoming connection
             occurs a thread will be started to recieve and decode the packet.  """
@@ -85,6 +86,8 @@ class webServer():
         # decode the packet into a dictionary type
         # TODO: add client port info so we can send back data. 
         strData = ast.literal_eval(str(data).strip("b\""))
+        # Add server to dict
+        strData["server"] = SERV_HOST_NAME
         command = strData["command"]
         userCommands[command](strData)
 

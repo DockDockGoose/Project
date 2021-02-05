@@ -158,7 +158,7 @@ class WorkloadGenerator:
 
             elif command == ADD:
                 amount = requestInfo[2]
-                self.performRequest(pid, transactionNumber, command, user, amount)
+                self.performRequest(pid, transactionNumber, command, user, amount=amount)
 
             elif command == COMMIT_BUY:
                 self.performRequest(pid, transactionNumber, command, user)
