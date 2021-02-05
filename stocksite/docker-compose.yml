@@ -4,8 +4,9 @@ services:
   db:
     image: mongo
     environment:
-      MONGO_INITDB_ROOT_USERNAME: dockdockgoose
+      MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: dockdockgoose
+    command: mongod --auth
     ports: 
       - 27017:27017
   web:
