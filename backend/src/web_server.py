@@ -12,10 +12,10 @@ import sys
 import time
 import ast
 import queue
-import threading
 import user_commands
 from user_commands import userCommands
 from threading import Lock
+from threading import Thread
 import datetime as datetime
 
 
@@ -23,7 +23,6 @@ SERV_PORT       = 65432
 SERV_HOST_NAME  = '127.0.0.1'
 
 PACKET_SIZE     = 1024
-thread_print_lk = Lock()
 
 # REFERENCE MATERIALS
 # https://gist.github.com/joncardasis/cc67cfb160fa61a0457d6951eff2aeae
@@ -76,7 +75,7 @@ class webServer():
         """ Listens to the socket for incoming packets. When a incoming connection
             occurs a thread will be started to recieve and decode the packet.  """
 
-        self.socket.listen(5)
+        self.socket.listen()
 
         while True:
             (conn, address) = self.socket.accept()
@@ -126,7 +125,7 @@ class webServer():
         }
 
         #Create and Start the user thread
-        cReqThread = threading.Thread(target=self.handleClientRequest, args=[userId])
+        cReqThread = Thread(target=self.handleClientRequest, args=[userId])
         cReqThread.start()
 
         return 
