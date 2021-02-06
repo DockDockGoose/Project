@@ -5,7 +5,6 @@
     Reads [user].txt to parse and send requested commands in JSON format to specified server.   """
 
 """ TODO: 
-        - Create logging (to specified xml schema)
         - Modify/Improve command requesting (sends DUMPLOG not last)     """ 
 
 import sys
@@ -16,8 +15,8 @@ import queue
 from threading import Thread
 
 defaultTestFile = "../workloads/WL_1_USER.txt"
-serverAddress = "localhost"
-defaultPort = 44444
+serverAddress   = "localhost"
+serverPort      = 65432
 
 ADD = "ADD"
 QUOTE = "QUOTE"
@@ -95,10 +94,16 @@ class WorkloadGenerator:
 
 
     def workloadHandler(self, pid):
-        while True:
-            user = userQ.get()
-            self.sendWorkload(user, pid)
-            userQ.task_done()
+        #TODO: is this an okay end loop condition?  -damon
+        while True: 
+
+            try: 
+                user = userQ.get()
+                self.sendWorkload(user, pid)
+                userQ.task_done()
+            except:
+                break
+
 
 
     def sendWorkload(self, user, pid):
@@ -164,7 +169,7 @@ class WorkloadGenerator:
             elif command == COMMIT_SELL:
                 self.performRequest(pid, transactionNumber, command, user)
 
-            elif command == CANCEL_SELL :
+            elif command == CANCEL_SELL:
                 self.performRequest(pid, transactionNumber, command, user)
 
             elif command == DISPLAY_SUMMARY:
@@ -198,11 +203,9 @@ class WorkloadGenerator:
             request['filename'] = filename
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        userPort = defaultPort + pid
-        
+                
         try:
-            s.bind((serverAddress, userPort))
-            s.connect((serverAddress, userPort))
+            s.connect((serverAddress, serverPort))
             s.sendall(str(request).encode())
             # print(str(request).encode())          # Uncomment this to see the raw requests being sent.
             # response = s.recv(4096)               # Wait for response, if we need.
