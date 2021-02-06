@@ -13,12 +13,14 @@ import time
 import ast
 import queue
 import user_commands
+
 from user_commands import userCommands
 from threading import Lock
 from threading import Thread
+
 import datetime as datetime
 
-
+# Default server values, but can be inputted by user on class initialization
 SERV_PORT       = 65432
 SERV_HOST_NAME  = '127.0.0.1'
 
@@ -34,7 +36,9 @@ class webServer():
         self.port           = port
         self.hostname       = hostname
         self.userProcesses  = {}
-        
+        self.serverRunning  = True
+
+
     def start(self):
         """ starts the webserver up. This includes initializing the socket, 
         binding the socket for recieving, and calling the class listen function"""
@@ -67,6 +71,7 @@ class webServer():
             print("~SERVER SHUTDOWN")
             time_now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
             print("Timestamp: ", time_now)
+            self.serverRunning = False
 
         except socket.error as err:
             pass
@@ -77,10 +82,12 @@ class webServer():
 
         self.socket.listen()
 
-        while True:
+        while self.serverRunning:
             (conn, address) = self.socket.accept()
             conn.settimeout(60)
             self.handleRequest(conn, address)
+
+        self.shutdown()
 
     def handleRequest(self, conn, address):
         """ Listens to the socket for incoming packets. When a incoming connection
@@ -91,10 +98,11 @@ class webServer():
         # decode the packet into a dictionary type
         # TODO: sending back data to front end ???
         strData = ast.literal_eval(str(data).strip("b\""))
+
         strData["server"] = SERV_HOST_NAME
 
         if "user" in strData.keys():
-            #IF user field is specified send to the user process threads.
+            # IF user field is specified send to the user process threads.
             user = strData["user"]
 
             if user not in self.userProcesses:
@@ -103,11 +111,11 @@ class webServer():
 
             threadContext = self.userProcesses[user]
 
-            #Add user command packet to thread work queue
+            # Add user command packet to thread work queue
             threadContext["workQ"].put(strData)
 
         else:
-            #NO user specified. Assume dumplog server command. 
+            # NO user specified. Assume dumplog server command. 
             threadContext = self.userProcesses["admin"]
             threadContext["workQ"].put(strData)
 
@@ -124,7 +132,7 @@ class webServer():
             "qLock"  : Lock(),
         }
 
-        #Create and Start the user thread
+        # Create and Start the user thread
         cReqThread = Thread(target=self.handleClientRequest, args=[userId])
         cReqThread.start()
 
@@ -139,16 +147,21 @@ class webServer():
 
         threadContext = self.userProcesses[userId]
 
-        #TODO: allow thread closing here through threadContext. 
-        while True:
-            #Wait for next work Q item.
+        # TODO: allow thread closing here through threadContext. 
+        while self.serverRunning:
+            # Wait for next work Q item.
             userReq = threadContext["workQ"].get()
             
-            #Call command function dictionary
+            # Call command function dictionary
             command = userReq["command"]
             userCommands[command](userReq)
 
+        print("Ending Thread Process for Client: ", userId)
+
 
 if __name__ == '__main__':
-    server = webServer()
+    host_adr    = input("Enter hostname (localhost default): ") or "localhost"
+    port        = int(input("Enter port number (65432 default): ") or 65432)
+
+    server = webServer(port, host_adr)
     server.start()
