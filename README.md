@@ -29,9 +29,21 @@ python manage.py runserver
 
 If you would like to run the application on Docker follow these steps. Please note, before starting make sure you have [docker compose](https://docs.docker.com/compose/install/) installed. 
 
+Due to changes made to the docker containers, the previous containers need to be removed. This can be done through Docker Desktop by removing the containers under stocksite app. It can be removed through the CLI by using the commands
+```
+docker ps -f "status=exited" or docker ps -a -q
+docker rm <container id >
+```
+You can also use this command but be careful it will remove all stopped containers
+```
+docker rm $(docker ps -a -q)
+```
+
+
 Go into stocksite directory and run the application:
 ```
 cd stocksite
+docker-compose build
 docker-compose up
 ```
 

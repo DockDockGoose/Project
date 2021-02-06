@@ -7,6 +7,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: dockdockgoose
     command: mongod --auth
+    volumes:
+      - ./data-db:/data/db
     ports: 
       - 27017:27017
   web:
@@ -16,5 +18,19 @@ services:
       - .:/code
     ports:
       - "8000:8000"
+    depends_on:
+      - db
+  migration:
+    build: .
+    command: python manage.py migrate
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+  makemigrations:
+    build: .
+    command: python manage.py makemigrations
+    volumes:
+      - .:/code
     depends_on:
       - db
