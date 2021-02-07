@@ -1,3 +1,6 @@
+""" TODO: 
+        - error handling for commands
+""" 
 import pymongo
 import sys
 
@@ -22,6 +25,9 @@ class Database(object):
             sys.exit(1)
             
     def insert(collection, data):
+        '''
+            Insert data document into collection
+        '''
         Database.DATABASE[collection].insert(data)
 
     def find(collection, select=None, project=None):
@@ -46,4 +52,13 @@ class Database(object):
         return Database.DATABASE[collection].update_one(project, select)
 
     def aggregate(collection, project=None):
+        '''
+            Organizes data in embedded document arrays
+        '''
         return Database.DATABASE[collection].aggregate(project)
+
+    def remove(collection, data=None, option=None):
+        '''
+            Remove data document from collection
+        '''
+        Database.DATABASE[collection].remove(data, option)
