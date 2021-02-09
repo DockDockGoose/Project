@@ -68,10 +68,16 @@ class webServer():
         """ shutsdown the server connection, and socket. """
         try:
             self.socket.shutdown(socket.SHUT_RDWR)
+
             print("~SERVER SHUTDOWN")
             time_now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
             print("Timestamp: ", time_now)
+
             self.serverRunning = False
+
+            for threadContext in self.userProcesses:
+                # block untill process the last of the thread queue work items  
+                threadContext["workQ"].join()
 
         except socket.error as err:
             pass
@@ -156,6 +162,9 @@ class webServer():
             command = userReq["command"]
             userCommands[command](userReq)
 
+            # Indicate that queue work item processed. 
+            threadContext["workQ"].task_done()
+
         print("Ending Thread Process for Client: ", userId)
 
 
@@ -165,3 +174,4 @@ if __name__ == '__main__':
 
     server = webServer(port, host_adr)
     server.start()
+
