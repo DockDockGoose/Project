@@ -1,10 +1,14 @@
 """ Webserver class definition. This webserver handles the incoming packets from both the
-    workload generator and web interface. This webserver  """
+    workload generator and web interface. """
 
 """ TODO: 
         - Change to be a DJango type web server (???) 
         - Make more scalable
         - !!! Add a method to turn off the server (I have no idea, tried signal handler - damon)
+
+    REFERENCES: 
+        - https://gist.github.com/joncardasis/cc67cfb160fa61a0457d6951eff2aeae
+        - https://realpython.com/python-sockets/
         """ 
 
 import socket
@@ -25,10 +29,6 @@ SERV_PORT       = 65432
 SERV_HOST_NAME  = '127.0.0.1'
 
 PACKET_SIZE     = 1024
-
-# REFERENCE MATERIALS
-# https://gist.github.com/joncardasis/cc67cfb160fa61a0457d6951eff2aeae
-# https://realpython.com/python-sockets/
 
 class webServer():
 
@@ -115,8 +115,9 @@ class webServer():
             threadContext["workQ"].put(strData)
 
         else:
-            # NO user specified. Assume dumplog server command. 
+            # NO user specified. Dumplog server command. 
             threadContext = self.userProcesses["admin"]
+
             threadContext["workQ"].put(strData)
 
 
@@ -129,7 +130,6 @@ class webServer():
         self.userProcesses[userId] = {
             "userId" : userId,
             "workQ"  : queue.Queue(),
-            "qLock"  : Lock(),
         }
 
         # Create and Start the user thread
@@ -147,7 +147,7 @@ class webServer():
 
         threadContext = self.userProcesses[userId]
 
-        # TODO: allow thread closing here through threadContext. 
+        # TODO: allow thread closing here. 
         while self.serverRunning:
             # Wait for next work Q item.
             userReq = threadContext["workQ"].get()
