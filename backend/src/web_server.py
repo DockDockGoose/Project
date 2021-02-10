@@ -132,10 +132,13 @@ class webServer():
             This function will initialize and start the user thread, including its queue, and user ports. """
         
         print("NEW USER! ", userId)
+
         # Initialize the threadContext associated with the user thread. 
         self.userProcesses[userId] = {
-            "userId" : userId,
-            "workQ"  : queue.Queue(),
+            "userId"   : userId,
+            "workQ"    : queue.Queue(),
+            "buyAmtQ"  : queue.Queue(),
+            "sellAmtQ" : queue.Queue(),
         }
 
         # Create and Start the user thread
@@ -160,7 +163,7 @@ class webServer():
             
             # Call command function dictionary
             command = userReq["command"]
-            userCommands[command](userReq)
+            userCommands[command](userReq, threadContext)
 
             # Indicate that queue work item processed. 
             threadContext["workQ"].task_done()
