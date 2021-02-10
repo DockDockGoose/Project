@@ -1,10 +1,14 @@
 """ Webserver class definition. This webserver handles the incoming packets from both the
-    workload generator and web interface. This webserver  """
+    workload generator and web interface. """
 
 """ TODO: 
         - Change to be a DJango type web server (???) 
         - Make more scalable
         - !!! Add a method to turn off the server (I have no idea, tried signal handler - damon)
+
+    REFERENCES: 
+        - https://gist.github.com/joncardasis/cc67cfb160fa61a0457d6951eff2aeae
+        - https://realpython.com/python-sockets/
         """ 
 
 import socket
@@ -25,10 +29,6 @@ SERV_PORT       = 65432
 SERV_HOST_NAME  = '127.0.0.1'
 
 PACKET_SIZE     = 1024
-
-# REFERENCE MATERIALS
-# https://gist.github.com/joncardasis/cc67cfb160fa61a0457d6951eff2aeae
-# https://realpython.com/python-sockets/
 
 class webServer():
 
@@ -68,10 +68,16 @@ class webServer():
         """ shutsdown the server connection, and socket. """
         try:
             self.socket.shutdown(socket.SHUT_RDWR)
+
             print("~SERVER SHUTDOWN")
             time_now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
             print("Timestamp: ", time_now)
+
             self.serverRunning = False
+
+            for threadContext in self.userProcesses:
+                # block untill process the last of the thread queue work items  
+                threadContext["workQ"].join()
 
         except socket.error as err:
             pass
@@ -115,8 +121,9 @@ class webServer():
             threadContext["workQ"].put(strData)
 
         else:
-            # NO user specified. Assume dumplog server command. 
+            # NO user specified. Dumplog server command. 
             threadContext = self.userProcesses["admin"]
+
             threadContext["workQ"].put(strData)
 
 
@@ -125,11 +132,13 @@ class webServer():
             This function will initialize and start the user thread, including its queue, and user ports. """
         
         print("NEW USER! ", userId)
+
         # Initialize the threadContext associated with the user thread. 
         self.userProcesses[userId] = {
-            "userId" : userId,
-            "workQ"  : queue.Queue(),
-            "qLock"  : Lock(),
+            "userId"   : userId,
+            "workQ"    : queue.Queue(),
+            "buyAmtQ"  : queue.Queue(),
+            "sellAmtQ" : queue.Queue(),
         }
 
         # Create and Start the user thread
@@ -147,14 +156,17 @@ class webServer():
 
         threadContext = self.userProcesses[userId]
 
-        # TODO: allow thread closing here through threadContext. 
+        # TODO: allow thread closing here. 
         while self.serverRunning:
             # Wait for next work Q item.
             userReq = threadContext["workQ"].get()
             
             # Call command function dictionary
             command = userReq["command"]
-            userCommands[command](userReq)
+            userCommands[command](userReq, threadContext)
+
+            # Indicate that queue work item processed. 
+            threadContext["workQ"].task_done()
 
         print("Ending Thread Process for Client: ", userId)
 
@@ -165,3 +177,4 @@ if __name__ == '__main__':
 
     server = webServer(port, host_adr)
     server.start()
+
