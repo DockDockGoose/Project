@@ -25,7 +25,7 @@ from threading import Thread
 import datetime as datetime
 
 # Default server values, but can be inputted by user on class initialization
-SERV_PORT       = 65432
+SERV_PORT       = 65000
 SERV_HOST_NAME  = '127.0.0.1'
 
 PACKET_SIZE     = 1024
@@ -90,26 +90,56 @@ class webServer():
 
         while self.serverRunning:
             (conn, address) = self.socket.accept()
-            conn.settimeout(60)
-            self.handleRequest(conn, address)
+            
+            conn.setblocking(False)
+            
+            # Start a thread for each socket connection.
+            # TODO: Change to be Event driven 
+            Thread(target=self.handleConnection, args=(conn, address)).start()
 
         self.shutdown()
 
-    def handleRequest(self, conn, address):
+    def handleConnection(self, conn, address):
         """ Listens to the socket for incoming packets. When a incoming connection
             occurs a thread will be started to recieve and decode the packet.  """
-        # need to enable more threads processing and sending user packets. 
-        data = str(conn.recv(PACKET_SIZE))
+
+        print("Server Connection Detected from: {conn}")
+
+        while self.serverRunning:
+            data = []
+
+            try:
+                data = str(conn.recv(PACKET_SIZE))
+            except socket.error as err:
+                continue
+
+            if not data:
+                # Connection has been closed. 
+                break
+
+            # Sometimes Data packets are bunched up in the read buffer. 
+            #      This mechanism will seperate them, and process each
+            strData = str(data).strip("b\"")
+            packets = strData.split("}")
+
+            for userReqData in packets[:-1]:
+                print("SENDING PACKET {}".format(userReqData))
+                self.handleClientRequest(userReqData + '}')
+
+        conn.close()
+        print("WARNING! Server Connection {conn} closed")    
+
+    def handleClientRequest(self, rawPacket):
 
         # decode the packet into a dictionary type
         # TODO: sending back data to front end ???
-        strData = ast.literal_eval(str(data).strip("b\""))
+        userReq = ast.literal_eval(str(rawPacket).strip("b\""))
 
-        strData["server"] = SERV_HOST_NAME
+        userReq["server"] = SERV_HOST_NAME
 
-        if "user" in strData.keys():
+        if "user" in userReq.keys():
             # IF user field is specified send to the user process threads.
-            user = strData["user"]
+            user = userReq["user"]
 
             if user not in self.userProcesses:
                 #IF no user process thread created initialize user process thread.
@@ -118,13 +148,13 @@ class webServer():
             threadContext = self.userProcesses[user]
 
             # Add user command packet to thread work queue
-            threadContext["workQ"].put(strData)
+            threadContext["workQ"].put(userReq)
 
         else:
             # NO user specified. Dumplog server command. 
             threadContext = self.userProcesses["admin"]
 
-            threadContext["workQ"].put(strData)
+            threadContext["workQ"].put(userReq)
 
 
     def initializeUserThread(self, userId):
@@ -142,12 +172,12 @@ class webServer():
         }
 
         # Create and Start the user thread
-        cReqThread = Thread(target=self.handleClientRequest, args=[userId])
+        cReqThread = Thread(target=self.userConsumerThread, args=[userId])
         cReqThread.start()
 
         return 
 
-    def handleClientRequest(self, userId):
+    def userConsumerThread(self, userId):
         """ This is the user thread associated with each user. Work is recieved from the client
             and put in the associated user work thread queue. The thread will retrieve this work 
             to execute on. """
@@ -173,7 +203,7 @@ class webServer():
 
 if __name__ == '__main__':
     host_adr    = input("Enter hostname (localhost default): ") or "localhost"
-    port        = int(input("Enter port number (65432 default): ") or 65432)
+    port        = int(input("Enter port number ({} default): ".format(SERV_PORT)) or SERV_PORT)
 
     server = webServer(port, host_adr)
     server.start()
