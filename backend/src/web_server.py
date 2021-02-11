@@ -28,7 +28,7 @@ import datetime as datetime
 SERV_PORT       = 65000
 SERV_HOST_NAME  = '127.0.0.1'
 
-PACKET_SIZE     = 1024
+PACKET_SIZE     = 8192
 
 class webServer():
 
@@ -103,29 +103,30 @@ class webServer():
         """ Listens to the socket for incoming packets. When a incoming connection
             occurs a thread will be started to recieve and decode the packet.  """
 
-        print("Server Connection Detected from: {conn}")
+        print("Server Connection Detected from: {}".format(address))
 
         while self.serverRunning:
             data = []
 
             try:
-                data = str(conn.recv(PACKET_SIZE))
+                data = conn.recv(PACKET_SIZE)
+                if not data:
+                    # Connection has been closed
+                    break
             except socket.error as err:
+                time.sleep(1)
                 continue
 
-            if not data:
-                # Connection has been closed. 
-                break
-
+            print("Got Data")
             # Sometimes Data packets are bunched up in the read buffer. 
             #      This mechanism will seperate them, and process each
             strData = str(data).strip("b\"")
             packets = strData.split("}")
 
             for userReqData in packets[:-1]:
-                print("SENDING PACKET {}".format(userReqData))
                 self.handleClientRequest(userReqData + '}')
 
+        conn.shutdown(socket.SHUT_RDWR)
         conn.close()
         print("WARNING! Server Connection {conn} closed")    
 
@@ -175,7 +176,7 @@ class webServer():
         cReqThread = Thread(target=self.userConsumerThread, args=[userId])
         cReqThread.start()
 
-        return 
+        return
 
     def userConsumerThread(self, userId):
         """ This is the user thread associated with each user. Work is recieved from the client
@@ -183,20 +184,22 @@ class webServer():
             to execute on. """
 
         print("Starting Thread Process for Client: ", userId)
-
         threadContext = self.userProcesses[userId]
 
-        # TODO: allow thread closing here. 
+        processed = 0
+
         while self.serverRunning:
             # Wait for next work Q item.
             userReq = threadContext["workQ"].get()
             
+            print("WORK LOG: {} -- {}".format(threadContext["workQ"].qsize(), processed))
             # Call command function dictionary
             command = userReq["command"]
             userCommands[command](userReq, threadContext)
 
             # Indicate that queue work item processed. 
             threadContext["workQ"].task_done()
+            processed += 1
 
         print("Ending Thread Process for Client: ", userId)
 
