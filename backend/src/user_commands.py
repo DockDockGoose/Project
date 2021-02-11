@@ -12,19 +12,15 @@ import queue
 import sys
 sys.path.append('..')
 from audit import logXML as log
-from threading import Lock
-cmd_print_lock = Lock()
-
 
 REMOVE = "REMOVE"
 ADD = "ADD"
 
 def printCmd(cmdDict):
-    with cmd_print_lock:
-        command = cmdDict["command"]
-        print("PACKET CONTENTS:", cmdDict)
-        print("    Trans. #: ",   cmdDict["transactionNumber"])
-        print("    CMD:      ",   command)
+    print("NUM, USER, CMD =  [{}, {}, {}]".format(cmdDict["transactionNumber"],
+                                              cmdDict["user"],
+                                              cmdDict["command"]))  
+
 
 def CMD_Add(cmdDict, threadContext):
     printCmd(cmdDict)
