@@ -33,7 +33,7 @@ NUM_FORWARD_SERVERS = 1
 #    - Audit server is always last array index. 
 forwardServers = []
 
-PACKET_SIZE     = 1024
+PACKET_SIZE     = 8192 
 
 class webServer():
 
@@ -41,6 +41,7 @@ class webServer():
         self.port           = port
         self.hostname       = hostname
         self.userProcesses  = {}
+        self.serverRunning  = True
         
     def start(self):
         """ starts the webserver up. This includes initializing the socket, 
@@ -88,14 +89,20 @@ class webServer():
     def shutdown(self):
         """ shutsdown the server connection, and socket. """
         try:
+            self.serverRunning = False
+
             self.socketRevc.shutdown(socket.SHUT_RDWR)
+            self.socketRevc.close()
 
             for index in range(forwardServers.size()):
                 self.serverSockets[index].shutdown(socket.SHUT_RDWR)
+                self.serverSockets[index].close()
 
             print("~SERVER SHUTDOWN")
             time_now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
             print("Timestamp: ", time_now)
+
+            self.packetQ.join()
 
         except socket.error as err:
             pass
@@ -107,35 +114,63 @@ class webServer():
         print("Starting load balancer PRODUCER thread")
         self.socketRevc.listen(5)
         
-        while True:
+        while self.serverRunning:
             (conn, address) = self.socketRevc.accept()
-            conn.settimeout(60)
-            self.handleRequest(conn, address)
+
+            conn.setblocking(False)
+
+            # Start a thread for each socket connection.
+            # TODO: Change to be Event driven 
+            Thread(target=self.handleConnection, args=(conn, address)).start()
 
         print("WARNING! Load Balancer producer thread ending")
 
-    def handleRequest(self, conn, address):
+    def handleConnection(self, conn, address):
         """ Listens to the socket for incoming packets. When a incoming connection
             occurs a thread will be started to recieve and decode the packet. 
             Will add the incoming packets to internal queue for later transmission.
             """
 
-        # need to enable more threads processing and sending user packets. 
-        data = str(conn.recv(PACKET_SIZE))
+        print("New Client Connection Detected from: {}".format(address))
 
-        # Decode the packet into a dictionary type
-        strData = ast.literal_eval(str(data).strip("b\""))
-        print("Producer -- Putting P on Queue")
-        self.packetQ.put(strData)
+        while self.serverRunning:
+            try:
+                data = conn.recv(PACKET_SIZE)
+                if not data:
+                    # connection has been closed
+                    break
+            except socket.error as err:
+                time.sleep(0.001)
+                continue
+
+            strData = str(data).strip("b\"")
+
+            # Sometimes Data packets are bunched up in the read buffer. 
+            #   This mechanism will seperate them, and process each
+            packets = strData.split("}")
+
+            for userReqData in packets[:-1]:
+                userReqData = userReqData.strip() + '}'
+
+                # Decode the packet into a dictionary type
+                userDict = ast.literal_eval(str(userReqData))
+
+                # DEBUG PRINT
+                #print("Producer -- Putting P on Queue")
+
+                self.packetQ.put(userDict)
+
+        print("Client Closed: {}".format(address))
+        conn.close()
 
 
     def consumerThread(self):
-    """ 
+        """ Consumer thread
+    
         """
-        
         print("Starting load balancer CONSUMER thread")
 
-        while True:
+        while self.serverRunning:
             try: 
                 packet = self.packetQ.get(False)
 
@@ -143,15 +178,16 @@ class webServer():
                     user = packet["user"]
                 else:
                     user = "default"
-
+                
                 serverHash = hash(user) % NUM_FORWARD_SERVERS
-
-                print("Consumer -- Got P off Queue (User: {}, Server: {} )".format(user, serverHash))
+                print("Forwarding Packet: [#{}:{}: --> Serv: {})".format(packet["transactionNumber"], user, serverHash))
+                
                 self.serverSockets[serverHash].send(str(packet).encode())
 
                 self.packetQ.task_done()
 
             except queue.Empty:
+                time.sleep(0.001)
                 pass 
 
         print("WARNING! Load Balancer consumer thread ending")
