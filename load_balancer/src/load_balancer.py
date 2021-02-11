@@ -12,7 +12,7 @@ import sys
 import time
 import ast
 import queue
-import threading
+from threading import Thread
 from threading import Lock
 import datetime as datetime
 
@@ -26,8 +26,6 @@ AUDIT_SERV_PORT = 50000
 DEFAULT_WEB_SERV_PORT = 65000
 
 NUM_FORWARD_SERVERS = 1
-
-
 
 # Table of open web servers to forward packet requests too. 
 #    - user IDs are key- hashed and modulos with NUM of servers
@@ -54,26 +52,47 @@ class webServer():
         print("Port: " + str(self.port))
         print()
         
-        # Initialize a thread to forward to audit servers on the DUMPLOG commands
-        #self.initializeUserThread("admin", forwardServers[-1][0], forwardServers[-1][1] )
-        self.initializeUserThread("admin", forwardServers[0][0], forwardServers[0][1] )
-
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Create Listening Socket
+        self.socketRevc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            self.socket.bind((self.hostname, self.port))
+            self.socketRevc.bind((self.hostname, self.port))
 
         except socket.error as err:
             print("ERROR! binding port {self.port} failed with error: {err}")
             self.shutdown()
             sys.exit(1)
 
-        # Call to the listening function to start recieving and decoding incoming packets
-        self.listen()
+        # Create Outgoing sockets for multiple webserver connections
+        numberOfServers = len(forwardServers)
+        self.serverSockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(numberOfServers)]
+
+        for index in range(numberOfServers):
+            self.serverSockets[index].connect((forwardServers[index][0], forwardServers[index][1]))
+
+
+        self.packetQ = queue.Queue()
+
+        # Create the consumer thread to listen for incoming packets. 
+        # TODO: Can create consumer thread for each connected webserver. 
+        consumerTh = Thread(target=self.consumerThread)
+        consumerTh.start()
+
+        # Create the producer thread to listen for incoming packets. 
+        producerTh = Thread(target=self.producerThread)
+        producerTh.start()
+
+        while True:
+            pass
+
     
     def shutdown(self):
         """ shutsdown the server connection, and socket. """
         try:
-            self.socket.shutdown(socket.SHUT_RDWR)
+            self.socketRevc.shutdown(socket.SHUT_RDWR)
+
+            for index in range(forwardServers.size()):
+                self.serverSockets[index].shutdown(socket.SHUT_RDWR)
+
             print("~SERVER SHUTDOWN")
             time_now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
             print("Timestamp: ", time_now)
@@ -81,89 +100,61 @@ class webServer():
         except socket.error as err:
             pass
 
-    def listen(self):
+    def producerThread(self):
         """ Listens to the socket for incoming packets. When a incoming connection
             occurs a thread will be started to recieve and decode the packet.  """
 
-        self.socket.listen(5)
-
+        print("Starting load balancer PRODUCER thread")
+        self.socketRevc.listen(5)
+        
         while True:
-            (conn, address) = self.socket.accept()
+            (conn, address) = self.socketRevc.accept()
             conn.settimeout(60)
             self.handleRequest(conn, address)
 
+        print("WARNING! Load Balancer producer thread ending")
+
     def handleRequest(self, conn, address):
         """ Listens to the socket for incoming packets. When a incoming connection
-            occurs a thread will be started to recieve and decode the packet.  """
+            occurs a thread will be started to recieve and decode the packet. 
+            Will add the incoming packets to internal queue for later transmission.
+            """
+
         # need to enable more threads processing and sending user packets. 
         data = str(conn.recv(PACKET_SIZE))
 
-        # decode the packet into a dictionary type
-        # TODO: sending back data to front end ???
+        # Decode the packet into a dictionary type
         strData = ast.literal_eval(str(data).strip("b\""))
-        #strData["server"] = SERV_HOST_NAME
-
-        if "user" in strData.keys():
-            #IF user field is specified send to the user process threads.
-            user = strData["user"]
-
-            if user not in self.userProcesses:
-                #IF no user process thread created initialize user process thread.
-                serverHash = hash(user) % NUM_FORWARD_SERVERS
-                self.initializeUserThread(user, forwardServers[serverHash][0], forwardServers[serverHash][1])
-
-            threadContext = self.userProcesses[user]
-
-            #Add user command packet to thread work queue
-            threadContext["workQ"].put(strData)
-
-        else:
-            #NO user specified. Assume dumplog server command. 
-            threadContext = self.userProcesses["admin"]
-            threadContext["workQ"].put(strData)
+        print("Producer -- Putting P on Queue")
+        self.packetQ.put(strData)
 
 
-    def initializeUserThread(self, userId, forwardAddress, forwardPort):
-        """ Every client has an asociated user thread. This thread will handle all of a specific user requests.
-            This function will initialize and start the user thread, including its queue, and user ports. """
+    def consumerThread(self):
+    """ 
+        """
         
-        print("NEW USER! ", userId)
-        # Initialize the threadContext associated with the user thread. 
-        self.userProcesses[userId] = {
-            "userId" : userId,
-            "workQ"  : queue.Queue(),
-            "qLock"  : Lock(),
-            "forwardAddress" : forwardAddress,
-            "forwardPort"    : forwardPort,
-        }
+        print("Starting load balancer CONSUMER thread")
 
-        #Create and Start the user thread
-        cReqThread = threading.Thread(target=self.handleClientRequest, args=[userId])
-        cReqThread.start()
-
-        return 
-
-    def handleClientRequest(self, userId):
-        """ This is the user thread associated with each user. Work is recieved from the client
-            and put in the associated user work thread queue. The thread will retrieve this work 
-            to execute on. """
-
-        print("Starting Thread Process for Client: ", userId)
-
-        threadContext = self.userProcesses[userId]
-
-        #TODO: allow thread closing here through threadContext. 
         while True:
-            userReq = threadContext["workQ"].get()
+            try: 
+                packet = self.packetQ.get(False)
 
-            # Wait for next work Q item.
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((threadContext["forwardAddress"], threadContext["forwardPort"]))
-            s.sendall(str(userReq).encode())
+                if "user" in packet.keys():
+                    user = packet["user"]
+                else:
+                    user = "default"
 
-            s.close()
+                serverHash = hash(user) % NUM_FORWARD_SERVERS
 
-        print("Ending Thread Process for Client: ", userId)
+                print("Consumer -- Got P off Queue (User: {}, Server: {} )".format(user, serverHash))
+                self.serverSockets[serverHash].send(str(packet).encode())
+
+                self.packetQ.task_done()
+
+            except queue.Empty:
+                pass 
+
+        print("WARNING! Load Balancer consumer thread ending")
 
 
 if __name__ == '__main__':
@@ -178,19 +169,20 @@ if __name__ == '__main__':
 
         print("\nAdding Webserver Connection: {}:{} \n".format(webServAddress, webServPort))
 
-        if "q" == (input("Enter \'q\' to stop inputing Web Server port/address: ") or "c"):
+        if "q" == (input("Enter \'q\' to STOP inputing Web Server port/address: ") or "c"):
             break
 
         DEFAULT_WEB_SERV_PORT += 1
         NUM_FORWARD_SERVERS   += 1
 
-    print("\n ~~~~ AUDIT SERVER INFORMATION ~~~~")
+    # TODO: Audit Server 
+    #print("\n ~~~~ AUDIT SERVER INFORMATION ~~~~")
 
-    auditServAddress  = input("\nEnter the Audit Server hostname (localhost default): ") or "localhost"
-    auditServPort     = int(input("Enter port number ({} default): ".format(AUDIT_SERV_PORT)) or AUDIT_SERV_PORT)
+    #auditServAddress  = input("\nEnter the Audit Server hostname (localhost default): ") or "localhost"
+    #auditServPort     = int(input("Enter port number ({} default): ".format(AUDIT_SERV_PORT)) or AUDIT_SERV_PORT)
 
-    print("\nAdding Audit Server Connection: {}:{} \n".format(auditServAddress, auditServPort))
-    forwardServers.append([auditServAddress, auditServPort])
+    #print("\nAdding Audit Server Connection: {}:{} \n".format(auditServAddress, auditServPort))
+    #forwardServers.append([auditServAddress, auditServPort])
 
     print("SERVER LIST: {} \n\n".format(forwardServers))
 
