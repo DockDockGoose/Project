@@ -3,6 +3,7 @@
 """ TODO: 
         - test with workload generator
 """ 
+
 import socket
 import sys
 
@@ -12,20 +13,21 @@ QUOTE_HOST_NAME  = '192.168.4.2'
 PACKET_SIZE 	 = 1024
 
 class QuoteServer:
-	def __init__(self, port=QUOTE_PORT, hostname=QUOTE_HOST_NAME):
-		self.port 	  = port
+	def __init__(self, hostname=QUOTE_HOST_NAME, port=QUOTE_PORT,):
+		
 		self.hostname = hostname
+		self.port     = port
 
 	def connect(self):
 		"""
 		Connect to quote server.
 		"""
-
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+
 		try:
-			print(f"Connecting to {self.host_adr}:{self.port} ...")
-			self.socket.connect((self.host_adr, self.port))
+			print(f"Connecting to {self.hostname}:{self.port} ...")
+			self.socket.connect((self.hostname, self.port))
 		except socket.error as err:
 			print(f"ERROR! binding port {self.port} failed with error: {err}")
 			self.socket.close()
@@ -47,10 +49,10 @@ class QuoteServer:
 			data = data.decode().split(",")
 
 			quote_data = {
-				'price': data[0],
+				'price': float(data[0]),
 				'stock': data[1],
 				'user': data[2],
-    			'cryptokey': data[4]
+    				'cryptokey': data[4].strip("\n")
 			}
 
 			return quote_data
@@ -62,14 +64,13 @@ class QuoteServer:
 			
 		
 if __name__ == '__main__':
-	host_adr = input("Enter hostname (192.168.4.2): ") or QUOTE_HOST_NAME
+	hostname = input("Enter hostname (192.168.4.2): ") or QUOTE_HOST_NAME
 	port = int(input("Enter port number (4444): ") or QUOTE_PORT)
 
 	test_cmd = {
 		'stockSymbol': 'S',
 		'user': 'abc12'
 	}
-	qs = QuoteServer(host_adr, port)
-	qs.connect
+	qs = QuoteServer(hostname, port)
+	qs.connect()
 	print(qs.getQuote(test_cmd))
-	
