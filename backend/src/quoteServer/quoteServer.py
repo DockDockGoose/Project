@@ -1,11 +1,8 @@
-""" Used to query quotes from the quote server
-"""
-""" TODO: 
-        - test with workload generator
-""" 
+""" Used to query quotes from the quote server. """
 
 import socket
 import sys
+
 
 QUOTE_PORT       = 4444
 QUOTE_HOST_NAME  = '192.168.4.2'
@@ -13,6 +10,8 @@ QUOTE_HOST_NAME  = '192.168.4.2'
 PACKET_SIZE 	 = 1024
 
 class QuoteServer:
+
+
 	def __init__(self, hostname=QUOTE_HOST_NAME, port=QUOTE_PORT,):
 		
 		self.hostname = hostname
@@ -37,41 +36,39 @@ class QuoteServer:
 		"""
 			Get a quote from the quote server
 		"""
+		# Connect to quote server
+		self.connect()
 
 		# Get query and send to quote server
 		quote =  cmdDict['stockSymbol'] + ',' + cmdDict['user'] + "\n"
 			
 		self.socket.send(quote.encode())
 		
-		# Read and print up to 1k of data.
+		# Read and send back 1k of data.
 		try:
+
 			data = self.socket.recv(PACKET_SIZE)
 			data = data.decode().split(",")
 
 			quote_data = {
-				'price': float(data[0]),
+				'price': data[0],
 				'stock': data[1],
 				'user': data[2],
 				'timestamp': data[3],
     				'cryptokey': data[4].strip("\n")
 			}
-
-			return quote_data
+			
+			# close quote server connection and send back data
+			self.socket.close()
+			return quote_data	
 			
 		except:
 			print ('Connection to server closed')	
 			# close the connection, and the socket
 			self.socket.close()
-			
-		
-if __name__ == '__main__':
-	hostname = input("Enter hostname (192.168.4.2): ") or QUOTE_HOST_NAME
-	port = int(input("Enter port number (4444): ") or QUOTE_PORT)
 
-	test_cmd = {
-		'stockSymbol': 'S',
-		'user': 'abc12'
-	}
-	qs = QuoteServer(hostname, port)
-	qs.connect()
-	print(qs.getQuote(test_cmd))
+		
+
+
+
+

@@ -91,26 +91,49 @@ python web_server.py
  * to send simulated requests to the webserver see workload generator section above. 
  * To end the server I use (ctrl+ALT+(BREAK/PAUSE)), maybe CRTL+Z, CRTL+C would work for different users
 
-### Testing Workload Generator with Database
+### Testing Workload Generator with Database on VM
 If you want to test the workload generator and see the commands run on the database, here is what to do. 
-First ensure you have mongodb installed (specifically the Run MongoDB Community Edition part): https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
+First ensure you have mongodb installed and pymongo to interact with the databse (reference: https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-ubuntu-18-04 )
 
-That webpage also has the commands to start a mongodb instance passed the installation part, but here it us just in case:
 ```
-# start mongo db
-sudo systemctl start mongod
-# check status to make sure it is running
+sudo apt update
+
+sudo apt install -y mongodb
+
+sudo apt install python3-pip
+
+pip3 install pymango
+
+```
+
+The installation should automatically starts a mongodb instance. Here are some commands to check that it is  running properly. 
+```
+
+# Check status to make sure it is running
 sudo systemctl status mongod
+# Check the database has the right server address and port
+mongo --eval 'db.runCommand({ connectionStatus: 1 })'
 # Connect to mongo db instance
 mongo 
 ```
 
-To look at our database and its collections (reference: https://docs.mongodb.com/manual/reference/mongo-shell/)
+To look at our database and its collections (reference: https://docs.mongodb.com/manual/reference/mongo-shell/ )
 ```
 show dbs
 use mongodb
 show collections
 ```
 Use `exit` to leave mongo shell. 
+
+If the mongodb instance is not running, here the is command to start it:
+```
+sudo systemctl start mongod
+
+```
+
+Command to shutdown mongodb instance
+```
+sudo systemctl stop mongodb
+```
 
 I would also highly recommend Mongodb Compass. It is a GUI for Mongodb: https://www.mongodb.com/try/download/compass 

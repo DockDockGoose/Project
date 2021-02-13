@@ -12,21 +12,6 @@ class MockQuoteServer:
 		self.port 	  = port
 		self.hostname = hostname
 
-	def connect(self):
-		"""
-		Connect to quote server.
-		"""
-
-		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-		try:
-			print(f"Connecting to {self.host_adr}:{self.port} ...")
-			self.socket.connect((self.host_adr, self.port))
-		except socket.error as err:
-			print(f"ERROR! binding port {self.port} failed with error: {err}")
-			self.socket.close()
-			sys.exit(1)
-
 	def getQuote(self, cmdDict):
 		"""
 			Use intead of getQuote when you are not connected to server

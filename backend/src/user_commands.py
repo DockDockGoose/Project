@@ -37,8 +37,9 @@ current_share_price = 2
 
 # Connect to database
 Database.connect()
-# Create quote server (Note: this is the mock version, on VM use real quote server by using quoteServer instead)
-qs = MockQuoteServer()
+# Create quote server (Note: this is the actual version for VM, use mock quote server for local testing by changing to MockQuoteServer instead)
+qs = QuoteServer()
+
 
 def printCmd(cmdDict):
     """
@@ -97,15 +98,16 @@ def CMD_Quote(cmdDict, threadContext):
 
     # query the quote server
     quote_data = qs.getQuote(cmdDict)
+    print(quote_data)
     
     # Log the results from quote server
-    cmdDict['price'] = str(quote_data['price'])
+    cmdDict['price'] = quote_data['price']
     cmdDict['cryptokey'] = quote_data['cryptokey']
     cmdDict['timestamp'] = str(int(time.time()))
     log.logEvents['quoteServer'](cmdDict)
 
     # Update the current price of shares
-    current_share_price = quote_data['price']
+    current_share_price = float(quote_data['price'])
 
     cmdCompleted(cmdDict)
 
