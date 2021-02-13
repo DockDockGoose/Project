@@ -93,7 +93,7 @@ python web_server.py
 
 ### Testing Workload Generator with Database
 If you want to test the workload generator and see the commands run on the database, here is what to do. 
-First ensure you have mongodb installede(specifically the Run MongoDB Community Edition part): https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
+First ensure you have mongodb installed (specifically the Run MongoDB Community Edition part): https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
 
 That webpage also has the commands to start a mongodb instance passed the installation part, but here it us just in case:
 ```

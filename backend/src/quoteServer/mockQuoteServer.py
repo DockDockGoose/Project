@@ -1,8 +1,7 @@
+""" A mock up of the quote server. Will return dummy quote."""
+
 import socket
 import sys
-
-
-""" A mock of the quote server. Will return dummy quote."""
 
 class MockQuoteServer:
 
@@ -38,7 +37,7 @@ class MockQuoteServer:
 				'price': 10,
 				'stock': cmdDict['stockSymbol'],
 				'user': cmdDict['user'],
-    			'cryptokey': 'iedfIbDal3nbXUIdp6BwrexrCe6ih3JZlFmjdMUools='
+				'cryptokey': 'iedfIbDal3nbXUIdp6BwrexrCe6ih3JZlFmjdMUools='
 		}
 
 		return quote_data

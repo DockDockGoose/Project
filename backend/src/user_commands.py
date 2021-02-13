@@ -2,8 +2,8 @@
     each user command is set to this function after decoding the packet in the webserver
 """
 """ TODO: 
-        - finish all commands
-        - inferface with the SQL database. 
+        - Extract commands into their own modules
+        - sell/buy trigger checking of quote server
         - error handling
         - logging is out of order -> needs error checking
 """ 

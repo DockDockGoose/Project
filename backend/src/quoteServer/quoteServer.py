@@ -1,3 +1,8 @@
+""" Used to query quotes from the quote server
+"""
+""" TODO: 
+        - test with workload generator
+""" 
 import socket
 import sys
 
@@ -5,11 +10,6 @@ QUOTE_PORT       = 4444
 QUOTE_HOST_NAME  = '192.168.4.2'
 
 PACKET_SIZE 	 = 1024
-
-
-"""
-	The real quote server, can be used on the VM
-"""
 
 class QuoteServer:
 	def __init__(self, port=QUOTE_PORT, hostname=QUOTE_HOST_NAME):
@@ -59,22 +59,16 @@ class QuoteServer:
 			print ('Connection to server closed')	
 			# close the connection, and the socket
 			self.socket.close()
-
-	def dummyGetQuote(self, cmdDict):
-		"""
-			Use intead of getQuote when you are not connected to server
-			Will return dummy data
-		"""
-		quote_data = {
-				'price': 10,
-				'stock': cmdDict['stockSymbol'],
-				'user': cmdDict['user'],
-    			'cryptokey': 'iedfIbDal3nbXUIdp6BwrexrCe6ih3JZlFmjdMUools='
-			}
-		return quote_data
 			
 		
 if __name__ == '__main__':
 	host_adr = input("Enter hostname (192.168.4.2): ") or QUOTE_HOST_NAME
 	port = int(input("Enter port number (4444): ") or QUOTE_PORT)
+
+	test_cmd = {
+		'stockSymbol': 'S',
+		'user': 'abc12'
+	}
 	qs = QuoteServer(host_adr, port)
+	qs.connect
+	print(qs.getQuote(test_cmd))
