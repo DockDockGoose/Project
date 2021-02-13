@@ -1,7 +1,7 @@
 version: "3.9"
    
 services:
-  db:
+  mongodb:
     image: mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
@@ -19,18 +19,18 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      - mongodb
   migration:
     build: .
     command: python manage.py migrate
     volumes:
       - .:/code
     depends_on:
-      - db
+      - mongodb
   makemigrations:
     build: .
     command: python manage.py makemigrations
     volumes:
       - .:/code
     depends_on:
-      - db
+      - mongodb

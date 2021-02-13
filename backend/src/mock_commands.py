@@ -1,7 +1,7 @@
-'''
+"""
     Contains mock data and the method call for each user command
     Used for testing usercommands 
-'''
+"""
 
 add_test_data = {
     'pid': 123,

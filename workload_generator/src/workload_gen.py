@@ -108,7 +108,7 @@ class WorkloadGenerator:
 
     def sendWorkload(self, user, pid):
         translation = {91: None, 93: None}
-
+        
         try:
             f = open(user + ".txt", "r")
         except IOError:
@@ -121,43 +121,43 @@ class WorkloadGenerator:
             command = requestInfo[0]
 
             if command == BUY:
-                (stockSymbol, amount) = (requestInfo[2], requestInfo[3])
+                (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
                 self.performRequest(pid, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SELL:
-                (stockSymbol, amount) = (requestInfo[2], requestInfo[3])
+                (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
                 self.performRequest(pid, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_BUY_AMOUNT:
-                (stockSymbol, amount) = (requestInfo[2], requestInfo[3])
+                (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
                 self.performRequest(pid, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_BUY_TRIGGER :
-                (stockSymbol, amount) = (requestInfo[2], requestInfo[3])
+                (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
                 self.performRequest(pid, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_SELL_AMOUNT:
-                (stockSymbol, amount) = (requestInfo[2], requestInfo[3])
+                (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
                 self.performRequest(pid, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_SELL_TRIGGER:
-                (stockSymbol, amount) = (requestInfo[2], requestInfo[3])
+                (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
                 self.performRequest(pid, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == QUOTE:
-                stockSymbol = requestInfo[2]
+                stockSymbol = requestInfo[2].strip("\n")
                 self.performRequest(pid, transactionNumber, command, user, stockSymbol)
 
             elif command == CANCEL_SET_BUY:
-                stockSymbol = requestInfo[2]
+                stockSymbol = requestInfo[2].strip("\n")
                 self.performRequest(pid, transactionNumber, command, user, stockSymbol)
 
             elif command == CANCEL_SET_SELL:
-                stockSymbol = requestInfo[2]
+                stockSymbol = requestInfo[2].strip("\n")
                 self.performRequest(pid, transactionNumber, command, user, stockSymbol)
 
             elif command == ADD:
-                amount = requestInfo[2]
+                amount = float(requestInfo[2].strip("\n"))
                 self.performRequest(pid, transactionNumber, command, user, amount=amount)
 
             elif command == COMMIT_BUY:
@@ -192,7 +192,7 @@ class WorkloadGenerator:
         
     def performRequest(self, pid, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
         request = {'transactionNumber': transactionNumber, 'command': command}
-        
+
         if user:
             request['user'] = user
         if stockSymbol:

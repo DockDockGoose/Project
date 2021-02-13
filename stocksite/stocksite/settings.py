@@ -86,9 +86,9 @@ DATABASES = {
                 }
             },
         },
-        'NAME': 'mongo',
+        'NAME': 'mongodb',
         'CLIENT': {
-            'host': 'db',
+            'host': 'mongodb',
             'port': 27017,
             'username': 'admin',
             'password': 'dockdockgoose',
