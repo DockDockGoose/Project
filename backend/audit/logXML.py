@@ -22,7 +22,7 @@ from xml.dom import minidom
 
 auditNum = "1"
 root = ElementTree.Element('log')
-auditFile = '../audit/auditLogs/logfile' + auditNum + '.xml'        # Relative path from backend/src
+auditFile = '../audit/logs/logfile' + auditNum + '.xml'        # Relative path from backend/src
 
 """ User commands come from the user command files or from manual entries in the students' web forms.   """
 def logUserCommand(infoDict):

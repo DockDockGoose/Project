@@ -67,7 +67,7 @@ command, stock symbol and other related information.
 Writes each partition to a file in the format of ```[user].txt```. Each partition file is read and a thread is spawned per user (the WG dynamically adjusts the port number). 
 The files are parsed and the requested commands are sent in JSON format to the specified server.
 
-<em>The default server and port is ```localhost:44444```</em>
+<em>The default server and port is ```localhost:65432```</em>
 
 To run using the default 1 user workload file:
 ```
@@ -77,6 +77,19 @@ To run using a specific workload file (eg. WL_2_USER.txt):
 ```
 python3 workload_gen.py ../workloads/WL_2_USER.txt
 ```
+
+
+## Running the Python WebServer
+This python webserver will immediately spin up and start accepting client requests. 
+
+<em>The default server and port is ```localhost:65432```</em>
+
+To run the server:
+```
+python web_server.py
+```
+ * to send simulated requests to the webserver see workload generator section above. 
+ * To end the server I use (ctrl+ALT+(BREAK/PAUSE)), maybe CRTL+Z, CRTL+C would work for different users
 
 ### Testing Workload Generator with Database
 If you want to test the workload generator and see the commands run on the database, here is what to do. 
