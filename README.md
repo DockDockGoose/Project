@@ -113,4 +113,4 @@ show collections
 ```
 Use `exit` to leave mongo shell. 
 
-I would also highly recommend Mongodb Compass. It is a GUI for Dynamodb: https://www.mongodb.com/try/download/compass 
+I would also highly recommend Mongodb Compass. It is a GUI for Mongodb: https://www.mongodb.com/try/download/compass 
