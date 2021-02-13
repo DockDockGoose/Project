@@ -93,7 +93,24 @@ python web_server.py
 
 ### Testing Workload Generator with Database
 If you want to test the workload generator and see the commands run on the database, here is what to do. 
-First ensure you have mongodb downloaded: https://www.mongodb.com/try/download/community
-And then run a local instance (specifically the Run MongoDB Community Edition part): https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
+First ensure you have mongodb installede(specifically the Run MongoDB Community Edition part): https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
 
-To see what is happening on the database, I would recommend Mongodb Compass. It is a GUI of your databases. 
+That webpage also has the commands to start a mongodb instance passed the installation part, but here it us just in case:
+```
+# start mongo db
+sudo systemctl start mongod
+# check status to make sure it is running
+sudo systemctl status mongod
+# Connect to mongo db instance
+mongo 
+```
+
+To look at our database and its collections (reference: https://docs.mongodb.com/manual/reference/mongo-shell/)
+```
+show dbs
+use mongodb
+show collections
+```
+Use `exit` to leave mongo shell. 
+
+I would also highly recommend Mongodb Compass. It is a GUI for Dynamodb: https://www.mongodb.com/try/download/compass 
