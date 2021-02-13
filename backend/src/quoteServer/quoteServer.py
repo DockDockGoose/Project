@@ -52,6 +52,7 @@ class QuoteServer:
 				'price': float(data[0]),
 				'stock': data[1],
 				'user': data[2],
+				'timestamp': data[3],
     				'cryptokey': data[4].strip("\n")
 			}
 
