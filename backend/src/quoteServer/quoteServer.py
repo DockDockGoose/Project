@@ -72,3 +72,4 @@ if __name__ == '__main__':
 	qs = QuoteServer(host_adr, port)
 	qs.connect
 	print(qs.getQuote(test_cmd))
+	
