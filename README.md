@@ -77,3 +77,10 @@ To run using a specific workload file (eg. WL_2_USER.txt):
 ```
 python3 workload_gen.py ../workloads/WL_2_USER.txt
 ```
+
+### Testing Workload Generator with Database
+If you want to test the workload generator and see the commands run on the database, here is what to do. 
+First ensure you have mongodb downloaded: https://www.mongodb.com/try/download/community
+And then run a local instance (specifically the Run MongoDB Community Edition part): https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
+
+To see what is happening on the database, I would recommend Mongodb Compass. It is a GUI of your databases. 

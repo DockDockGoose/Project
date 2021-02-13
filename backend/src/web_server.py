@@ -48,7 +48,7 @@ class webServer():
             print("Port: " + str(self.port))
 
         except socket.error as err:
-            print("ERROR! binding port {self.port} failed with error: {err}")
+            print("ERROR! binding port {self.port} failed with error: ", err)
             self.shutdown()
             sys.exit(1)
 
@@ -86,6 +86,7 @@ class webServer():
         # decode the packet into a dictionary type
         # TODO: add client port info so we can send back data. 
         strData = ast.literal_eval(str(data).strip("b\""))
+        print(strData)
         # Add server to dict
         strData["server"] = SERV_HOST_NAME
         command = strData["command"]
