@@ -100,7 +100,7 @@ def CMD_Quote(cmdDict, threadContext):
     # Log the results from quote server
     cmdDict['price'] = quote_data['price']
     cmdDict['cryptokey'] = quote_data['cryptokey']
-    cmdDict['timestamp'] = str(int(time.time()*1000))
+    cmdDict['timestamp'] = quote_data['timestamp']
     log.logEvents['quoteServer'](cmdDict)
 
     # Update the current price of shares
@@ -489,7 +489,7 @@ def CMD_Dumplog(cmdDict, threadContext):
         print("Error while trying to open and write to", cmdDict['filename'])
         
     f.close()
-    cmdDict['timestamp'] = str(int(time.time()))
+    cmdDict['timestamp'] = str(int(time.time()*1000))
     log.logEvents['userCommand'](cmdDict)
     cmdCompleted(cmdDict)
 
@@ -510,7 +510,7 @@ def CMD_DisplaySummary(cmdDict, threadContext):
     print("\n----- User's Current Account Status -----\n", user_account)
     print("\n----- User's Triggers -----\n", user_triggers)
 
-    cmdDict['timestamp'] = str(int(time.time()))
+    cmdDict['timestamp'] = str(int(time.time()*1000))
     log.logEvents['userCommand'](cmdDict)
     cmdCompleted(cmdDict)
 

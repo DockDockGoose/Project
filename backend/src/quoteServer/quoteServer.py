@@ -55,7 +55,7 @@ class QuoteServer:
 				'stock': data[1],
 				'user': data[2],
 				'timestamp': data[3],
-    				'cryptokey': data[4].strip("\n")
+    				'cryptokey': data[4]
 			}
 			
 			# close quote server connection and send back data
