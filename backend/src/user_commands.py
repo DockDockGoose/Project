@@ -38,7 +38,7 @@ current_share_price = 2
 # Connect to database
 Database.connect()
 # Create quote server (Note: this is the actual version for VM, use mock quote server for local testing by changing to MockQuoteServer instead)
-qs = MockQuoteServer()
+qs = QuoteServer()
 
 
 def printCmd(cmdDict):
