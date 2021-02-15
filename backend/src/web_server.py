@@ -57,7 +57,8 @@ class webServer():
             self.socket.bind((self.hostname, self.port))
 
         except socket.error as err:
-            print("ERROR! binding port {self.port} failed with error: {err}")
+            print(f"ERROR! binding port {self.port} failed with error: {err}")
+            self.socket.close()
             self.shutdown()
             sys.exit(1)
 
@@ -104,7 +105,6 @@ class webServer():
         # decode the packet into a dictionary type
         # TODO: sending back data to front end ???
         strData = ast.literal_eval(str(data).strip("b\""))
-
         strData["server"] = SERV_HOST_NAME
 
         if "user" in strData.keys():

@@ -1,12 +1,16 @@
 version: "3.9"
    
 services:
-  db:
-    image: postgres
+  mongodb:
+    image: mongo
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=dockdockgoose
-      - POSTGRES_PASSWORD=dockdockgoose
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: dockdockgoose
+    command: mongod --auth
+    volumes:
+      - ./data-db:/data/db
+    ports: 
+      - 27017:27017
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
@@ -15,4 +19,18 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      - mongodb
+  migration:
+    build: .
+    command: python manage.py migrate
+    volumes:
+      - .:/code
+    depends_on:
+      - mongodb
+  makemigrations:
+    build: .
+    command: python manage.py makemigrations
+    volumes:
+      - .:/code
+    depends_on:
+      - mongodb
