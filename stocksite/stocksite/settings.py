@@ -75,12 +75,26 @@ WSGI_APPLICATION = 'stocksite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'dockdockgoose',
-        'PASSWORD': 'dockdockgoose',
-        'HOST': 'db',
-        'PORT': 5432,
+        'ENGINE': 'djongo',
+        'ENFORCE_SCHEMA': True,
+        'LOGGING': {
+            'version': 1,
+            'loggers': {
+                'djongo': {
+                    'level': 'DEBUG',
+                    'propogate': False,                        
+                }
+            },
+        },
+        'NAME': 'mongodb',
+        'CLIENT': {
+            'host': 'mongodb',
+            'port': 27017,
+            'username': 'admin',
+            'password': 'dockdockgoose',
+            'authSource': 'admin',
+            'authMechanism': 'SCRAM-SHA-1'
+        },
     }
 }
 

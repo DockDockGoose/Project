@@ -29,9 +29,21 @@ python manage.py runserver
 
 If you would like to run the application on Docker follow these steps. Please note, before starting make sure you have [docker compose](https://docs.docker.com/compose/install/) installed. 
 
+Due to changes made to the docker containers, the previous containers need to be removed. This can be done through Docker Desktop by removing the containers under stocksite app. It can be removed through the CLI by using the commands
+```
+docker ps -f "status=exited" or docker ps -a -q
+docker rm <container id >
+```
+You can also use this command but be careful it will remove all stopped containers
+```
+docker rm $(docker ps -a -q)
+```
+
+
 Go into stocksite directory and run the application:
 ```
 cd stocksite
+docker-compose build
 docker-compose up
 ```
 
@@ -85,3 +97,50 @@ python3 load_balancer.py
 Notes: 
  * to send simulated requests to the webserver see workload generator section above. 
  * To end the server I use (ctrl+ALT+(BREAK/PAUSE)), maybe CRTL+Z, CRTL+C would work for different users
+
+### Testing Workload Generator with Database on VM
+If you want to test the workload generator and see the commands run on the database, here is what to do. 
+First ensure you have mongodb installed and pymongo to interact with the databse (reference: https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-ubuntu-18-04 )
+
+```
+sudo apt update
+
+sudo apt install -y mongodb
+
+sudo apt install python3-pip
+
+pip3 install pymango
+
+```
+
+The installation should automatically starts a mongodb instance. Here are some commands to check that it is  running properly. 
+```
+
+# Check status to make sure it is running
+sudo systemctl status mongod
+# Check the database has the right server address and port
+mongo --eval 'db.runCommand({ connectionStatus: 1 })'
+# Connect to mongo db instance
+mongo 
+```
+
+To look at our database and its collections (reference: https://docs.mongodb.com/manual/reference/mongo-shell/ )
+```
+show dbs
+use mongodb
+show collections
+```
+Use `exit` to leave mongo shell. 
+
+If the mongodb instance is not running, here the is command to start it:
+```
+sudo systemctl start mongod
+
+```
+
+Command to shutdown mongodb instance
+```
+sudo systemctl stop mongodb
+```
+
+I would also highly recommend Mongodb Compass. It is a GUI for Mongodb: https://www.mongodb.com/try/download/compass 
