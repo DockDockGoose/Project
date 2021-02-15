@@ -495,6 +495,8 @@ def CMD_Dumplog(cmdDict, threadContext):
         print("Error while trying to open and write to", cmdDict['filename'])
         
     f.close()
+    cmdDict['timestamp'] = str(int(time.time()))
+    log.logEvents['userCommand'](cmdDict)
     cmdCompleted(cmdDict)
 
 
@@ -514,6 +516,8 @@ def CMD_DisplaySummary(cmdDict, threadContext):
     print("\n----- User's Current Account Status -----\n", user_account)
     print("\n----- User's Triggers -----\n", user_triggers)
 
+    cmdDict['timestamp'] = str(int(time.time()))
+    log.logEvents['userCommand'](cmdDict)
     cmdCompleted(cmdDict)
 
 userCommands = {
