@@ -2,6 +2,7 @@
 
 import socket
 import sys
+import time
 
 class MockQuoteServer:
 
@@ -19,9 +20,10 @@ class MockQuoteServer:
 		"""
 		
 		quote_data = {
-				'price': 10,
+				'price': '10',
 				'stock': cmdDict['stockSymbol'],
 				'user': cmdDict['user'],
+				'timestamp': '1234',
 				'cryptokey': 'iedfIbDal3nbXUIdp6BwrexrCe6ih3JZlFmjdMUools='
 		}
 

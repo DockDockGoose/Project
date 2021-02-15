@@ -38,7 +38,7 @@ current_share_price = 2
 # Connect to database
 Database.connect()
 # Create quote server (Note: this is the actual version for VM, use mock quote server for local testing by changing to MockQuoteServer instead)
-qs = QuoteServer()
+qs = MockQuoteServer()
 
 
 def printCmd(cmdDict):
@@ -112,6 +112,15 @@ def CMD_Buy(cmdDict, threadContext):
     """
         Sets up a buy command for the user and specified stock
     """
+    quoteCmd = {
+        'command': 'QUOTE',
+        'user': cmdDict['user'],
+        'stockSymbol': cmdDict['stockSymbol'],
+        'transactionNumber': cmdDict['transactionNumber'],
+        'server': cmdDict['server']
+    }
+
+    CMD_Quote(quoteCmd, threadContext)
 
     printCmd(cmdDict)
     buyAmtQ.put(cmdDict['amount'])
@@ -223,6 +232,16 @@ def CMD_Sell(cmdDict, threadContext):
     printCmd(cmdDict)
     sellAmtQ.put(cmdDict['amount'])
 
+    quoteCmd = {
+        'command': 'QUOTE',
+        'user': cmdDict['user'],
+        'stockSymbol': cmdDict['stockSymbol'],
+        'transactionNumber': cmdDict['transactionNumber'],
+        'server': cmdDict['server']
+    }
+
+    CMD_Quote(quoteCmd, threadContext)
+    
     cmdDict['timestamp'] = str(time.time())
 
     #Make sure user has enough of stock in account
