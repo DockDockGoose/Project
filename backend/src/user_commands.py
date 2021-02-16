@@ -17,9 +17,6 @@ from audit import logXML as log
 from database import Database
 from quoteServer import MockQuoteServer, QuoteServer
 
-
-buyAmtQ = queue.Queue()
-sellAmtQ = queue.Queue()
 ACCOUNTS_COLLECT = "accounts"
 TRANSACT_COLLECT = "transactions"
 TRIGGER_COLLECT = "triggers"
@@ -38,29 +35,31 @@ Database.connect()
 # Create quote server (Note: this is the actual version for VM, use mock quote server for local testing by changing to MockQuoteServer instead)
 qs = QuoteServer()
 
-
 def printCmd(cmdDict):
     """
         Prints out the current command being executed to the terminal
     """
-
     print("NUM, USER, CMD =  [{}, {}, {}]".format(cmdDict["transactionNumber"],
                                                   cmdDict["user"],
                                                   cmdDict["command"]))  
 
-def cmdCompleted(cmdDict):
+def cmdCompleted(cmdDict, startTime):
     """
         Keeps track of executed commands into transactions collection
     """
-    print("-----",cmdDict["command"]," Command Executed-----")
+    elapsedTime = time.now() - startTime
+
+    print("-----[{}, {}, {}s] Command Executed".format(cmdDict["transactionNumber"],
+                                                    cmdDict["command"],
+                                                    round(elapsedTime, 3))
     Database.insert(TRANSACT_COLLECT, cmdDict)
 
-def CMD_Add(cmdDict, threadContext):
+def CMD_Add(cmdDict, threadContext, startTime):
     """
         Adds money to user's account
     """
     printCmd(cmdDict)
-    
+
     # Connect to database and check if user is new
     if (Database.find_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}) == None):
         # Modify command to get appropriate information for database
@@ -82,9 +81,9 @@ def CMD_Add(cmdDict, threadContext):
     # The users account is modified, log this action
     log.logEvents['accountTransaction'](cmdDict)
 
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
-def CMD_Quote(cmdDict, threadContext):
+def CMD_Quote(cmdDict, threadContext, startTime):
     """
         Retrieves price of stock
     """
@@ -103,9 +102,9 @@ def CMD_Quote(cmdDict, threadContext):
     # Update the current price of shares
     current_share_price = float(quote_data['price'])
 
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
-def CMD_Buy(cmdDict, threadContext):
+def CMD_Buy(cmdDict, threadContext, startTime):
     """
         Sets up a buy command for the user and specified stock
     """
@@ -120,7 +119,6 @@ def CMD_Buy(cmdDict, threadContext):
     CMD_Quote(quoteCmd, threadContext)
 
     printCmd(cmdDict)
-    threadContext["buyAmtQ"].put(cmdDict['amount'])
 
     # Modify time in order to include seconds
     cmdDict['timestamp'] = time.time()
@@ -141,9 +139,9 @@ def CMD_Buy(cmdDict, threadContext):
 
     log.logEvents['userCommand'](cmdDict)
 
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
-def CMD_CommitBuy(cmdDict, threadContext):
+def CMD_CommitBuy(cmdDict, threadContext, startTime):
     """
         Executes the most recent buy command from user
     """
@@ -154,7 +152,9 @@ def CMD_CommitBuy(cmdDict, threadContext):
 
     # Check for previous buy command 
     buy_cmd = Database.find_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user'], 'buy': { '$exists': True } }, { 'buy': 1, '_id': 0})
+    
     print(buy_cmd)
+
     if (buy_cmd == None):
         cmdDict['amount'] = 0.00
         cmdDict['errorMessage'] = "Invalid cmd. No recent pending buys" 
@@ -186,20 +186,14 @@ def CMD_CommitBuy(cmdDict, threadContext):
 
     # The users account is modified after committing to buying the stock, log this action
     cmdDict['timestamp'] = str(int(time.time()*1000))
-
-    if not threadContext["buyAmtQ"].empty():
-        threadContext["buyAmtQ"].put(cmdDict['amount'])
-        log.logEvents['userCommand'](cmdDict)
-    else: 
-        cmdDict['amount'] = "0.00"
-        cmdDict['errorMessage'] = "Invalid cmd. No recent pending buys" 
+    log.logEvents['userCommand'](cmdDict)
 
     log.logEvents['accountTransaction'](cmdDict)
 
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
 
-def CMD_CancelBuy(cmdDict, threadContext):
+def CMD_CancelBuy(cmdDict, threadContext, startTime):
     """
         Cancels the most recent buy command from user
     """
@@ -219,16 +213,15 @@ def CMD_CancelBuy(cmdDict, threadContext):
 
     log.logEvents['userCommand'](cmdDict)
 
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
 
-def CMD_Sell(cmdDict, threadContext):
+def CMD_Sell(cmdDict, threadContext, startTime):
     """
         Sets up a sell command for the user and specified stock amount
     """
 
     printCmd(cmdDict)
-    threadContext["sellAmtQ"].put(cmdDict['amount'])
 
     quoteCmd = {
         'command': 'QUOTE',
@@ -266,10 +259,10 @@ def CMD_Sell(cmdDict, threadContext):
 
     log.logEvents['userCommand'](cmdDict)
 
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
 
-def CMD_CommitSell(cmdDict, threadContext):
+def CMD_CommitSell(cmdDict, threadContext, startTime):
     """
         Executes the most recent sell command from the user
     """
@@ -284,6 +277,7 @@ def CMD_CommitSell(cmdDict, threadContext):
     else: 
         # Check that less than 60s has passed
         sec_passed = time.time() - float(sell_cmd['sell']['timestamp'])
+
         if (sec_passed <= 60):
             # Remove stocks from user and update funds
             stock_data = {
@@ -302,20 +296,13 @@ def CMD_CommitSell(cmdDict, threadContext):
 
     # The users account is modified after committing to sell the stock, log this action
     cmdDict['timestamp'] = str(int(time.time()*1000))
-
-    if not threadContext["sellAmtQ"].empty():
-        threadContext["sellAmtQ"].put(cmdDict['amount'])
-        log.logEvents['userCommand'](cmdDict)
-    else: 
-        cmdDict['amount'] = "0.00"
-        cmdDict['errorMessage'] = "Invalid cmd. No recent pending buys" 
-
+    log.logEvents['userCommand'](cmdDict)
     log.logEvents['accountTransaction'](cmdDict)
 
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
 
-def CMD_CancelSell(cmdDict, threadContext):
+def CMD_CancelSell(cmdDict, threadContext, startTime):
     """
         Cancels the most recent sell command
     """
@@ -335,10 +322,10 @@ def CMD_CancelSell(cmdDict, threadContext):
 
     log.logEvents['userCommand'](cmdDict)
 
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
 
-def CMD_SetBuyAmt(cmdDict, threadContext):
+def CMD_SetBuyAmt(cmdDict, threadContext, startTime):
     """
         Creates a buy trigger based on the number of the stocks the user wants to buy
     """
@@ -367,9 +354,9 @@ def CMD_SetBuyAmt(cmdDict, threadContext):
 
         log.logEvents['errorEvent'](cmdDict)
     
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
-def CMD_CancelSetBuy(cmdDict, threadContext):
+def CMD_CancelSetBuy(cmdDict, threadContext, startTime):
     """
         Cancels the set buy command
     """
@@ -385,9 +372,9 @@ def CMD_CancelSetBuy(cmdDict, threadContext):
     cmdDict['timestamp'] = str(int(time.time()*1000))
     log.logEvents['userCommand'](cmdDict)
 
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
     
-def CMD_SetBuyTrigger(cmdDict, threadContext):
+def CMD_SetBuyTrigger(cmdDict, threadContext, startTime):
     """
         Adds the price trigger to the set buy command
     """
@@ -403,9 +390,9 @@ def CMD_SetBuyTrigger(cmdDict, threadContext):
     cmdDict['amount'] = str(int(cmdDict['amount']))
     log.logEvents['userCommand'](cmdDict)
 
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
-def CMD_SetSellAmt(cmdDict, threadContext):
+def CMD_SetSellAmt(cmdDict, threadContext, startTime):
     """
         Creates a sell trigger based on the number of stocks the user wants to sell
     """
@@ -436,10 +423,10 @@ def CMD_SetSellAmt(cmdDict, threadContext):
     cmdDict['amount'] = str(int(cmdDict['amount']))
     log.logEvents['userCommand'](cmdDict)
 
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
 
-def CMD_CancelSetSell(cmdDict, threadContext):
+def CMD_CancelSetSell(cmdDict, threadContext, startTime):
     """
         Cancels the set sell command
     """
@@ -457,10 +444,10 @@ def CMD_CancelSetSell(cmdDict, threadContext):
     
     cmdDict['timestamp'] = str(int(time.time()*1000))
     log.logEvents['userCommand'](cmdDict)
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
 
-def CMD_SetSellTrigger(cmdDict, threadContext):
+def CMD_SetSellTrigger(cmdDict, threadContext, startTime):
     """
         Adds the price trigger to the set sell command
     """
@@ -482,10 +469,10 @@ def CMD_SetSellTrigger(cmdDict, threadContext):
     cmdDict['timestamp'] = str(int(time.time()*1000))
     cmdDict['amount'] = str(int(cmdDict['amount']))
     log.logEvents['userCommand'](cmdDict)
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
 
-def CMD_Dumplog(cmdDict, threadContext):
+def CMD_Dumplog(cmdDict, threadContext, startTime):
     """
         Print all of the transactions or just the user's transactions
     """
@@ -508,10 +495,10 @@ def CMD_Dumplog(cmdDict, threadContext):
     f.close()
     cmdDict['timestamp'] = str(int(time.time()*1000))
     log.logEvents['userCommand'](cmdDict)
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
 
 
-def CMD_DisplaySummary(cmdDict, threadContext):
+def CMD_DisplaySummary(cmdDict, threadContext, startTime):
     """
         Print the user's account from accounts, transaction history, and buy/sell triggers
     """
@@ -529,7 +516,17 @@ def CMD_DisplaySummary(cmdDict, threadContext):
 
     cmdDict['timestamp'] = str(int(time.time()*1000))
     log.logEvents['userCommand'](cmdDict)
-    cmdCompleted(cmdDict)
+    cmdCompleted(cmdDict, startTime)
+
+def CMD_UserDC(cmdDict, threadContext, startTime):  
+    """
+        User has disconnected. Clean up thread context and prepare exit. 
+    """
+    printCmd(cmdDict)
+
+    threadContext["UserConnected"] = False
+
+    cmdCompleted(cmdDict, startTime)
 
 userCommands = {
     'ADD'               : CMD_Add,
@@ -548,5 +545,6 @@ userCommands = {
     'SET_SELL_TRIGGER'  : CMD_SetSellTrigger,
     'DUMPLOG'           : CMD_Dumplog,
     'DISPLAY_SUMMARY'   : CMD_DisplaySummary,
+    'USER_DISCONNECT'   : CMD_UserDC,
 }
 

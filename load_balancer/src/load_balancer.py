@@ -35,7 +35,7 @@ forwardServers = []
 
 PACKET_SIZE     = 8192 
 
-class webServer():
+class loadBalancer():
 
     def __init__(self, port=SERV_PORT, hostname=SERV_HOST_NAME):
         self.port           = port
@@ -222,5 +222,5 @@ if __name__ == '__main__':
 
     print("SERVER LIST: {} \n\n".format(forwardServers))
 
-    server = webServer()
+    server = loadBalancer()
     server.start()

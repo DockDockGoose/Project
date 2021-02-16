@@ -58,7 +58,6 @@ coverage.xml
 pytestdebug.log
 
 # Generants
-*.xml
 *.txt
 
 # Translations

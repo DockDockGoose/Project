@@ -169,10 +169,9 @@ class webServer():
 
         # Initialize the threadContext associated with the user thread. 
         self.userProcesses[userId] = {
-            "userId"   : userId,
-            "workQ"    : queue.Queue(),
-            "buyAmtQ"  : queue.Queue(),
-            "sellAmtQ" : queue.Queue(),
+            "userId"        : userId,
+            "workQ"         : queue.Queue(),
+            "userConnected" : True,
         }
 
         # Create and Start the user thread
@@ -191,15 +190,16 @@ class webServer():
 
         processed = 0
 
-        while self.serverRunning:
-            if not threadContext["workQ"].empty():
+        while threadContext["userConnected"]:
+            while not threadContext["workQ"].empty():
                 # Wait for next work Q item.
                 userReq = threadContext["workQ"].get()
                 
                 print("QUEUE/PROCESSED: {} -- {}".format(threadContext["workQ"].qsize(), processed))
+
                 # Call command function dictionary
                 command = userReq["command"]
-                userCommands[command](userReq, threadContext)
+                userCommands[command](userReq, threadContext, time.time())
 
                 # Indicate that queue work item processed. 
                 threadContext["workQ"].task_done()
