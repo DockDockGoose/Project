@@ -45,8 +45,8 @@ def printCmd(cmdDict):
     """
 
     print("NUM, USER, CMD =  [{}, {}, {}]".format(cmdDict["transactionNumber"],
-                                              cmdDict["user"],
-                                              cmdDict["command"]))  
+                                                  cmdDict["user"],
+                                                  cmdDict["command"]))  
 
 def cmdCompleted(cmdDict):
     """

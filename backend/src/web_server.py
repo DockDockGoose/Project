@@ -118,7 +118,8 @@ class webServer():
                 time.sleep(1)
                 continue
 
-            print("Got Data")
+            print("~~ Read Data ~~")
+
             # Sometimes Data packets are bunched up in the read buffer. 
             #      This mechanism will seperate them, and process each
             strData = str(data).strip("b\"")
@@ -126,6 +127,7 @@ class webServer():
 
             for userReqData in packets[:-1]:
                 self.handleClientRequest(userReqData + '}')
+
 
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
@@ -190,17 +192,21 @@ class webServer():
         processed = 0
 
         while self.serverRunning:
-            # Wait for next work Q item.
-            userReq = threadContext["workQ"].get()
-            
-            print("WORK LOG: {} -- {}".format(threadContext["workQ"].qsize(), processed))
-            # Call command function dictionary
-            command = userReq["command"]
-            userCommands[command](userReq, threadContext)
+            if not threadContext["workQ"].empty():
+                # Wait for next work Q item.
+                userReq = threadContext["workQ"].get()
+                
+                print("QUEUE/PROCESSED: {} -- {}".format(threadContext["workQ"].qsize(), processed))
+                # Call command function dictionary
+                command = userReq["command"]
+                userCommands[command](userReq, threadContext)
 
-            # Indicate that queue work item processed. 
-            threadContext["workQ"].task_done()
-            processed += 1
+                # Indicate that queue work item processed. 
+                threadContext["workQ"].task_done()
+
+                processed += 1
+            else:
+                time.sleep(0.005)
 
         print("Ending Thread Process for Client: ", userId)
 
