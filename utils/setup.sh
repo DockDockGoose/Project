@@ -19,3 +19,5 @@ show dbs
 use mongodb
 
 show collections
+
+exit

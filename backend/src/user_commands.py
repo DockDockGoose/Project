@@ -117,7 +117,7 @@ def CMD_Buy(cmdDict, threadContext, startTime):
         'server': cmdDict['server']
     }
 
-    CMD_Quote(quoteCmd, threadContext)
+    CMD_Quote(quoteCmd, threadContext, startTime)
 
     printCmd(cmdDict)
 
