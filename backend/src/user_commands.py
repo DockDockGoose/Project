@@ -32,6 +32,7 @@ current_share_price = 2
 
 # Connect to database
 Database.connect()
+
 # Create quote server (Note: this is the actual version for VM, use mock quote server for local testing by changing to MockQuoteServer instead)
 qs = QuoteServer()
 
@@ -51,7 +52,7 @@ def cmdCompleted(cmdDict, startTime):
 
     print("-----[{}, {}, {}s] Command Executed".format(cmdDict["transactionNumber"],
                                                     cmdDict["command"],
-                                                    round(elapsedTime, 3))
+                                                    round(elapsedTime, 3)))
     Database.insert(TRANSACT_COLLECT, cmdDict)
 
 def CMD_Add(cmdDict, threadContext, startTime):
