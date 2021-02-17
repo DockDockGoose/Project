@@ -12,11 +12,12 @@ import re
 import socket
 import logging
 import queue
+import time
 from threading import Thread
 
 defaultTestFile = "../workloads/WL_1_USER.txt"
 serverAddress   = "localhost"
-serverPort      = 65432
+serverPort      = 60000
 
 ADD = "ADD"
 QUOTE = "QUOTE"
@@ -36,6 +37,7 @@ DUMPLOG = "DUMPLOG"
 DISPLAY_SUMMARY = "DISPLAY_SUMMARY"
 
 userQ = queue.Queue()
+packetQ = queue.Queue()
 
 class WorkloadGenerator:
     def __init__(self, testFile):
@@ -94,9 +96,8 @@ class WorkloadGenerator:
 
 
     def workloadHandler(self, pid):
-        #TODO: is this an okay end loop condition?  -damon
-        while True: 
 
+        while True: 
             try: 
                 user = userQ.get()
                 self.sendWorkload(user, pid)
@@ -205,21 +206,43 @@ class WorkloadGenerator:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 
         try:
-            s.connect((serverAddress, serverPort))
-            s.sendall(str(request).encode())
-            # print(str(request).encode())          # Uncomment this to see the raw requests being sent.
-            # response = s.recv(4096)               # Wait for response, if we need.
-            s.close()
+            packetQ.put(request)
         except socket.error as err:
-            logging.error(f"Bind failed. Error: {err}")
+            logging.error(f"Queue Put failured with: {err}")
             sys.exit()
+
+def consumerThread():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((serverAddress, serverPort))
+
+    while True:
+        try:
+            # set get to throw exception if no packet in 5 seconds
+            request = packetQ.get(True, 2)
+        except:
+            break
+
+        requestStr = str(request).encode()
+
+        s.sendall(requestStr.ljust(256))
+
+        packetQ.task_done()
+    
+    time.sleep(2)
+    s.shutdown(socket.SHUT_RDWR)
+    s.close()
+    print("Consumer Thread Finished!")
 
 
 def spawnHandlers(userList, handler):
-        for i, user in enumerate(userList):
-            t = Thread(target=handler, args=(i,))
-            t.daemon = True
-            t.start()
+
+    cThread = Thread(target=consumerThread)
+    cThread.start()
+
+    for i, user in enumerate(userList):
+        t = Thread(target=handler, args=(i,))
+        t.daemon = True
+        t.start()
         
 
 if __name__ == '__main__':
@@ -237,3 +260,4 @@ if __name__ == '__main__':
         userQ.put(user)
 
     userQ.join()
+    packetQ.join()
