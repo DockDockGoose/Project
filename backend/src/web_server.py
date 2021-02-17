@@ -126,18 +126,18 @@ class webServer():
             packets = strData.split("}")
 
             for userReqData in packets[:-1]:
-                self.handleClientRequest(userReqData + '}')
+                self.handleClientRequest(userReqData.strip + '}')
 
 
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
-        print("WARNING! Server Connection {conn} closed")    
+        print("Client Closed: {}".format(address)) 
 
     def handleClientRequest(self, rawPacket):
 
         # decode the packet into a dictionary type
         # TODO: sending back data to front end ???
-        userReq = ast.literal_eval(str(rawPacket).strip("b\""))
+        userReq = ast.literal_eval(str(rawPacket))
 
         userReq["server"] = SERV_HOST_NAME
 

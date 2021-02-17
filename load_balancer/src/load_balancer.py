@@ -159,9 +159,10 @@ class loadBalancer():
                 #print("Producer -- Putting P on Queue")
 
                 self.packetQ.put(userDict)
-
-        print("Client Closed: {}".format(address))
+        conn.shutdown(socket.SHUT_RDWR)
         conn.close()
+        print("Client Closed: {}".format(address))
+
 
 
     def consumerThread(self):
