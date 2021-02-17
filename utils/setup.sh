@@ -1,9 +1,5 @@
 echo "Setting up Enviroment"
 
-cd ~/Desktop
-
-git clone https://github.com/DockDockGoose/Project.git
-
 sudo apt update
 
 sudo apt install -y mongodb
