@@ -126,7 +126,7 @@ class webServer():
             packets = strData.split("}")
 
             for userReqData in packets[:-1]:
-                self.handleClientRequest(userReqData.strip + '}')
+                self.handleClientRequest(userReqData.strip() + '}')
 
 
         conn.shutdown(socket.SHUT_RDWR)
