@@ -477,7 +477,9 @@ def CMD_Dumplog(cmdDict, threadContext, startTime):
     """
         Print all of the transactions or just the user's transactions
     """
-    
+
+    cmdDict['user'] = "admin"
+
     printCmd(cmdDict)
 
     # Get entire log or use log
