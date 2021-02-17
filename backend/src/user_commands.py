@@ -48,7 +48,7 @@ def cmdCompleted(cmdDict, startTime):
     """
         Keeps track of executed commands into transactions collection
     """
-    elapsedTime = time.now() - startTime
+    elapsedTime = time.time() - startTime
 
     print("-----[{}, {}, {}s] Command Executed".format(cmdDict["transactionNumber"],
                                                     cmdDict["command"],
