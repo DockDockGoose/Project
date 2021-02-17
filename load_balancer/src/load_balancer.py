@@ -182,7 +182,9 @@ class loadBalancer():
                 serverHash = hash(user) % NUM_FORWARD_SERVERS
                 print("Forwarding Packet: [#{}:{}: --> Serv: {})".format(packet["transactionNumber"], user, serverHash))
                 
-                self.serverSockets[serverHash].send(str(packet).encode())
+                requestStr = str(packet).encode()
+
+                self.serverSockets[serverHash].send(requestStr.ljust(256))
 
                 self.packetQ.task_done()
 

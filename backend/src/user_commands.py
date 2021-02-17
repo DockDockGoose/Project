@@ -52,7 +52,7 @@ def cmdCompleted(cmdDict, startTime):
 
     print("-----[{}, {}, {}s] Command Executed".format(cmdDict["transactionNumber"],
                                                     cmdDict["command"],
-                                                    round(elapsedTime, 3)))
+                                                    round(elapsedTime,  5)))
     Database.insert(TRANSACT_COLLECT, cmdDict)
 
 def CMD_Add(cmdDict, threadContext, startTime):
@@ -92,7 +92,7 @@ def CMD_Quote(cmdDict, threadContext, startTime):
 
     # query the quote server
     quote_data = qs.getQuote(cmdDict)
-    print(quote_data)
+    #print(quote_data)
     
     # Log the results from quote server
     cmdDict['price'] = quote_data['price']
@@ -154,7 +154,7 @@ def CMD_CommitBuy(cmdDict, threadContext, startTime):
     # Check for previous buy command 
     buy_cmd = Database.find_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user'], 'buy': { '$exists': True } }, { 'buy': 1, '_id': 0})
     
-    print(buy_cmd)
+    #print(buy_cmd)
 
     if (buy_cmd == None):
         cmdDict['amount'] = 0.00
