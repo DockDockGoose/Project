@@ -68,6 +68,7 @@ def CMD_Add(cmdDict, threadContext, startTime):
             '_id': cmdDict['user'],
             'funds': float(cmdDict['amount'])
         }
+
         Database.insert(ACCOUNTS_COLLECT, user_data)
     else:
         # Get the user's current funds and add the new amount to it
@@ -248,7 +249,7 @@ def CMD_Sell(cmdDict, threadContext, startTime):
 
     user_stock = list(user_stock)
 
-    if (user_stock[0]['stocks']['amount'] >= cmdDict['amount']):
+    if user_stock and (user_stock[0]['stocks']['amount'] >= cmdDict['amount']):
         # Add sell command to user
         stock_data = {
             'timestamp': cmdDict['timestamp'],
@@ -417,7 +418,7 @@ def CMD_SetSellAmt(cmdDict, threadContext, startTime):
     user_stock = list(user_stock)
 
     # Check if user has enough of stock in account and initialize sell trigger
-    if (user_stock[0]['stocks']['amount'] >= cmdDict['amount']):
+    if user_stock and (user_stock[0]['stocks']['amount'] >= cmdDict['amount']):
         sell_trigger = {
             'user': cmdDict['user'],
             'type': 'sell',
