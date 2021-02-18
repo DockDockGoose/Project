@@ -188,7 +188,7 @@ class loadBalancer():
                     userServerFwds[user] = currentServ 
                     currentServ = (currentServ + 1) % NUM_FORWARD_SERVERS
 
-                print("Forwarding Packet: [#{}:{}: --> Serv: {})".format(packet["transactionNumber"], fwdServer, serverHash))
+                print("Forwarding Packet: [#{}:{}: --> Serv: {})".format(packet["transactionNumber"], user, fwdServer))
                 requestStr = str(packet).encode()
 
                 self.serverSockets[fwdServer].send(requestStr.ljust(256))
