@@ -160,7 +160,7 @@ def CMD_CommitBuy(cmdDict, threadContext, startTime):
         cmdDict['amount'] = 0.00
         cmdDict['errorMessage'] = "Invalid cmd. No recent pending buys" 
     else:
-        cmdDict['amount'] = str(int(sell_cmd['buy']['amount']))
+        cmdDict['amount'] = str(int(buy_cmd['buy']['amount']))
         # Check that less than 60s has passed
         sec_passed = time.time() - float(buy_cmd['buy']['timestamp'])
         if (sec_passed <= 60):
