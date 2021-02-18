@@ -170,6 +170,7 @@ class loadBalancer():
     
         """
         print("Starting load balancer CONSUMER thread")
+        currentServ = 0
 
         while self.serverRunning:
             try: 
@@ -180,12 +181,17 @@ class loadBalancer():
                 else:
                     user = "default"
                 
-                serverHash = hash(user) % NUM_FORWARD_SERVERS
-                print("Forwarding Packet: [#{}:{}: --> Serv: {})".format(packet["transactionNumber"], user, serverHash))
-                
+                if user in userServerFwds.keys():
+                    fwdServer = userServerFwds[user]
+                else:
+                    fwdServer = currentServ
+                    userServerFwds[user] = currentServ 
+                    currentServ = (currentServ + 1) % NUM_FORWARD_SERVERS
+
+                print("Forwarding Packet: [#{}:{}: --> Serv: {})".format(packet["transactionNumber"], fwdServer, serverHash))
                 requestStr = str(packet).encode()
 
-                self.serverSockets[serverHash].send(requestStr.ljust(256))
+                self.serverSockets[fwdServer].send(requestStr.ljust(256))
 
                 self.packetQ.task_done()
 
