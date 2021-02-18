@@ -160,7 +160,7 @@ def CMD_CommitBuy(cmdDict, threadContext, startTime):
         cmdDict['amount'] = 0.00
         cmdDict['errorMessage'] = "Invalid cmd. No recent pending buys" 
     else:
-        cmdDict['amount'] = buy_cmd['buy']['amount']
+        cmdDict['amount'] = str(int(sell_cmd['buy']['amount']))
         # Check that less than 60s has passed
         sec_passed = time.time() - float(buy_cmd['buy']['timestamp'])
         if (sec_passed <= 60):
@@ -258,7 +258,7 @@ def CMD_Sell(cmdDict, threadContext, startTime):
         Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$set': { 'sell': stock_data}})
 
     cmdDict['timestamp'] = str(int(time.time()*1000))
-    cmdDict['amount'] = str(int(cmdDict['amount']))
+    cmdDict['amount'] = str(int(cmdDict['amount'])) # ? 
 
     log.logEvents['userCommand'](cmdDict)
 
@@ -278,7 +278,7 @@ def CMD_CommitSell(cmdDict, threadContext, startTime):
         cmdDict['amount'] = 0.00
         cmdDict['errorMessage'] = "Invalid cmd. No recent pending buys" 
     else: 
-        cmdDict['amount'] = sell_cmd['sell']['amount']
+        cmdDict['amount'] = str(int(sell_cmd['sell']['amount']))
 
         # Check that less than 60s has passed
         sec_passed = time.time() - float(sell_cmd['sell']['timestamp'])
