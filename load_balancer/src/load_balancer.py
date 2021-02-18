@@ -170,6 +170,7 @@ class loadBalancer():
         """
         print("Starting load balancer CONSUMER thread")
         currentServ = 0
+        userServerFwds = {}
 
         while self.serverRunning:
             try: 
