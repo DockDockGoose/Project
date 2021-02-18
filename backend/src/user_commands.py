@@ -160,10 +160,11 @@ def CMD_CommitBuy(cmdDict, threadContext, startTime):
         cmdDict['amount'] = 0.00
         cmdDict['errorMessage'] = "Invalid cmd. No recent pending buys" 
     else:
+        cmdDict['amount'] = buy_cmd['buy']['amount']
         # Check that less than 60s has passed
         sec_passed = time.time() - float(buy_cmd['buy']['timestamp'])
         if (sec_passed <= 60):
-          
+
             # Add stocks to user and update funds
             stock_data = {
                 'stockSymbol': buy_cmd['buy']['stockSymbol'],
@@ -180,9 +181,10 @@ def CMD_CommitBuy(cmdDict, threadContext, startTime):
                 final = Database.update_one(ACCOUNTS_COLLECT, 
                 { '_id': cmdDict['user'], 'stocks.stockSymbol': buy_cmd['buy']['stockSymbol']},
                 {'$inc': { 'stocks.$.amount': buy_cmd['buy']['amount'], 'funds': - buy_cmd['buy']['amount'] * current_share_price}})
+        else:
+            cmdDict['errorMessage'] = "Invalid cmd. Buy Commit exceed 60s timeout!" 
 
-        
-        #remove buy command   
+        # remove buy command   
         Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'buy': ""}})
 
     # The users account is modified after committing to buying the stock, log this action
@@ -276,6 +278,8 @@ def CMD_CommitSell(cmdDict, threadContext, startTime):
         cmdDict['amount'] = 0.00
         cmdDict['errorMessage'] = "Invalid cmd. No recent pending buys" 
     else: 
+        cmdDict['amount'] = sell_cmd['sell']['amount']
+
         # Check that less than 60s has passed
         sec_passed = time.time() - float(sell_cmd['sell']['timestamp'])
 
@@ -290,10 +294,12 @@ def CMD_CommitSell(cmdDict, threadContext, startTime):
             Database.update_one(ACCOUNTS_COLLECT, 
                 { '_id': cmdDict['user'], 'stocks.stockSymbol': sell_cmd['sell']['stockSymbol']},
                 {'$inc': { 'stocks.$.amount': -sell_cmd['sell']['amount'], 'funds': sell_cmd['sell']['amount'] * current_share_price}})
-        
+        else: 
+            cmdDict['errorMessage'] = "Invalid cmd. Sell Commit exceed 60s timeout!" 
+
+
         #remove sell command   
         Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'sell': ""}})
-        cmdDict['amount'] = sell_cmd['sell']['amount']
 
     # The users account is modified after committing to sell the stock, log this action
     cmdDict['timestamp'] = str(int(time.time()*1000))
