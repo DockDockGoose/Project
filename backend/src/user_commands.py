@@ -40,7 +40,7 @@ def printCmd(cmdDict):
     """
         Prints out the current command being executed to the terminal
     """
-    print("NUM, USER, CMD =  [{}, {}, {}]".format(cmdDict["transactionNumber"],
+    print("Executing: [#:{}, U:{}, C:{}] ...".format(cmdDict["transactionNumber"],
                                                   cmdDict["user"],
                                                   cmdDict["command"]))  
 
@@ -50,7 +50,7 @@ def cmdCompleted(cmdDict, startTime):
     """
     elapsedTime = time.time() - startTime
 
-    print("-----[{}, {}, {}s] Command Executed".format(cmdDict["transactionNumber"],
+    print("...FINISHED! [#:{}, C:{}, T:{}s] Command Executed".format(cmdDict["transactionNumber"],
                                                     cmdDict["command"],
                                                     round(elapsedTime,  5)))
     Database.insert(TRANSACT_COLLECT, cmdDict)
@@ -234,7 +234,7 @@ def CMD_Sell(cmdDict, threadContext, startTime):
         'server': cmdDict['server']
     }
 
-    CMD_Quote(quoteCmd, threadContext)
+    CMD_Quote(quoteCmd, threadContext, startTime)
     
     cmdDict['timestamp'] = str(time.time())
 
@@ -278,7 +278,7 @@ def CMD_CommitSell(cmdDict, threadContext, startTime):
         cmdDict['amount'] = 0.00
         cmdDict['errorMessage'] = "Invalid cmd. No recent pending buys" 
     else: 
-        cmdDict['amount'] = str(int(sell_cmd['sell']['amount']))
+        cmdDict['amount'] = str(int(buy_cmd['sell']['amount']))
 
         # Check that less than 60s has passed
         sec_passed = time.time() - float(sell_cmd['sell']['timestamp'])
@@ -513,15 +513,15 @@ def CMD_DisplaySummary(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
     
-    user_transactions = list(Database.find(TRANSACT_COLLECT, {'user': cmdDict['user']}))
+    #user_transactions = list(Database.find(TRANSACT_COLLECT, {'user': cmdDict['user']}))
 
-    user_account = list(Database.find(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}))
+    #user_account = list(Database.find(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}))
 
-    user_triggers = list(Database.find(TRIGGER_COLLECT, {'user': cmdDict['user']}))
+    #user_triggers = list(Database.find(TRIGGER_COLLECT, {'user': cmdDict['user']}))
 
-    print("----- User's Transaction History -----\n", user_transactions)
-    print("\n----- User's Current Account Status -----\n", user_account)
-    print("\n----- User's Triggers -----\n", user_triggers)
+    #print("----- User's Transaction History -----\n", user_transactions)
+    #print("\n----- User's Current Account Status -----\n", user_account)
+    #print("\n----- User's Triggers -----\n", user_triggers)
 
     cmdDict['timestamp'] = str(int(time.time()*1000))
     log.logEvents['userCommand'](cmdDict)
