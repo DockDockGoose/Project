@@ -127,7 +127,7 @@ class webServer():
 
             for userReqData in packets[:-1]:
                 self.handleClientRequest(userReqData.strip() + '}')
-
+            time.sleep(0.5)
 
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
