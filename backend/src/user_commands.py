@@ -50,7 +50,7 @@ def cmdCompleted(cmdDict, startTime):
     """
     elapsedTime = time.time() - startTime
 
-    print("...FINISHED! [#:{}, C:{}, T:{}s] Command Executed".format(cmdDict["transactionNumber"],
+    print("...FINISHED! [#:{}, C:{}, T:{}s]".format(cmdDict["transactionNumber"],
                                                     cmdDict["command"],
                                                     round(elapsedTime,  5)))
     Database.insert(TRANSACT_COLLECT, cmdDict)
@@ -278,7 +278,7 @@ def CMD_CommitSell(cmdDict, threadContext, startTime):
         cmdDict['amount'] = 0.00
         cmdDict['errorMessage'] = "Invalid cmd. No recent pending buys" 
     else: 
-        cmdDict['amount'] = str(int(buy_cmd['sell']['amount']))
+        cmdDict['amount'] = str(int(sell_cmd['sell']['amount']))
 
         # Check that less than 60s has passed
         sec_passed = time.time() - float(sell_cmd['sell']['timestamp'])
