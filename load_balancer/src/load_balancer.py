@@ -164,7 +164,6 @@ class loadBalancer():
         print("Client Closed: {}".format(address))
 
 
-
     def consumerThread(self):
         """ Consumer thread
     
@@ -214,7 +213,7 @@ if __name__ == '__main__':
 
         print("\nAdding Webserver Connection: {}:{} \n".format(webServAddress, webServPort))
 
-        if "q" == (input("Enter \'q\' to STOP inputing Web Server port/address: ") or "c"):
+        if "q" == (input(">> ENTER \'q\' to STOP inputing Web Server port/address: ") or "c"):
             break
 
         DEFAULT_WEB_SERV_PORT += 1
