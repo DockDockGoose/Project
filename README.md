@@ -137,3 +137,46 @@ sudo systemctl stop mongodb
 ```
 
 I would also highly recommend Mongodb Compass. It is a GUI for Mongodb: https://www.mongodb.com/try/download/compass 
+
+
+##  Setup Stock Site on Docker with MongoDB !!!
+
+Due to changes made to the docker containers, the previous containers need to be removed. This can be done through Docker Desktop by removing the containers under stocksite app. It can be removed through the CLI by using the commands
+```
+docker ps -f "status=exited" or docker ps -a -q
+docker rm <container id >
+```
+You can also use this command but be careful it will remove all stopped containers 
+```
+docker rm $(docker ps -a -q)
+```
+To prune the system (clear all including volumes) (recommended):
+```
+docker system prune -af
+```
+
+
+Note that mongo-express will initially fail in connecting to the mongo container (& db). This is because the root user must be created first.
+This user is created through the docker entrypoint script that is mounted as mongo-init.js. 
+In order for the script and dockerfiles to run correctly, we have to run a fresh docker instance of the database. 
+As it is a linked volume, please ensure that the stocksite/data-db directory has been deleted prior to running the docker-compose for the first time as docker tries to preserve as much data as it can. By deleting, it can be freshly created by docker-compose.
+
+
+Go into stocksite directory and run the application:
+```
+cd stocksite
+docker-compose build
+docker-compose up
+```
+
+Head to http://localhost:8000/ to see application running 🎉
+
+To view web and db containers:
+```
+docker ps
+```
+
+To get view db in browser head to http://localhost:8081
+
+
+Shutdown containers using `Ctrl-c` or `docker-compose down`.

@@ -88,9 +88,9 @@ DATABASES = {
         },
         'NAME': 'mongodb',
         'CLIENT': {
-            'host': 'mongodb',
-            'port': 27017,
-            'username': 'admin',
+            'host': 'mongodb://mongodb:27017',
+            # 'port': 27017,
+            'username': 'root',
             'password': 'dockdockgoose',
             'authSource': 'admin',
             'authMechanism': 'SCRAM-SHA-1'
