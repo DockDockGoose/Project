@@ -155,11 +155,11 @@ To prune the system (clear all including volumes) (recommended):
 docker system prune -af
 ```
 
-
 Note that mongo-express will initially fail in connecting to the mongo container (& db). This is because the root user must be created first.
 This user is created through the docker entrypoint script that is mounted as mongo-init.js. 
 In order for the script and dockerfiles to run correctly, we have to run a fresh docker instance of the database. 
-As it is a linked volume, please ensure that the stocksite/data-db directory has been deleted prior to running the docker-compose for the first time as docker tries to preserve as much data as it can. By deleting, it can be freshly created by docker-compose.
+As it is a linked volume, please ensure that the stocksite/data-db directory has been deleted prior to running the docker-compose for the first time since docker tries to preserve as much data as it can and thus retains the no root user db. By deleting, it can be freshly created by docker-compose.
+There might be a better way to set up mongo and docker but for now, this works so yay!
 
 
 Go into stocksite directory and run the application:
@@ -176,7 +176,19 @@ To view web and db containers:
 docker ps
 ```
 
-To get view db in browser head to http://localhost:8081
+To use MongoExpress and view our db in a browser head to http://localhost:8081
 
+
+To look at our database and its collections, first enter the mongo shell of the docker container as root:
+```
+docker exec it mongodb mongo -u root
+```
+You will be prompted to enter our team password. After entering it, you have succesfully accessed our contianerized db!
+``` 
+show dbs
+use mongodb
+show collections
+```
+Use `exit` to leave mongo shell. 
 
 Shutdown containers using `Ctrl-c` or `docker-compose down`.
