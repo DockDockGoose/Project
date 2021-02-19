@@ -128,7 +128,7 @@ class webServer():
             strData = str(data).strip("b\"")
             packets = re.findall('(\{.*?\})', strData)
 
-            for userReqData in packets[:-1]:
+            for userReqData in packets:
                 self.handleClientRequest(ast.literal_eval(userReqData))
             time.sleep(0.5)
 
