@@ -26,7 +26,9 @@ processing = 0
 for transact in transactions:
     print(processing)
     processing = processing + 1
-    log.logEvents['userCommand'](transact)
+    if (transact['logType'] == 'userCommand'):
+        print(transact)
+        log.logEvents['userCommand'](transact)
 
 log.prettyPrintLog()
 
