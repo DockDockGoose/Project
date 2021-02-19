@@ -20,7 +20,7 @@ import sys
 from xml.etree import ElementTree, cElementTree
 from xml.dom import minidom
 
-auditNum = "1"
+auditNum = "45"
 root = ElementTree.Element('log')
 auditFile = '../audit/logs/logfile' + auditNum + '.xml'        # Relative path from backend/src
 
@@ -39,7 +39,7 @@ def logUserCommand(infoDict):
     if 'filename' in infoDict:
         ElementTree.SubElement(userCommand, 'filename').text = infoDict['filename']
     if 'amount' in infoDict:
-        ElementTree.SubElement(userCommand, 'funds').text = infoDict['amount']
+        ElementTree.SubElement(userCommand, 'funds').text = '%.2f' % infoDict['amount']
 
     #prettyPrintLog(root)
 
