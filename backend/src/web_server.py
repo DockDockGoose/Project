@@ -16,6 +16,7 @@ import sys
 import time
 import ast
 import queue
+import re
 
 sys.path.append('../../')
 
@@ -125,21 +126,19 @@ class webServer():
             # Sometimes Data packets are bunched up in the read buffer. 
             #      This mechanism will separate them, and process each
             strData = str(data).strip("b\"")
-            packets = strData.split("}")
+            packets = re.findall('(\{.*?\})', strData)
 
             for userReqData in packets[:-1]:
-                self.handleClientRequest(userReqData.strip() + '}')
+                self.handleClientRequest(ast.literal_eval(userReqData))
             time.sleep(0.5)
 
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
         print("Client Closed: {}".format(address))
 
-    def handleClientRequest(self, rawPacket):
+    def handleClientRequest(self, userReq):
 
-        # decode the packet into a dictionary type
         # TODO: sending back data to front end ???
-        userReq = ast.literal_eval(str(rawPacket))
 
         userReq["server"] = SERV_HOST_NAME
 
