@@ -58,9 +58,9 @@ docker ps
 To use MongoExpress and view our db in a browser head to http://localhost:8081
 
 
-To look at our database and its collections, first enter the mongo shell of the docker container as root:
+To look at our database and its collections on the CLI, first enter the mongo shell of the docker container as root:
 ```
-docker exec it mongodb mongo -u root
+docker exec -it mongodb mongo -u root
 ```
 You will be prompted to enter our team password. After entering it, you have succesfully accessed our contianerized db!
 ``` 
