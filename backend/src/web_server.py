@@ -9,14 +9,13 @@
     REFERENCES: 
         - https://gist.github.com/joncardasis/cc67cfb160fa61a0457d6951eff2aeae
         - https://realpython.com/python-sockets/
-        """ 
+        """
 
 import socket
 import sys
 import time
 import ast
 import queue
-
 
 sys.path.append('../../')
 
@@ -33,6 +32,7 @@ SERV_HOST_NAME  = '127.0.0.1'
 
 PACKET_SIZE     = 8192
 
+
 class webServer():
 
     def __init__(self, port=SERV_PORT, hostname=SERV_HOST_NAME):
@@ -40,7 +40,6 @@ class webServer():
         self.hostname       = hostname
         self.userProcesses  = {}
         self.serverRunning  = True
-
 
     def start(self):
         """ starts the webserver up. This includes initializing the socket, 
@@ -51,7 +50,7 @@ class webServer():
         print("Port: " + str(self.hostname))
         print("Port: " + str(self.port))
         print()
-        
+
         # Initialize a server administration thread for dumplog command
         self.initializeUserThread("admin")
 
@@ -67,7 +66,7 @@ class webServer():
 
         # Call to the listening function to start recieving and decoding incoming packets
         self.listen()
-    
+
     def shutdown(self):
         """ shutsdown the server connection, and socket. """
         try:
@@ -94,9 +93,9 @@ class webServer():
 
         while self.serverRunning:
             (conn, address) = self.socket.accept()
-            
+
             conn.setblocking(False)
-            
+
             # Start a thread for each socket connection.
             # TODO: Change to be Event driven 
             Thread(target=self.handleConnection, args=(conn, address)).start()
@@ -124,23 +123,23 @@ class webServer():
             print("~~ Read Data ~~")
 
             # Sometimes Data packets are bunched up in the read buffer. 
-            #      This mechanism will seperate them, and process each
+            #      This mechanism will separate them, and process each
             strData = str(data).strip("b\"")
             packets = strData.split("}")
 
             for userReqData in packets[:-1]:
-                self.handleClientRequest(userReqData + '}')
-
+                self.handleClientRequest(userReqData.strip() + '}')
 
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
-        print("WARNING! Server Connection {conn} closed")    
+        print("WARNING! Server Connection {conn} closed")
 
     def handleClientRequest(self, rawPacket):
 
         # decode the packet into a dictionary type
         # TODO: sending back data to front end ???
-        userReq = ast.literal_eval(str(rawPacket).strip("b\""))
+
+        userReq = ast.literal_eval(str(rawPacket))
 
         userReq["server"] = SERV_HOST_NAME
 
@@ -149,7 +148,7 @@ class webServer():
             user = userReq["user"]
 
             if user not in self.userProcesses:
-                #IF no user process thread created initialize user process thread.
+                # IF no user process thread created initialize user process thread.
                 self.initializeUserThread(user)
 
             threadContext = self.userProcesses[user]
@@ -163,11 +162,10 @@ class webServer():
 
             threadContext["workQ"].put(userReq)
 
-
     def initializeUserThread(self, userId):
         """ Every client has an asociated user thread. This thread will handle all of a specific user requests.
             This function will initialize and start the user thread, including its queue, and user ports. """
-        
+
         print("NEW USER! ", userId)
 
         # Initialize the threadContext associated with the user thread. 
@@ -197,7 +195,7 @@ class webServer():
             while not threadContext["workQ"].empty():
                 # Wait for next work Q item.
                 userReq = threadContext["workQ"].get()
-                
+
                 print("QUEUE/PROCESSED: {} -- {}".format(threadContext["workQ"].qsize(), processed))
 
                 # Call command function dictionary
@@ -220,4 +218,3 @@ if __name__ == '__main__':
 
     server = webServer(port, host_adr)
     server.start()
-

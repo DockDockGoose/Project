@@ -1,14 +1,12 @@
 """ Contains dictionary of the commands for each user command that can be specified. 
     each user command is set to this function after decoding the packet in the webserver
 """
-""" TODO: 
-        - Extract commands into their own modules
-        - sell/buy trigger checking of quote server
-        - error handling
-        - logging is out of order -> needs error checking
-""" 
 
+import socket
+import sys
 import time
+import ast
+import queue
 
 from .commands.add_cmd import AddCmd
 from .commands.quote_cmd import QuoteCmd
@@ -21,6 +19,12 @@ from .commands.dumplog_cmd import DumplogCmd
 
 
 from .database.database import Database
+from threading import Lock
+from threading import Thread
+
+# Default server values, but can be inputted by user on class initialization
+SERV_PORT       = 65000
+SERV_HOST_NAME  = '127.0.0.1'
 
 
 ACCOUNTS_COLLECT = "accounts"
@@ -34,6 +38,21 @@ QUOTE_HOST_NAME  = '192.168.4.2'
 
 # Connect to database
 Database.connect()
+
+# class transactionServer:
+#
+#     def __init__(self, port=SERV_PORT, hostname=SERV_HOST_NAME):
+#         self.port           = port
+#         self.hostname       = hostname
+#         self.userProcesses  = {}
+#         self.serverRunning  = True
+#
+#
+# def start():
+#
+#
+# def triggerHandlerThread():
+
 
 
 def printCmd(cmdDict):
@@ -212,10 +231,10 @@ def CMD_Dumplog(cmdDict, threadContext, startTime):
     """
 
     cmdDict['user'] = 'admin'
+
     printCmd(cmdDict)
 
     DumplogCmd.execute(cmdDict)
-
 
     cmdCompleted(cmdDict, startTime)
 

@@ -21,6 +21,7 @@ class QuoteCmd():
         """
             Retrieves price of stock
         """
+
         dbLog.log(cmdDict, CMD_LOG)
 
         try:
@@ -29,13 +30,12 @@ class QuoteCmd():
 
             # query the quote server
             quote_data = qs.getQuote(cmdDict)
-            
-            # Log the results from quote server
-            cmdDict['price'] = quote_data['price']
-            cmdDict['cryptokey'] = quote_data['cryptokey']
-            cmdDict['timestamp'] = quote_data['timestamp']
 
-            dbLog.log(cmdDict, QUOTE_LOG)
+            # Log the results from quote server
+            quote_data['command'] = 'QUOTE'
+            quote_data['logType'] = QUOTE_LOG
+
+            dbLog.logQuote(quote_data)
 
             # return the current price of shares
             return float(quote_data['price'])

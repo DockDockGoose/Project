@@ -28,7 +28,7 @@ class BuyCmd():
             'server': cmdDict['server']
         }
 
-        stock_price = QuoteCmd.CMD_Quote(quote)
+        stock_price = QuoteCmd.execute(quote)
 
         try:
             # Make sure user exist and has enough funds in account

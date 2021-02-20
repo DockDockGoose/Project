@@ -31,7 +31,7 @@ class SetSellAmtCmd():
                     }, {'$limit': 1}
                 ]))
 
-            if (user_stock[0] == None):
+            if not user_stock:
                 err = "Invalid cmd. User does not have the specified stock." 
                 dbLog.log(cmdDict, ERROR_LOG, err) 
 
@@ -70,7 +70,7 @@ class CancelSetSellCmd():
                 dbLog.log(cmdDict, ERROR_LOG, err)
             else:
                 # Re-add funds only if trigger price had been set
-                if (sell_trigger['triggerPrice'] != None):
+                if ('triggerPrice' in sell_trigger.keys()):
                     Database.update_one(ACCOUNTS_COLLECT,
                         { '_id': cmdDict['user'], 'stocks.stockSymbol': cmdDict['stockSymbol']},
                         {'$inc': { 'stocks.$.amount': sell_trigger['amount']}}

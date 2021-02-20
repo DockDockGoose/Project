@@ -30,7 +30,7 @@ class SellCmd():
             'server': cmdDict['server']
         }
 
-        stock_price = QuoteCmd.CMD_Quote(quote)
+        stock_price = QuoteCmd.execute(quote)
         
         try:
             user_stock = list(Database.aggregate(ACCOUNTS_COLLECT, [
@@ -41,7 +41,7 @@ class SellCmd():
                 ]))
 
             # Check if user has enough of stock in account
-            if (user_stock[0] == None):
+            if not user_stock:
                 err = "Invalid cmd. User does not have the specified stock." 
                 dbLog.log(cmdDict, ERROR_LOG, err)
 
@@ -117,15 +117,19 @@ class CancelSellCmd():
             # Get previous sell command 
             sell_cmd = Database.find_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user'], 'sell': { '$exists': True } }, { 'sell': 1, '_id': 0})
 
-            # Check that less than 60s has passed
-            sec_passed = time.time() - sell_cmd['sell']['timestamp']
-            if (sec_passed > 60):
-                err = "Invalid cmd. More than 60 seconds passed." 
+            if (sell_cmd == None):
+                err = "Invalid cmd. No recent pending buys"
                 dbLog.log(cmdDict, ERROR_LOG, err)
+            else:
+                # Check that less than 60s has passed
+                sec_passed = time.time() - sell_cmd['sell']['timestamp']
+                if (sec_passed > 60):
+                    err = "Invalid cmd. More than 60 seconds passed."
+                    dbLog.log(cmdDict, ERROR_LOG, err)
 
-            # Remove previous sell command
-            Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'sell': ""}})
-            dbLog.log(cmdDict, TRANSACT_LOG)
+                # Remove previous sell command
+                Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'sell': ""}})
+                dbLog.log(cmdDict, TRANSACT_LOG)
 
         except pymongo.errors.PyMongoError as err:
             print(f"ERROR! Could not complete command {cmdDict['command']} failed with error: {err}")
