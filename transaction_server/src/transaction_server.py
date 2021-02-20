@@ -9,7 +9,6 @@
 """ 
 
 import time
-import sys
 
 from .commands.add_cmd import AddCmd
 from .commands.quote_cmd import QuoteCmd

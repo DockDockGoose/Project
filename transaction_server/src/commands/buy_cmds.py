@@ -7,8 +7,6 @@ from .quote_cmd import QuoteCmd
 
 from ..database.database import Database
 
-
-
 ACCOUNTS_COLLECT = "accounts"
 
 ERROR_LOG = 'errorEvent'
@@ -87,13 +85,14 @@ class CommitBuyCmd:
                     stock_check = Database.find_one(ACCOUNTS_COLLECT, { '_id': cmdDict['user'], 'stocks.stockSymbol': buy_cmd['buy']['stockSymbol']})
                             
                     if (stock_check == None):
-                        Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, 
-                        {'$addToSet': { 'stocks': stock_data}, '$inc': {'funds': - buy_cmd['buy']['amount'] * buy_cmd['buy']['price']}})
+                        Database.update_one(ACCOUNTS_COLLECT,
+                            {'_id': cmdDict['user']},
+                            {'$addToSet': { 'stocks': stock_data}, '$inc': {'funds': - buy_cmd['buy']['amount'] * buy_cmd['buy']['price']}})
                     else:
                         # else increase their amount of stock
-                        final = Database.update_one(ACCOUNTS_COLLECT, 
-                        { '_id': cmdDict['user'], 'stocks.stockSymbol': buy_cmd['buy']['stockSymbol']},
-                        {'$inc': { 'stocks.$.amount': buy_cmd['buy']['amount'], 'funds': - buy_cmd['buy']['amount'] * buy_cmd['buy']['price']}})
+                        Database.update_one(ACCOUNTS_COLLECT,
+                            { '_id': cmdDict['user'], 'stocks.stockSymbol': buy_cmd['buy']['stockSymbol']},
+                            {'$inc': { 'stocks.$.amount': buy_cmd['buy']['amount'], 'funds': - buy_cmd['buy']['amount'] * buy_cmd['buy']['price']}})
 
                     dbLog.log(cmdDict, TRANSACT_LOG)
 
