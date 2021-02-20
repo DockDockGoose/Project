@@ -3,7 +3,7 @@ import pymongo
 
 from .db_log import dbLog
 
-from database.database import Database
+from ..database.database import Database
 
 ACCOUNTS_COLLECT = "accounts"
 TRANSACT_COLLECT = "transactions"
@@ -14,7 +14,7 @@ CMD_LOG = 'userCommand'
 TRANSACT_LOG = 'accountTransaction'
 
 class DumplogCmd():
-    def execute(self, cmdDict):
+    def execute(cmdDict):
         """
             Print all of the transactions or just the user's transactions
         """

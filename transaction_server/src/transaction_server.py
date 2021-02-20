@@ -11,17 +11,17 @@
 import time
 import sys
 
-from commands.add_cmd import AddCmd
-from commands.quote_cmd import QuoteCmd
-from commands.buy_cmds import BuyCmd, CommitBuyCmd, CancelBuyCmd
-from commands.buy_trigger_cmds import SetBuyAmtCmd, SetBuyTriggerCmd, CancelSetBuyCmd
-from commands.sell_cmds import SellCmd, CommitSellCmd, CancelSellCmd
-from commands.sell_trigger_cmd import SetSellAmtCmd, SetSellTriggerCmd, CancelSetSellCmd
-from commands.display_sum_cmd import DisplaySumCmd
-from commands.dumplog_cmd import DumplogCmd
+from .commands.add_cmd import AddCmd
+from .commands.quote_cmd import QuoteCmd
+from .commands.buy_cmds import BuyCmd, CommitBuyCmd, CancelBuyCmd
+from .commands.buy_trigger_cmds import SetBuyAmtCmd, SetBuyTriggerCmd, CancelSetBuyCmd
+from .commands.sell_cmds import SellCmd, CommitSellCmd, CancelSellCmd
+from .commands.sell_trigger_cmd import SetSellAmtCmd, SetSellTriggerCmd, CancelSetSellCmd
+from .commands.display_sum_cmd import DisplaySumCmd
+from .commands.dumplog_cmd import DumplogCmd
 
 
-from database.database import Database
+from .database.database import Database
 
 
 ACCOUNTS_COLLECT = "accounts"
@@ -61,7 +61,7 @@ def CMD_Add(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
 
-    AddCmd(cmdDict)
+    AddCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -71,7 +71,7 @@ def CMD_Quote(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
 
-    QuoteCmd(cmdDict)
+    QuoteCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -82,7 +82,7 @@ def CMD_Buy(cmdDict, threadContext, startTime):
 
     printCmd(cmdDict)
 
-    BuyCmd(cmdDict)
+    BuyCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -92,7 +92,7 @@ def CMD_CommitBuy(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
 
-    CommitBuyCmd(cmdDict)
+    CommitBuyCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -103,7 +103,7 @@ def CMD_CancelBuy(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
 
-    CancelBuyCmd(cmdDict)
+    CancelBuyCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -115,7 +115,7 @@ def CMD_Sell(cmdDict, threadContext, startTime):
 
     printCmd(cmdDict)
 
-    SellCmd(cmdDict)
+    SellCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -126,7 +126,7 @@ def CMD_CommitSell(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
 
-    CommitSellCmd(cmdDict)
+    CommitSellCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -137,7 +137,7 @@ def CMD_CancelSell(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
 
-    CancelSellCmd(cmdDict)
+    CancelSellCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -148,7 +148,7 @@ def CMD_SetBuyAmt(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
 
-    SetBuyAmtCmd(cmdDict)
+    SetBuyAmtCmd.execute(cmdDict)
     
     cmdCompleted(cmdDict, startTime)
 
@@ -158,7 +158,7 @@ def CMD_CancelSetBuy(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
 
-    CancelSetBuyCmd(cmdDict)
+    CancelSetBuyCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
     
@@ -169,7 +169,7 @@ def CMD_SetBuyTrigger(cmdDict, threadContext, startTime):
 
     printCmd(cmdDict)
 
-    SetBuyTriggerCmd(cmdDict)
+    SetBuyTriggerCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -180,7 +180,7 @@ def CMD_SetSellAmt(cmdDict, threadContext, startTime):
     
     printCmd(cmdDict)
 
-    SetSellAmtCmd(cmdDict)
+    SetSellAmtCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -191,7 +191,7 @@ def CMD_CancelSetSell(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
 
-    CancelSetSellCmd(cmdDict)
+    CancelSetSellCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -202,7 +202,7 @@ def CMD_SetSellTrigger(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
 
-    SetSellTriggerCmd(cmdDict)
+    SetSellTriggerCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -211,9 +211,12 @@ def CMD_Dumplog(cmdDict, threadContext, startTime):
     """
         Print all of the transactions or just the user's transactions
     """
+
+    cmdDict['user'] = 'admin'
     printCmd(cmdDict)
 
-    DumplogCmd(cmdDict)
+    DumplogCmd.execute(cmdDict)
+
 
     cmdCompleted(cmdDict, startTime)
 
@@ -224,7 +227,7 @@ def CMD_DisplaySummary(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
 
-    DisplaySumCmd(cmdDict)
+    DisplaySumCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 

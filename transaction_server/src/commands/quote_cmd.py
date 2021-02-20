@@ -5,7 +5,7 @@ import pymongo
 from .db_log import dbLog
 
 sys.path.append('..')
-from quoteServer import MockQuoteServer, QuoteServer
+from ..quoteServer import MockQuoteServer, QuoteServer
 
 
 ACCOUNTS_COLLECT = "accounts"
@@ -17,7 +17,7 @@ CMD_LOG = 'userCommand'
 QUOTE_LOG = 'quoteServer'
 
 class QuoteCmd():
-    def execute(self, cmdDict):
+    def execute(cmdDict):
         """
             Retrieves price of stock
         """

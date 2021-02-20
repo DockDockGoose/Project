@@ -5,7 +5,7 @@ import pymongo
 from .db_log import dbLog
 from .quote_cmd import QuoteCmd
 
-from database.database import Database
+from ..database.database import Database
 
 
 
@@ -16,7 +16,7 @@ CMD_LOG = 'userCommand'
 TRANSACT_LOG = 'accountTransaction'
 
 class BuyCmd():
-    def execute(self, cmdDict):
+    def execute(cmdDict):
         """
             Sets up a buy command for the user and specified stock
         """
@@ -60,7 +60,7 @@ class BuyCmd():
             dbLog.log(cmdDict, ERROR_LOG, err) 
 
 class CommitBuyCmd:
-    def execute(self, cmdDict):
+    def execute(cmdDict):
         """
             Executes the most recent buy command from user
         """
@@ -110,7 +110,7 @@ class CommitBuyCmd:
 
 
 class CancelBuyCmd:
-    def execute(self, cmdDict):
+    def execute(cmdDict):
         """
             Cancels the most recent buy command from user
         """

@@ -4,7 +4,7 @@ import pymongo
 
 from .db_log import dbLog
 
-from database.database import Database
+from ..database.database import Database
 
 
 ACCOUNTS_COLLECT = "accounts"
@@ -16,7 +16,7 @@ TRANSACT_LOG = 'accountTransaction'
 
 
 class SetSellAmtCmd():
-    def execute(self, cmdDict):
+    def execute(cmdDict):
         """
             Creates a sell trigger based on the number of stocks the user wants to sell
         """
@@ -55,7 +55,7 @@ class SetSellAmtCmd():
 
 
 class CancelSetSellCmd():
-    def execute(self, cmdDict):
+    def execute(cmdDict):
         """
             Cancels the set sell command
         """
@@ -85,7 +85,7 @@ class CancelSetSellCmd():
 
 
 class SetSellTriggerCmd():
-    def execute(self, cmdDict):
+    def execute(cmdDict):
         """
             Adds the price trigger to the set sell command
         """

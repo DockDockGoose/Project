@@ -2,8 +2,7 @@ import time
 import sys
 import pymongo
 
-sys.path.append('..')
-from database.database import Database
+from ..database.database import Database
 
 TRANSACT_COLLECT = "transactions"
 
@@ -13,12 +12,13 @@ TRANSACT_LOG = 'accountTransaction'
 
 
 class dbLog():
-    def log(self, cmdDict, type, error=None):
+    def log(cmdDict, kind, error=None):
         """
             Log the commands into transaction collection
         """
         cmdDict['timestamp'] = str(int(time.time() * 1000))
-        cmdDict['logType'] = type
+        cmdDict['logType'] = kind
+        cmdDict['_id'] = cmdDict['user'] + cmdDict['command'] + cmdDict['timestamp'] + cmdDict['logType']
 
         if (error != None):
             cmdDict['errorMessage'] = error

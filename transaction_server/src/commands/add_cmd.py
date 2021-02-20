@@ -1,7 +1,7 @@
 import pymongo
 
 from .db_log import dbLog
-from database.database import Database
+from ..database.database import Database
 
 ACCOUNTS_COLLECT = "accounts"
 
@@ -11,7 +11,7 @@ TRANSACT_LOG = 'accountTransaction'
 
 
 class AddCmd:
-    def execute(self, cmdDict):
+    def execute(cmdDict):
         """
             Adds money to user's account
         """

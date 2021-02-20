@@ -3,7 +3,7 @@ import pymongo
 
 from .db_log import dbLog
 
-from database.database import Database
+from ..database.database import Database
 
 ACCOUNTS_COLLECT = "accounts"
 TRANSACT_COLLECT = "transactions"
@@ -15,7 +15,7 @@ TRANSACT_LOG = 'accountTransaction'
 
 
 class DisplaySumCmd():
-    def execute(self, cmdDict):
+    def execute(cmdDict):
         """
             Print the user's account from accounts, transaction history, and buy/sell triggers
         """

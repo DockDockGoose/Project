@@ -16,9 +16,12 @@ import sys
 import time
 import ast
 import queue
-import user_commands
 
-from user_commands import userCommands
+
+sys.path.append('../../')
+
+from transaction_server.src.transaction_server import userCommands
+
 from threading import Lock
 from threading import Thread
 
@@ -181,7 +184,7 @@ class webServer():
         return
 
     def userConsumerThread(self, userId):
-        """ This is the user thread associated with each user. Work is recieved from the client
+        """ This is the user thread associated with each user. Work is received from the client
             and put in the associated user work thread queue. The thread will retrieve this work 
             to execute on. """
 
