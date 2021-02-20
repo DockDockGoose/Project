@@ -72,6 +72,8 @@ Use `exit` to leave mongo shell.
 
 Shutdown containers using `Ctrl-c` or `docker-compose down`.
 
+Visit https://www.django-rest-framework.org/#example for Django REST Framework documentation.
+
 ## Setup Information
  [Follow these instructions to set up Django](https://docs.djangoproject.com/en/3.1/topics/install/#installing-official-release)
  
