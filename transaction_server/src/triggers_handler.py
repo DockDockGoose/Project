@@ -89,6 +89,11 @@ def triggerBuyCmd(cmdDict, stock_symbol, price):
 
         dbLog.log(cmdDict, TRANSACT_LOG)
 
+        # Delete Buy trigger
+        Database.remove(TRIGGER_COLLECT,
+                        {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'buy'})
+
+
     except pymongo.errors.PyMongoError as err:
         print(f"ERROR! Could not complete command {cmdDict['command']} failed with error: {err}")
         dbLog.log(cmdDict, ERROR_LOG, err)
@@ -109,6 +114,10 @@ def triggerSellCmd(cmdDict, stock_symbol, price):
                             {'$inc': {'funds': stock_funds}})
 
         dbLog.log(cmdDict, TRANSACT_LOG)
+
+        # Delete Sell trigger
+        Database.remove(TRIGGER_COLLECT,
+                        {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'sell'})
 
     except pymongo.errors.PyMongoError as err:
         print(f"ERROR! Could not complete command {cmdDict['command']} failed with error: {err}")
