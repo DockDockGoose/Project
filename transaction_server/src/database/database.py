@@ -1,6 +1,6 @@
-""" TODO: 
+""" TODO:
         - error handling for commands
-""" 
+"""
 import pymongo
 import sys
 
@@ -8,22 +8,36 @@ DB_NAME = 'mongodb'
 DB_PORT = 27017
 HOST = 'localhost'
 
+ACCOUNTS_COLLECT = "accounts"
+TRANSACT_COLLECT = "transactions"
+TRIGGER_COLLECT = "triggers"
+
+
 # Code created with reference to
 # https://medium.com/analytics-vidhya/setting-up-a-database-class-mongodb-for-interactions-in-python-6a16417cd58e
 
 class Database(object):
+
     DATABASE = None
 
     def connect():
+        """
+            Connect to database and clear current collections
+        """
+
         try:
             client = pymongo.MongoClient(HOST, DB_PORT)
             Database.DATABASE = client[DB_NAME]
             print("-----CONNECTED TO MONGODB DB-----")
-        
+            Database.DATABASE[ACCOUNTS_COLLECT].drop()
+            Database.DATABASE[TRANSACT_COLLECT].drop()
+            Database.DATABASE[TRIGGER_COLLECT].drop()
+
+
         except pymongo.errors.ConnectionFailure as err:
-            print("ERROR! Could not connect to database {self.db_name} failed with error: {err}")
+            print(f"ERROR! Could not connect to database {self.db_name} failed with error: {err}")
             sys.exit(1)
-            
+
     def insert(collection, data):
         """
             Insert data document into collection
@@ -36,7 +50,7 @@ class Database(object):
             - can specifiy the selection and projection of attributes
         """
         return Database.DATABASE[collection].find(select, project)
-    
+
     def find_one(collection, select=None, project=None):
         """
             Returns the first document in the collection
