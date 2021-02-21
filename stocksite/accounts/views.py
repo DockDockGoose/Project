@@ -29,11 +29,19 @@ class AccountView(APIView):
         """
         Get account data.
         """
-        #  Responses with HTTP 404 if Account doesnt exist.
-        account = get_object_or_404(Account, userId=self.kwargs['userId'])
+        #  Responses with HTTP 404 if Account doesnt exist. 
+        # TODO: Figure out how to make dynamic account urls using this
+        # account = get_object_or_404(Account, userId=self.kwargs['userId'])
 
-        if account is not None:
-            serializer = AccountSerializer(account)
+        userId = request.data.get("userId")
+
+        # Find account
+        account = Account.objects.filter(userId=userId,).first()
+
+        # Serialize data for serving
+        serializer = AccountSerializer(account)
+
+        # Log systemEvent using Transaction model (create data obj & .save())
 
         return Response(serializer.data, status=status.HTTP_200_OK)
     

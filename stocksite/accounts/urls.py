@@ -4,7 +4,8 @@ from .views import AccountListView, AccountView, AddView
 
 urlpatterns = [
     path('', AccountListView.as_view()),
-    path('<slug:userId>/', AccountView.as_view()),
+    # TODO: Figure out how to make dynamic account urls using this
+    # path('<slug:userId>/', AccountView.as_view()),
     path('add/', AddView.as_view()),
     path('rest-auth/', include('rest_auth.urls')),
 ]
