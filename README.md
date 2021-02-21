@@ -78,6 +78,14 @@ Use `exit` to leave mongo shell.
 
 Shutdown containers using `Ctrl-c` or `docker-compose down`.
 
+To experiment with the current API, head to http://localhost:8000/api/accounts/add and in the textfield in JSON format, enter a string userId and a float of funds (optional).
+```
+{
+    "userId": "pikachu",
+    "amount": 9.11
+}
+```
+
 ### REST-ful resources 😉:
 
 - https://www.django-rest-framework.org/#example for Django REST Framework documentation.
@@ -89,7 +97,10 @@ Shutdown containers using `Ctrl-c` or `docker-compose down`.
 
 <em> When developing the app with the docker containers up and running, I find I sometimes have to prune, rebuild and re-up in order to observe all changes. It's not always the case, but it might be worth mentioning. </em>
 
-TODO: Enable serving multiple concurrent users with nginx & uwsgi.
+#### TODO: 
+- Enable serving multiple concurrent users with nginx & uwsgi.
+- Implement other apps API endpoints.
+- Configure custom user model. 
 
 ## Setup Information
  [Follow these instructions to set up Django](https://docs.djangoproject.com/en/3.1/topics/install/#installing-official-release)
