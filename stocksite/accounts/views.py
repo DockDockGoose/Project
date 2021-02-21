@@ -1,13 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
+from transactions.models import Transaction
 from .models import Account
 from .serializers import AccountSerializer
+from time import time
 
-# TODO: Implement Account view logic
+# TODO: Implement Account view logic (change id to UUID), transaction tracking & server mapping
 
 class AccountListView(ListAPIView):
     """
@@ -17,6 +19,23 @@ class AccountListView(ListAPIView):
     serializer_class = AccountSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['userId']
+
+class AccountView(APIView):
+    """
+    API endpoint that allows a single account to be viewed.
+    """
+
+    def get(self, request, userId):
+        """
+        Get account data.
+        """
+        #  Responses with HTTP 404 if Account doesnt exist.
+        account = get_object_or_404(Account, userId=self.kwargs['userId'])
+
+        if account is not None:
+            serializer = AccountSerializer(account)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
 
 class AddView(APIView):
@@ -25,7 +44,7 @@ class AddView(APIView):
     """
     def get(self, request):
         """
-        Get account data.
+        Get account & funds data.
         """
         userId = request.data.get("userId")
 
@@ -57,5 +76,16 @@ class AddView(APIView):
         account.save()
 
         # Log accountTransaction event using Transaction model (create data obj * .save())
-        
+        accountTransaction = Transaction(
+            type="accountTransaction",
+            timestamp=int(time()*1000),
+            server='DOCK1',
+            transactionNum=0,
+            command='add',
+            userId=userId,
+            amount=amount
+        )
+
+        accountTransaction.save()
+
         return Response(status=status.HTTP_200_OK)
