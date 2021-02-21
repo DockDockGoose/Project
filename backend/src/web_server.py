@@ -93,9 +93,9 @@ class webServer():
 
         while self.serverRunning:
             (conn, address) = self.socket.accept()
-
+            
             conn.setblocking(False)
-
+            
             # Start a thread for each socket connection.
             # TODO: Change to be Event driven 
             Thread(target=self.handleConnection, args=(conn, address)).start()
@@ -129,16 +129,16 @@ class webServer():
 
             for userReqData in packets[:-1]:
                 self.handleClientRequest(userReqData.strip() + '}')
+            time.sleep(0.5)
 
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
-        print("WARNING! Server Connection {conn} closed")
+        print("Client Closed: {}".format(address))
 
     def handleClientRequest(self, rawPacket):
 
         # decode the packet into a dictionary type
         # TODO: sending back data to front end ???
-
         userReq = ast.literal_eval(str(rawPacket))
 
         userReq["server"] = SERV_HOST_NAME
@@ -165,7 +165,7 @@ class webServer():
     def initializeUserThread(self, userId):
         """ Every client has an asociated user thread. This thread will handle all of a specific user requests.
             This function will initialize and start the user thread, including its queue, and user ports. """
-
+        
         print("NEW USER! ", userId)
 
         # Initialize the threadContext associated with the user thread. 
@@ -182,7 +182,7 @@ class webServer():
         return
 
     def userConsumerThread(self, userId):
-        """ This is the user thread associated with each user. Work is received from the client
+        """ This is the user thread associated with each user. Work is recieved from the client
             and put in the associated user work thread queue. The thread will retrieve this work 
             to execute on. """
 
@@ -195,7 +195,7 @@ class webServer():
             while not threadContext["workQ"].empty():
                 # Wait for next work Q item.
                 userReq = threadContext["workQ"].get()
-
+                
                 print("QUEUE/PROCESSED: {} -- {}".format(threadContext["workQ"].qsize(), processed))
 
                 # Call command function dictionary
@@ -218,3 +218,4 @@ if __name__ == '__main__':
 
     server = webServer(port, host_adr)
     server.start()
+
