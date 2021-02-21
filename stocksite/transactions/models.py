@@ -10,7 +10,7 @@ class Transaction(models.Model):
     server = models.CharField(max_length=50, blank=True)
     transactionNum = models.IntegerField(blank=True)
     command = models.CharField(max_length=50, blank=True)
-    username = models.CharField(max_length=50, blank=True)
+    userId = models.CharField(max_length=50, blank=True)
     stockSymbol = models.CharField(max_length=50, blank=True)
     fileName = models.CharField(max_length=50, blank=True)
     # Account Transaction
@@ -28,6 +28,5 @@ class Transaction(models.Model):
     debugEvent = models.CharField(max_length=50, blank=True)
     debugMessage = models.CharField(max_length=50, blank=True)
 
-    # Used for testing
     def __str__(self):
         return self.command

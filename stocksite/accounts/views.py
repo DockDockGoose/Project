@@ -35,6 +35,8 @@ class AddView(APIView):
         # Serialize data for serving
         serializer = AccountSerializer(account)
 
+        #L Log systemEvent using Transaction model (create data obj & .save())
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -53,5 +55,7 @@ class AddView(APIView):
 
         account.funds += amount
         account.save()
+
+        # Log accountTransaction event using Transaction model (create data obj * .save())
         
         return Response(status=status.HTTP_200_OK)
