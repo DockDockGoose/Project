@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django_filters',
     'accounts',
     'transactions',
+    'stocks',
 ]
 
 REST_FRAMEWORK = {
@@ -51,7 +52,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'],
     # Paginate results
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 50
+    'PAGE_SIZE': 50,
+    # Use the django-filter backend by default
+    'DEFAULT_FILTER_BACKENDS': 'django_filters.rest_framework.DjangoFilterBackend',
 }
 
 MIDDLEWARE = [
