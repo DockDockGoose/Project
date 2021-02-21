@@ -9,7 +9,9 @@ SENG 468 - Software Scalability</em>
 
 In order to use Docker, ensure you have pip, docker and mongo installed.
 
-Before running docker-compose, we have to be in the Django virtual environment. Daniel had previously set up `django-project` but I faced some issues with using/activating that, so I created another venv called `django-env`. Its unclear if we have to each setup a venv as it relies on a local PYTHONPATH, but I think that might be the case. If you face any issues with the following command, you can locate each use of PYTHONPATH in the venv scripts and change it to your Python's path OR simply visit: https://docs.djangoproject.com/en/3.1/howto/windows/#setting-up-a-virtual-environment to create your own venv for Django.
+Before running docker-compose, we have to be in the Django virtual environment. Daniel had previously set up `django-project` but I faced some issues with using/activating that, so I created another venv called `django-env`.  
+
+If you face any issues with the following command, simply [create your own venv for Django](https://docs.djangoproject.com/en/3.1/howto/windows/#setting-up-a-virtual-environment).
 
 On Windows from the Project directory:
 ```
@@ -29,7 +31,9 @@ You can also use this command but be careful it will remove all stopped containe
 ```
 docker rm $(docker ps -a -q)
 ```
-To prune the system (clear all including volumes) (recommended):
+It is recommended we prune the system to clear all old/previous containers, images & volumes that docker might try to use again for our project. <b>Be careful as this removes all of the items listen above.</b>
+
+To prune the system:
 ```
 docker system prune -af
 ```
@@ -37,7 +41,9 @@ docker system prune -af
 Note that mongo-express will initially fail in connecting to the mongo container (& db). This is because the root user must be created first.
 This user is created through the docker entrypoint script that is mounted as mongo-init.js. 
 In order for the script and dockerfiles to run correctly, we have to run a fresh docker instance of the database. 
+
 As it is a linked volume, please ensure that the stocksite/data-db directory has been deleted prior to running the docker-compose for the first time since docker tries to preserve as much data as it can and thus retains the no root user db. By deleting, it can be freshly created by docker-compose.
+
 There might be a better way to set up mongo and docker but for now, this works so yay!
 
 
@@ -72,7 +78,14 @@ Use `exit` to leave mongo shell.
 
 Shutdown containers using `Ctrl-c` or `docker-compose down`.
 
-Visit https://www.django-rest-framework.org/#example for Django REST Framework documentation.
+### REST-ful resources 😉:
+
+- https://www.django-rest-framework.org/#example for Django REST Framework documentation.
+- http://www.cdrf.co/ for detailed descriptions, with full methods and attributes, for each of Django REST Framework's class-based views and serializers. (clean, browsable UI)
+- https://django-rest-auth.readthedocs.io/en/latest/installation.html for the django user registration/authentication module we are using.
+- https://www.caktusgroup.com/blog/2019/02/01/creating-api-endpoint-django-rest-framework/ for a quick but detailed tutorial for creating api endpoints in django.
+
+<em> When developing the app with the docker containers up and running, I find I sometimes have to prune, rebuild and re-up in order to observe all changes. It's not always the case, but it might be worth mentioning. </em>
 
 ## Setup Information
  [Follow these instructions to set up Django](https://docs.djangoproject.com/en/3.1/topics/install/#installing-official-release)
@@ -95,41 +108,6 @@ and run
 ```
 python manage.py runserver
 ```
-##  Setup Stock Site on Docker
-
-If you would like to run the application on Docker follow these steps. Please note, before starting make sure you have [docker compose](https://docs.docker.com/compose/install/) installed. 
-
-Due to changes made to the docker containers, the previous containers need to be removed. This can be done through Docker Desktop by removing the containers under stocksite app. It can be removed through the CLI by using the commands
-```
-docker ps -f "status=exited" or docker ps -a -q
-docker rm <container id >
-```
-You can also use this command but be careful it will remove all stopped containers
-```
-docker rm $(docker ps -a -q)
-```
-
-
-Go into stocksite directory and run the application:
-```
-cd stocksite
-docker-compose build
-docker-compose up
-```
-
-Head to http://localhost:8000/ to see application running 🎉
-
-To view web and db containers:
-```
-docker ps
-```
-
-To get into database container:
-```
-docker-compose run db bash
-```
-
-Shutdown containers using `Ctrl-c` or `docker-compose down`.
 
 ## Workload Generator
 Takes workload input file and partitions commands per user, retaining transaction number, 
