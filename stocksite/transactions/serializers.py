@@ -10,10 +10,10 @@ custom logic for creates (POST requests) or updates (PUT or PATCH requests)
 """
 
 # Serializers define the API representation.
-class TransactionSerializer(serializers.HyperlinkedModelSerializer):
+class TransactionSerializer(serializers.ModelSerializer):
     """
-    Serializer used for transaction data representations. Of type HyperlinkedModelSerializer so we can
-    use hyperlinked relations. Can also use other Serializers such as for primary key relationships.
+    Serializer used for transaction data representations (primary key relationship).
+    Can also use HyperlinkedModelSerializer for hyperlinked relations.
     """
     class Meta:
         model = Transaction
