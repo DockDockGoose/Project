@@ -19,7 +19,7 @@ import queue
 
 sys.path.append('../../')
 
-from transaction_server.src.transaction_server import userCommands
+from transaction_service.src.transaction_server import userCommands
 
 from threading import Lock
 from threading import Thread

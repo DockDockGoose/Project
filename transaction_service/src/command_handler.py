@@ -1,4 +1,4 @@
-""" Contains dictionary of the commands for each user command that can be specified. 
+""" Contains dictionary of the commands for each user command that can be specified.
     each user command is set to this function after decoding the packet in the webserver
 """
 
@@ -18,50 +18,18 @@ from .commands.display_sum_cmd import DisplaySumCmd
 from .commands.dumplog_cmd import DumplogCmd
 
 
-from .database.database import Database
-from threading import Lock
-from threading import Thread
-
-# Default server values, but can be inputted by user on class initialization
-SERV_PORT       = 65000
-SERV_HOST_NAME  = '127.0.0.1'
-
-
-ACCOUNTS_COLLECT = "accounts"
-TRANSACT_COLLECT = "transactions"
-TRIGGER_COLLECT = "triggers"
-REMOVE = "REMOVE"
-ADD = "ADD"
-
-QUOTE_PORT       = 4444
-QUOTE_HOST_NAME  = '192.168.4.2'
-
-# Connect to database
-Database.connect()
-
-# class transactionServer:
-#
-#     def __init__(self, port=SERV_PORT, hostname=SERV_HOST_NAME):
-#         self.port           = port
-#         self.hostname       = hostname
-#         self.userProcesses  = {}
-#         self.serverRunning  = True
-#
-#
-# def start():
-#
-#
-# def triggerHandlerThread():
-
-
 
 def printCmd(cmdDict):
     """
         Prints out the current command being executed to the terminal
     """
+    if 'user' not in cmdDict.keys():
+        cmdDict['user'] = 'admin'
+
     print("NUM, USER, CMD =  [{}, {}, {}]".format(cmdDict["transactionNumber"],
                                                   cmdDict["user"],
-                                                  cmdDict["command"]))  
+                                                  cmdDict["command"]))
+
 
 def cmdCompleted(cmdDict, startTime):
     """
@@ -70,8 +38,9 @@ def cmdCompleted(cmdDict, startTime):
     elapsedTime = time.time() - startTime
 
     print("-----[{}, {}, {}s] Command Executed".format(cmdDict["transactionNumber"],
-                                                    cmdDict["command"],
-                                                    round(elapsedTime, 3)))
+                                                       cmdDict["command"],
+                                                       round(elapsedTime, 3)))
+
 
 def CMD_Add(cmdDict, threadContext, startTime):
     """
@@ -83,6 +52,7 @@ def CMD_Add(cmdDict, threadContext, startTime):
 
     cmdCompleted(cmdDict, startTime)
 
+
 def CMD_Quote(cmdDict, threadContext, startTime):
     """
         Retrieves price of stock
@@ -92,6 +62,7 @@ def CMD_Quote(cmdDict, threadContext, startTime):
     QuoteCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
+
 
 def CMD_Buy(cmdDict, threadContext, startTime):
     """
@@ -103,6 +74,7 @@ def CMD_Buy(cmdDict, threadContext, startTime):
     BuyCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
+
 
 def CMD_CommitBuy(cmdDict, threadContext, startTime):
     """
@@ -167,8 +139,9 @@ def CMD_SetBuyAmt(cmdDict, threadContext, startTime):
     printCmd(cmdDict)
 
     SetBuyAmtCmd.execute(cmdDict)
-    
+
     cmdCompleted(cmdDict, startTime)
+
 
 def CMD_CancelSetBuy(cmdDict, threadContext, startTime):
     """
@@ -179,7 +152,8 @@ def CMD_CancelSetBuy(cmdDict, threadContext, startTime):
     CancelSetBuyCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)
-    
+
+
 def CMD_SetBuyTrigger(cmdDict, threadContext, startTime):
     """
         Adds the price trigger to the set buy command
@@ -191,11 +165,12 @@ def CMD_SetBuyTrigger(cmdDict, threadContext, startTime):
 
     cmdCompleted(cmdDict, startTime)
 
+
 def CMD_SetSellAmt(cmdDict, threadContext, startTime):
     """
         Creates a sell trigger based on the number of stocks the user wants to sell
     """
-    
+
     printCmd(cmdDict)
 
     SetSellAmtCmd.execute(cmdDict)
@@ -229,9 +204,6 @@ def CMD_Dumplog(cmdDict, threadContext, startTime):
     """
         Print all of the transactions or just the user's transactions
     """
-
-    cmdDict['user'] = 'admin'
-
     printCmd(cmdDict)
 
     DumplogCmd.execute(cmdDict)
@@ -249,9 +221,10 @@ def CMD_DisplaySummary(cmdDict, threadContext, startTime):
 
     cmdCompleted(cmdDict, startTime)
 
-def CMD_UserDC(cmdDict, threadContext, startTime):  
+
+def CMD_UserDC(cmdDict, threadContext, startTime):
     """
-        User has disconnected. Clean up thread context and prepare exit. 
+        User has disconnected. Clean up thread context and prepare exit.
     """
     printCmd(cmdDict)
 
@@ -259,23 +232,23 @@ def CMD_UserDC(cmdDict, threadContext, startTime):
 
     cmdCompleted(cmdDict, startTime)
 
-userCommands = {
-    'ADD'               : CMD_Add,
-    'QUOTE'             : CMD_Quote,
-    'BUY'               : CMD_Buy,
-    'COMMIT_BUY'        : CMD_CommitBuy,
-    'CANCEL_BUY'        : CMD_CancelBuy,
-    'SELL'              : CMD_Sell,
-    'COMMIT_SELL'       : CMD_CommitSell,
-    'CANCEL_SELL'       : CMD_CancelSell,
-    'SET_BUY_AMOUNT'    : CMD_SetBuyAmt,
-    'CANCEL_SET_BUY'    : CMD_CancelSetBuy,
-    'SET_BUY_TRIGGER'   : CMD_SetBuyTrigger,
-    'SET_SELL_AMOUNT'   : CMD_SetSellAmt,
-    'CANCEL_SET_SELL'   : CMD_CancelSetSell,
-    'SET_SELL_TRIGGER'  : CMD_SetSellTrigger,
-    'DUMPLOG'           : CMD_Dumplog,
-    'DISPLAY_SUMMARY'   : CMD_DisplaySummary,
-    'USER_DISCONNECT'   : CMD_UserDC,
-}
 
+userCommands = {
+    'ADD': CMD_Add,
+    'QUOTE': CMD_Quote,
+    'BUY': CMD_Buy,
+    'COMMIT_BUY': CMD_CommitBuy,
+    'CANCEL_BUY': CMD_CancelBuy,
+    'SELL': CMD_Sell,
+    'COMMIT_SELL': CMD_CommitSell,
+    'CANCEL_SELL': CMD_CancelSell,
+    'SET_BUY_AMOUNT': CMD_SetBuyAmt,
+    'CANCEL_SET_BUY': CMD_CancelSetBuy,
+    'SET_BUY_TRIGGER': CMD_SetBuyTrigger,
+    'SET_SELL_AMOUNT': CMD_SetSellAmt,
+    'CANCEL_SET_SELL': CMD_CancelSetSell,
+    'SET_SELL_TRIGGER': CMD_SetSellTrigger,
+    'DUMPLOG': CMD_Dumplog,
+    'DISPLAY_SUMMARY': CMD_DisplaySummary,
+    'USER_DISCONNECT': CMD_UserDC,
+}
