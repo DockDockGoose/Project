@@ -38,8 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_auth',
     'django_filters',
-    'transactions'
+    'accounts',
+    'transactions',
 ]
 
 REST_FRAMEWORK = {
@@ -110,6 +113,8 @@ DATABASES = {
     }
 }
 
+# Use custom user model
+AUTH_USER_MODEL = 'accounts.Account'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators

@@ -15,11 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from . import views
 
 urlpatterns = [
-    path('api/', include('transactions.urls')),
+    path('api/transactions/', include('transactions.urls')),
+    path('api/accounts/', include('accounts.urls')),
     path('admin/', admin.site.urls),
-    # Additionally, we include login URLs for the browsable API.
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    # # Additionally, we include login URLs for the browsable API.
+    # path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
