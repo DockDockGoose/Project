@@ -212,8 +212,12 @@ class webServer():
 
 
 if __name__ == '__main__':
-    host_adr    = input("Enter hostname (localhost default): ") or "localhost"
-    port        = int(input("Enter port number ({} default): ".format(SERV_PORT)) or SERV_PORT)
+    if(len(sys.argv) < 3):
+        host_adr    = input("Enter hostname (localhost default): ") or "localhost"
+        port        = int(input("Enter port number ({} default): ".format(SERV_PORT)) or SERV_PORT)
+    else:
+        host_adr    = sys.argv[1]
+        port        = int(sys.argv[2])
 
     server = webServer(port, host_adr)
     server.start()
