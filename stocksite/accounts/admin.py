@@ -9,6 +9,6 @@ class AccountAdmin(UserAdmin):
     add_form = AccountCreationForm
     form = AccountChangeForm
     model = Account
-    list_display = ['userId', 'funds', 'pendingFunds']
+    list_display = ['username', 'funds', 'pendingFunds']
 
 admin.site.register(Account, AccountAdmin)

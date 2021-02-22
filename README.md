@@ -81,7 +81,7 @@ Shutdown containers using `Ctrl-c` or `docker-compose down`.
 To experiment with the current API, head to http://localhost:8000/api/accounts/add and in the textfield in JSON format, enter a string userId and a float of funds (optional).
 ```
 {
-    "userId": "pikachu",
+    "username": "pikachu",
     "amount": 9.11
 }
 ```
@@ -100,7 +100,7 @@ To experiment with the current API, head to http://localhost:8000/api/accounts/a
 #### TODO: 
 - Enable serving multiple concurrent users with nginx & uwsgi.
 - Implement other apps API endpoints.
-- Configure custom user model. 
+- Configure custom user model. (& dynamic url routing)
 
 ## Setup Information
  [Follow these instructions to set up Django](https://docs.djangoproject.com/en/3.1/topics/install/#installing-official-release)
