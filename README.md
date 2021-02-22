@@ -106,6 +106,8 @@ To experiment with the current API, head to http://localhost:8000/api/accounts/a
 - Implement other apps API endpoints.
 - Configure custom user model. (& dynamic url routing)
 - Refactor Workload Generator to send JSON requests to stocksite django app.
+- Look into caching stock prices
+- Look into mongodb database sharding (horizontally scale our db)
 
 ## Local Setup Information
  [Follow these instructions to set up Django](https://docs.djangoproject.com/en/3.1/topics/install/#installing-official-release)

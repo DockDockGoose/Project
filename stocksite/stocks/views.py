@@ -1,38 +1,66 @@
+# from django.db.models import F
+# from rest_framework import viewsets
+# from .serializers import StockSerializer
 from django.shortcuts import render
-from django.db.models import F
-from rest_framework import viewsets
-from .models import Stock
-from .serializers import StockSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
-from .mockQuoteServer import MockQuoteServer
+from .models import Stock
 from accounts.models import Account
+from stocks.models import Stock, Shares
 from transactions.models import Transaction
+from .mockQuoteServer import MockQuoteServer
 from time import time
 
-# TODO: Implement Stock view logic
-class StockViewSet(viewsets.ModelViewSet):
+# class StockViewSet(viewsets.ModelViewSet):
+#     queryset = Stock.objects.all()
+#     serializer_class = StockSerializer
+
+# class SharesViewSet(viewsets.ModelViewSet):
+#     queryset = Shares.objects.all()
+#     serializer_class = SceneSerializer
+
+
+class QuoteView(APIView):
     """
-    API endpoint that allows stocks to be viewed or edited.
+    API endpoint that allows a stock to be quoted.
     """
-    queryset = Stock.objects.all()
-    serializer_class = StockSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['stockSymbol']
-    ordering = ['quoteServerTime']
+    def post(self, request):
+        stockSymbol = request.data.get('stockSymbol')
+        username = request.data.get('username')
 
+        # Log the quote command transaction
+        transaction = Transaction(
+                type='userCommand',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = Transaction.objects.last().transactionNum + 1,
+                command='QUOTE',
+                username=username,
+                stockSymbol=stockSymbol,
+            )
+        transaction.save()
 
-# class QuoteView(APIView):
-#     """
-#     API endpoint that allows a stock to be quoted.
-#     """
-#     def get(self, request):
-#         stockSymbol = request.data.get('stockSymbol')
+        # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
+        quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)
 
-#         MockQuoteServer.getQuote()
-#         # Query the QuoteServer
+        #  # Log quoteServer transaction (only increment transactionNum for userCommands?)
+        transaction = Transaction(
+                type='quoteServer',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = Transaction.objects.last().transactionNum,
+                price=quoteQuery['price'],
+                username=username,
+                stockSymbol=stockSymbol,
+                quoteServerTime=quoteQuery['quoteServerTime'],
+                cryptoKey=quoteQuery['cryptoKey']
+            )
+        transaction.save()
+
+        return Response(quoteQuery, status=status.HTTP_200_OK)
 
 
 class BuyView(APIView):
@@ -40,7 +68,7 @@ class BuyView(APIView):
     API endpoint that allows stocks to be bought.
     """
     def post(self, request):
-         # Get request data
+        # Get request data
         username = request.data.get("username")
         stockSymbol = request.data.get("stockSymbol")
         amount = float(request.data.get("amount"))
