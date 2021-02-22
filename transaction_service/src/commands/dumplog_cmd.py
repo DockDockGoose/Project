@@ -18,7 +18,7 @@ class DumplogCmd():
         """
             Print all of the transactions or just the user's transactions
         """
-        dbLog.log(cmdDict, CMD_LOG)
+        dbLog.log(cmdDict, CMD_LOG)        
 
         try:
             # Get entire log or use log
