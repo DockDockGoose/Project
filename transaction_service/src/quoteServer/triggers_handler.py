@@ -110,7 +110,7 @@ def triggerSellCmd(cmdDict, stock_symbol, price):
     cmdDict['timestamp'] = time.time()
 
     # Calculate the amount of money they gain from the sell
-    stock_funds = cmdDict['amount'] * price;
+    stock_funds = cmdDict['amount'] * price
 
     try:
         # Increase user's fund

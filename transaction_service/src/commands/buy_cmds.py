@@ -2,10 +2,12 @@ import sys
 import time
 import pymongo
 
-from .db_log import dbLog
 from .quote_cmd import QuoteCmd
 
-from ..database.database import Database
+sys.path.append('../../')
+
+from database.src.database import Database
+from database.src.db_log import dbLog
 
 ACCOUNTS_COLLECT = "accounts"
 

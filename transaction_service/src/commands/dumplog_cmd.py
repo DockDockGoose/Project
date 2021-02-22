@@ -1,9 +1,10 @@
 import sys
 import pymongo
 
-from .db_log import dbLog
+sys.path.append('../../')
 
-from ..database.database import Database
+from database.src.database import Database
+from database.src.db_log import dbLog
 
 ACCOUNTS_COLLECT = "accounts"
 TRANSACT_COLLECT = "transactions"

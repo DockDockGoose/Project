@@ -2,7 +2,7 @@ import time
 import sys
 import pymongo
 
-from ..database.database import Database
+from .database import Database
 
 TRANSACT_COLLECT = "transactions"
 
