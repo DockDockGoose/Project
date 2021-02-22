@@ -32,6 +32,11 @@ for transact in transactions:
     try:
         print(processing)
         processing = processing + 1
+        # Remove the admin user from dumplog commands
+        if (transact['user'] == 'admin'):
+            transact.pop('user')
+
+        # Create the correct log based on type
         if (transact['logType'] == CMD_LOG):
             log.logEvents[CMD_LOG](transact)
         elif (transact['logType'] == QUOTE_LOG):
