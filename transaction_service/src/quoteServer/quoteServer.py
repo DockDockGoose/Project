@@ -52,7 +52,7 @@ class QuoteServer:
                 'price': data[0],
                 'stockSymbol': data[1],
                 'user': data[2],
-                'timestamp': data[3],
+                'quoteServerTime': data[3],
                 'cryptokey': data[4]
             }
 

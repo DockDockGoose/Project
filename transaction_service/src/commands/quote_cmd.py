@@ -37,6 +37,7 @@ class QuoteCmd():
             quote_data['logType'] = QUOTE_LOG
             quote_data['transactionNumber'] = cmdDict['transactionNumber']
             quote_data['server'] = cmdDict['server']
+            quote_data['timestamp'] = str(int(time.time() * 1000))
 
             dbLog.logQuote(quote_data)
 

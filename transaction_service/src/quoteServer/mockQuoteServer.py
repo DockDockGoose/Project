@@ -21,7 +21,7 @@ class MockQuoteServer:
             'price': '10',
             'stockSymbol': cmdDict['stockSymbol'],
             'user': cmdDict['user'],
-            'timestamp': str(int(time.time() * 1000)),
+            'quoteServerTime': str(int(time.time() * 1000)),
             'cryptokey': 'iedfIbDal3nbXUIdp6BwrexrCe6ih3JZlFmjdMUools='
         }
 

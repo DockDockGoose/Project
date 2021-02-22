@@ -53,7 +53,7 @@ def logQuoteServer(infoDict):
     ElementTree.SubElement(quoteServer, 'price').text = infoDict['price']
     ElementTree.SubElement(quoteServer, 'stockSymbol').text = infoDict['stockSymbol']
     ElementTree.SubElement(quoteServer, 'username').text = infoDict['user']
-    ElementTree.SubElement(quoteServer, 'quoteServerTime').text = infoDict['timestamp']
+    ElementTree.SubElement(quoteServer, 'quoteServerTime').text = infoDict['quoteServerTime']
     ElementTree.SubElement(quoteServer, 'cryptokey').text = infoDict['cryptokey']
     #prettyPrintLog(root)
 
