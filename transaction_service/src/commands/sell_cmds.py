@@ -54,7 +54,6 @@ class SellCmd():
                     'price': stock_price
                 }
                 Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$set': { 'sell': stock_data}})
-                dbLog.log(cmdDict, TRANSACT_LOG)
 
             else:
                 err = "Invalid cmd. User has insufficient amount of stock." 
@@ -93,6 +92,7 @@ class CommitSellCmd():
                         { '_id': cmdDict['user'], 'stocks.stockSymbol': sell_cmd['sell']['stockSymbol']},
                         {'$inc': { 'stocks.$.amount': -sell_cmd['sell']['amount'], 'funds': sell_cmd['sell']['amount'] * sell_cmd['sell']['price']}})
 
+                    cmdDict['amount'] = sell_cmd['sell']['amount'] * sell_cmd['sell']['price']
                     dbLog.log(cmdDict, TRANSACT_LOG)
                 else:
                     err = "Invalid cmd. More than 60 seconds passed." 
@@ -129,7 +129,6 @@ class CancelSellCmd():
 
                 # Remove previous sell command
                 Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'sell': ""}})
-                dbLog.log(cmdDict, TRANSACT_LOG)
 
         except pymongo.errors.PyMongoError as err:
             print(f"ERROR! Could not complete command {cmdDict['command']} failed with error: {err}")

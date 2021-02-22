@@ -69,6 +69,7 @@ class CancelSetBuyCmd():
                 Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$inc': {'funds': buy_trigger ['amount']}})
                 Database.remove(TRIGGER_COLLECT, {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'buy'})
 
+                cmdDict['amount'] = buy_trigger ['amount']
                 dbLog.log(cmdDict, TRANSACT_LOG)
 
         except pymongo.errors.PyMongoError as err:

@@ -35,6 +35,8 @@ class QuoteCmd():
             # Log the results from quote server
             quote_data['command'] = 'QUOTE'
             quote_data['logType'] = QUOTE_LOG
+            quote_data['transactionNumber'] = cmdDict['transactionNumber']
+            quote_data['server'] = cmdDict['server']
 
             dbLog.logQuote(quote_data)
 

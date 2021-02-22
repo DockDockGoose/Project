@@ -55,7 +55,7 @@ def logQuoteServer(infoDict):
     ElementTree.SubElement(quoteServer, 'username').text = infoDict['user']
     ElementTree.SubElement(quoteServer, 'quoteServerTime').text = infoDict['timestamp']
     ElementTree.SubElement(quoteServer, 'cryptokey').text = infoDict['cryptokey']
-    prettyPrintLog(root)
+    #prettyPrintLog(root)
 
 """ Any time a user's account is touched, an account message is printed.  
     Appropriate actions are "add" or "remove".  """
@@ -66,8 +66,8 @@ def logAccountTransaction(infoDict):
     ElementTree.SubElement(accountTransaction, 'transactionNum').text = infoDict['transactionNumber']
     ElementTree.SubElement(accountTransaction, 'action').text = infoDict['command']         #should be add or remove
     ElementTree.SubElement(accountTransaction, 'username').text = infoDict['user']
-    ElementTree.SubElement(accountTransaction, 'funds').text = infoDict['amount']
-    prettyPrintLog(root)
+    ElementTree.SubElement(accountTransaction, 'funds').text = '%.2f' % infoDict['amount']
+    #prettyPrintLog(root)
 
 """ System events can be current user commands, interserver communications, 
     or the execution of previously set triggers.    """
@@ -85,7 +85,7 @@ def logSystemEvent(infoDict):
     if 'filename' in infoDict:
         ElementTree.SubElement(systemEvent, 'filename').text = infoDict['filename']
     if 'amount' in infoDict:
-        ElementTree.SubElement(systemEvent, 'funds').text = infoDict['amount']
+        ElementTree.SubElement(systemEvent, 'funds').text = '%.2f' % infoDict['amount']
 
     prettyPrintLog(root)
 
@@ -105,7 +105,7 @@ def logErrorEvent(infoDict):
     if 'filename' in infoDict:
         ElementTree.SubElement(errorEvent, 'filename').text = infoDict['filename']
     if 'amount' in infoDict:
-        ElementTree.SubElement(errorEvent, 'funds').text = infoDict['amount']
+        ElementTree.SubElement(errorEvent, 'funds').text = '%.2f' % infoDict['amount']
     if 'errorMessage' in infoDict:
         ElementTree.SubElement(errorEvent, 'errorMessage').text = infoDict['errorMessage']
 
@@ -127,7 +127,7 @@ def logDebugEvent(infoDict):
     if 'filename' in infoDict:
         ElementTree.SubElement(debugEvent, 'filename').text = infoDict['filename']
     if 'amount' in infoDict:
-        ElementTree.SubElement(debugEvent, 'funds').text = infoDict['amount']
+        ElementTree.SubElement(debugEvent, 'funds').text = '%.2f' % infoDict['amount']
     if 'debugMessage' in infoDict:
         ElementTree.SubElement(debugEvent, 'debugMessage').text = infoDict['debugMessage']
 

@@ -151,10 +151,12 @@ def printCmd(cmdDict):
         Prints out the current command being executed to the terminal
     """
     if 'user' not in cmdDict.keys():
-        cmdDict['user'] = 'admin'
+        user = 'admin'
+    else:
+        user = cmdDict["user"]
 
     print("NUM, USER, CMD =  [{}, {}, {}]".format(cmdDict["transactionNumber"],
-                                                  cmdDict["user"],
+                                                  user,
                                                   cmdDict["command"]))  
 
 def cmdCompleted(cmdDict, startTime):
@@ -334,8 +336,6 @@ def CMD_DisplaySummary(cmdDict, threadContext, startTime):
     """
         Print the user's account from accounts, transaction history, and buy/sell triggers
     """
-    printCmd(cmdDict)
-
     DisplaySumCmd.execute(cmdDict)
 
     cmdCompleted(cmdDict, startTime)

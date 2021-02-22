@@ -75,6 +75,7 @@ class CancelSetSellCmd():
                         { '_id': cmdDict['user'], 'stocks.stockSymbol': cmdDict['stockSymbol']},
                         {'$inc': { 'stocks.$.amount': sell_trigger['amount']}}
                     )
+                    cmdDict['amount'] = sell_trigger['amount']
                     dbLog.log(cmdDict, TRANSACT_LOG)
                 # Delete sell trigger
                 Database.remove(TRIGGER_COLLECT, {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'sell'})
@@ -111,7 +112,7 @@ class SetSellTriggerCmd():
                     { '_id': cmdDict['user'], 'stocks.stockSymbol': sell_trigger['stockSymbol']},
                     {'$inc': { 'stocks.$.amount': - sell_trigger['amount']}}
                 )
-                
+                cmdDict['amount'] = sell_trigger['amount']
                 dbLog.log(cmdDict, TRANSACT_LOG)
 
         except pymongo.errors.PyMongoError as err:

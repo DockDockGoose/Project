@@ -19,9 +19,9 @@ class MockQuoteServer:
         time.sleep(0.05)
         quote_data = {
             'price': '10',
-            'stock': cmdDict['stockSymbol'],
+            'stockSymbol': cmdDict['stockSymbol'],
             'user': cmdDict['user'],
-            'timestamp': time.time(),
+            'timestamp': str(int(time.time() * 1000)),
             'cryptokey': 'iedfIbDal3nbXUIdp6BwrexrCe6ih3JZlFmjdMUools='
         }
 

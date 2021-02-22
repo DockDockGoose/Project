@@ -93,7 +93,8 @@ class CommitBuyCmd:
                         Database.update_one(ACCOUNTS_COLLECT,
                             { '_id': cmdDict['user'], 'stocks.stockSymbol': buy_cmd['buy']['stockSymbol']},
                             {'$inc': { 'stocks.$.amount': buy_cmd['buy']['amount'], 'funds': - buy_cmd['buy']['amount'] * buy_cmd['buy']['price']}})
-
+                    
+                    cmdDict['amount'] = buy_cmd['buy']['amount'] *  buy_cmd['buy']['price']
                     dbLog.log(cmdDict, TRANSACT_LOG)
 
                 else:
@@ -130,8 +131,7 @@ class CancelBuyCmd:
                     dbLog.log(cmdDict, ERROR_LOG, err)
 
                 # Remove previous buy command
-                Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'buy': ""}})
-                dbLog.log(cmdDict, TRANSACT_LOG) 
+                Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'buy': ""}}) 
 
         except pymongo.errors.PyMongoError as err:
             print(f"ERROR! Could not complete command {cmdDict['command']} failed with error: {err}")
