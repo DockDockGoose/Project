@@ -85,13 +85,18 @@ This python webserver will immediately spin up and start accepting client reques
 <em>The default server and port is ```localhost:65432```</em>
 
 To run the web server call the following command, and input the server address, and port when prompted. 
+Optional:
+N: How many web servers you want to launch.
 ```
-python3 web_server.py
+python3 web_server.py *N*
 ```
 
-To run the load balancer call the below command. You will be prompted to enter each webservers hostname and port. 
+To run the load balancer call the below command. You will be prompted to enter each webservers hostname and port.
+A couple options:
+N: How many web servers you want to attach to the load balancer.
+start-port: Where the web servers port starts. So if you type in python3 load_balancer 45, 6750, it would connect to web servers on ports 6750 to 6795.
 ```
-python3 load_balancer.py
+python3 load_balancer.py *N* *start-port*
 ```
 
 Notes: 
