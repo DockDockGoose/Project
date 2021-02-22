@@ -73,7 +73,11 @@ class AddView(APIView):
         Add funds to a new or existing account.
         """
         username = request.data.get("username")
-        amount = float(request.data.get("amount"))
+        amount = request.data.get("amount")
+        if amount is None:
+            amount = 0.00
+        else:
+            amount = float(request.data.get("amount"))
 
         # Find account
         account = Account.objects.filter(username=username).first()

@@ -78,7 +78,7 @@ Use `exit` to leave mongo shell.
 
 Shutdown containers using `Ctrl-c` or `docker-compose down`.
 
-To experiment with the current API, head to http://localhost:8000/api/accounts/add and in the textfield in JSON format, enter a string userId and a float of funds (optional).
+To experiment with the current API, head to http://localhost:8000/api/accounts/add and in the textfield in JSON format, enter a string userId and a float amount (the amount field is optional).
 ```
 {
     "username": "pikachu",
@@ -88,12 +88,13 @@ To experiment with the current API, head to http://localhost:8000/api/accounts/a
 
 ### REST-ful resources 😉:
 
-- https://www.django-rest-framework.org/#example for Django REST Framework documentation.
-- http://www.cdrf.co/ for detailed descriptions, with full methods and attributes, for each of Django REST Framework's class-based views and serializers. (clean, browsable UI)
-- https://docs.djangoproject.com/en/3.1/topics/db/ for django documentation on models and databases.
-- https://www.djongomapper.com/djongonxt-model-query/ for djongo documentation, specifically model queries and database transactions.
-- https://django-rest-auth.readthedocs.io/en/latest/installation.html for the django user registration/authentication module we are using.
-- https://www.caktusgroup.com/blog/2019/02/01/creating-api-endpoint-django-rest-framework/ for a quick but detailed tutorial for creating api endpoints in django.
+- [Django REST Framework (DRF) official documentation.](https://www.django-rest-framework.org/#example)
+- [Detailed descriptions, with full methods and attributes, for each of Django REST Framework's class-based views and serializers. (clean, browsable UI)](http://www.cdrf.co/)
+- [Django documentation on models and databases.](https://docs.djangoproject.com/en/3.1/topics/db/)
+- [Djongo documentation, specifically model queries and database transactions.](https://www.djongomapper.com/djongonxt-model-query/)
+- [The documentation for the Django user registration/authentication module we are currently using.](https://django-rest-auth.readthedocs.io/en/latest/installation.html)
+- [A quick but detailed tutorial for creating API endpoints in Django.](https://www.caktusgroup.com/blog/2019/02/01/creating-api-endpoint-django-rest-framework/)
+- [A tutorial on building a CRUD API (app) with React and Django using DRF (something we could do for the front-end @Daniel)](https://blog.logrocket.com/creating-an-app-with-react-and-django/)
 
 <em> When developing the app with the docker containers up and running, I find I sometimes have to prune, rebuild and re-up in order to observe all changes. It's not always the case, but it might be worth mentioning. </em>
 
@@ -101,8 +102,9 @@ To experiment with the current API, head to http://localhost:8000/api/accounts/a
 - Enable serving multiple concurrent users with nginx & uwsgi.
 - Implement other apps API endpoints.
 - Configure custom user model. (& dynamic url routing)
+- Refactor Workload Generator to send JSON requests to stocksite django app.
 
-## Setup Information
+## Local Setup Information
  [Follow these instructions to set up Django](https://docs.djangoproject.com/en/3.1/topics/install/#installing-official-release)
  
 Make sure you have [pip](https://pip.pypa.io/en/stable/) installed.
