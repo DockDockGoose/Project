@@ -159,9 +159,9 @@ class loadBalancer():
                 #print("Producer -- Putting P on Queue")
 
                 self.packetQ.put(userDict)
-
-        print("Client Closed: {}".format(address))
+        conn.shutdown(socket.SHUT_RDWR)
         conn.close()
+        print("Client Closed: {}".format(address))
 
 
     def consumerThread(self):
@@ -169,6 +169,8 @@ class loadBalancer():
     
         """
         print("Starting load balancer CONSUMER thread")
+        currentServ = 0
+        userServerFwds = {}
 
         while self.serverRunning:
             try: 
@@ -179,10 +181,17 @@ class loadBalancer():
                 else:
                     user = "default"
                 
-                serverHash = hash(user) % NUM_FORWARD_SERVERS
-                print("Forwarding Packet: [#{}:{}: --> Serv: {})".format(packet["transactionNumber"], user, serverHash))
-                
-                self.serverSockets[serverHash].send(str(packet).encode())
+                if user in userServerFwds.keys():
+                    fwdServer = userServerFwds[user]
+                else:
+                    fwdServer = currentServ
+                    userServerFwds[user] = currentServ 
+                    currentServ = (currentServ + 1) % NUM_FORWARD_SERVERS
+
+                print("Forwarding Packet: [#{}:{}: --> Serv: {})".format(packet["transactionNumber"], user, fwdServer))
+                requestStr = str(packet).encode()
+
+                self.serverSockets[fwdServer].send(requestStr.ljust(256))
 
                 self.packetQ.task_done()
 
@@ -205,7 +214,7 @@ if __name__ == '__main__':
 
         print("\nAdding Webserver Connection: {}:{} \n".format(webServAddress, webServPort))
 
-        if "q" == (input("Enter \'q\' to STOP inputing Web Server port/address: ") or "c"):
+        if "q" == (input(">> ENTER \'q\' to STOP inputing Web Server port/address: ") or "c"):
             break
 
         DEFAULT_WEB_SERV_PORT += 1

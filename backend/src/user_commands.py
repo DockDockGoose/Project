@@ -40,7 +40,7 @@ def printCmd(cmdDict):
     """
         Prints out the current command being executed to the terminal
     """
-    print("NUM, USER, CMD =  [{}, {}, {}]".format(cmdDict["transactionNumber"],
+    print("Executing: [#:{}, U:{}, C:{}] ...".format(cmdDict["transactionNumber"],
                                                   cmdDict["user"],
                                                   cmdDict["command"]))  
 
@@ -50,9 +50,9 @@ def cmdCompleted(cmdDict, startTime):
     """
     elapsedTime = time.time() - startTime
 
-    print("-----[{}, {}, {}s] Command Executed".format(cmdDict["transactionNumber"],
+    print("...FINISHED! [#:{}, C:{}, T:{}s]".format(cmdDict["transactionNumber"],
                                                     cmdDict["command"],
-                                                    round(elapsedTime, 3)))
+                                                    round(elapsedTime,  5)))
     Database.insert(TRANSACT_COLLECT, cmdDict)
 
 def CMD_Add(cmdDict, threadContext, startTime):
@@ -68,6 +68,7 @@ def CMD_Add(cmdDict, threadContext, startTime):
             '_id': cmdDict['user'],
             'funds': float(cmdDict['amount'])
         }
+
         Database.insert(ACCOUNTS_COLLECT, user_data)
     else:
         # Get the user's current funds and add the new amount to it
@@ -77,10 +78,6 @@ def CMD_Add(cmdDict, threadContext, startTime):
     # We Add funds to account, timestamp this action then log UserCommand
     cmdDict['timestamp'] = str(int(time.time()*1000))
     cmdDict['amount'] = str(int(cmdDict['amount']))
-    log.logEvents['userCommand'](cmdDict)
-
-    # The users account is modified, log this action
-    log.logEvents['accountTransaction'](cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -92,14 +89,12 @@ def CMD_Quote(cmdDict, threadContext, startTime):
 
     # query the quote server
     quote_data = qs.getQuote(cmdDict)
-    print(quote_data)
     
     # Log the results from quote server
     cmdDict['price'] = quote_data['price']
     cmdDict['cryptokey'] = quote_data['cryptokey']
     cmdDict['timestamp'] = quote_data['timestamp']
-    log.logEvents['quoteServer'](cmdDict)
-
+    
     # Update the current price of shares
     current_share_price = float(quote_data['price'])
 
@@ -117,7 +112,7 @@ def CMD_Buy(cmdDict, threadContext, startTime):
         'server': cmdDict['server']
     }
 
-    CMD_Quote(quoteCmd, threadContext)
+    CMD_Quote(quoteCmd, threadContext, startTime)
 
     printCmd(cmdDict)
 
@@ -138,8 +133,6 @@ def CMD_Buy(cmdDict, threadContext, startTime):
     cmdDict['timestamp'] = str(int(time.time()*1000))
     cmdDict['amount'] = str(int(cmdDict['amount']))
 
-    log.logEvents['userCommand'](cmdDict)
-
     cmdCompleted(cmdDict, startTime)
 
 def CMD_CommitBuy(cmdDict, threadContext, startTime):
@@ -149,21 +142,21 @@ def CMD_CommitBuy(cmdDict, threadContext, startTime):
     printCmd(cmdDict)
 
     cmdDict['timestamp'] = str(int(time.time()*1000))
-    log.logEvents['userCommand'](cmdDict)
 
     # Check for previous buy command 
     buy_cmd = Database.find_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user'], 'buy': { '$exists': True } }, { 'buy': 1, '_id': 0})
     
-    print(buy_cmd)
+    #print(buy_cmd)
 
     if (buy_cmd == None):
         cmdDict['amount'] = 0.00
         cmdDict['errorMessage'] = "Invalid cmd. No recent pending buys" 
     else:
+        cmdDict['amount'] = str(int(buy_cmd['buy']['amount']))
         # Check that less than 60s has passed
         sec_passed = time.time() - float(buy_cmd['buy']['timestamp'])
         if (sec_passed <= 60):
-          
+
             # Add stocks to user and update funds
             stock_data = {
                 'stockSymbol': buy_cmd['buy']['stockSymbol'],
@@ -180,16 +173,14 @@ def CMD_CommitBuy(cmdDict, threadContext, startTime):
                 final = Database.update_one(ACCOUNTS_COLLECT, 
                 { '_id': cmdDict['user'], 'stocks.stockSymbol': buy_cmd['buy']['stockSymbol']},
                 {'$inc': { 'stocks.$.amount': buy_cmd['buy']['amount'], 'funds': - buy_cmd['buy']['amount'] * current_share_price}})
+        else:
+            cmdDict['errorMessage'] = "Invalid cmd. Buy Commit exceed 60s timeout!" 
 
-        
-        #remove buy command   
+        # remove buy command   
         Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'buy': ""}})
 
     # The users account is modified after committing to buying the stock, log this action
     cmdDict['timestamp'] = str(int(time.time()*1000))
-    log.logEvents['userCommand'](cmdDict)
-
-    log.logEvents['accountTransaction'](cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -212,8 +203,6 @@ def CMD_CancelBuy(cmdDict, threadContext, startTime):
     
     cmdDict['timestamp'] = str(int(time.time()*1000))
 
-    log.logEvents['userCommand'](cmdDict)
-
     cmdCompleted(cmdDict, startTime)
 
 
@@ -232,7 +221,7 @@ def CMD_Sell(cmdDict, threadContext, startTime):
         'server': cmdDict['server']
     }
 
-    CMD_Quote(quoteCmd, threadContext)
+    CMD_Quote(quoteCmd, threadContext, startTime)
     
     cmdDict['timestamp'] = str(time.time())
 
@@ -246,7 +235,7 @@ def CMD_Sell(cmdDict, threadContext, startTime):
 
     user_stock = list(user_stock)
 
-    if (user_stock[0]['stocks']['amount'] >= cmdDict['amount']):
+    if user_stock and (user_stock[0]['stocks']['amount'] >= cmdDict['amount']):
         # Add sell command to user
         stock_data = {
             'timestamp': cmdDict['timestamp'],
@@ -256,9 +245,7 @@ def CMD_Sell(cmdDict, threadContext, startTime):
         Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$set': { 'sell': stock_data}})
 
     cmdDict['timestamp'] = str(int(time.time()*1000))
-    cmdDict['amount'] = str(int(cmdDict['amount']))
-
-    log.logEvents['userCommand'](cmdDict)
+    cmdDict['amount'] = str(int(cmdDict['amount'])) # ? 
 
     cmdCompleted(cmdDict, startTime)
 
@@ -276,6 +263,8 @@ def CMD_CommitSell(cmdDict, threadContext, startTime):
         cmdDict['amount'] = 0.00
         cmdDict['errorMessage'] = "Invalid cmd. No recent pending buys" 
     else: 
+        cmdDict['amount'] = str(int(sell_cmd['sell']['amount']))
+
         # Check that less than 60s has passed
         sec_passed = time.time() - float(sell_cmd['sell']['timestamp'])
 
@@ -290,15 +279,15 @@ def CMD_CommitSell(cmdDict, threadContext, startTime):
             Database.update_one(ACCOUNTS_COLLECT, 
                 { '_id': cmdDict['user'], 'stocks.stockSymbol': sell_cmd['sell']['stockSymbol']},
                 {'$inc': { 'stocks.$.amount': -sell_cmd['sell']['amount'], 'funds': sell_cmd['sell']['amount'] * current_share_price}})
-        
+        else: 
+            cmdDict['errorMessage'] = "Invalid cmd. Sell Commit exceed 60s timeout!" 
+
+
         #remove sell command   
         Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'sell': ""}})
-        cmdDict['amount'] = sell_cmd['sell']['amount']
 
     # The users account is modified after committing to sell the stock, log this action
     cmdDict['timestamp'] = str(int(time.time()*1000))
-    log.logEvents['userCommand'](cmdDict)
-    log.logEvents['accountTransaction'](cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -320,8 +309,6 @@ def CMD_CancelSell(cmdDict, threadContext, startTime):
     # if (sec_passed <= 60):
 
     Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'sell': ""}})
-
-    log.logEvents['userCommand'](cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -347,13 +334,11 @@ def CMD_SetBuyAmt(cmdDict, threadContext, startTime):
 
         cmdDict['timestamp'] = str(int(time.time()*1000))
         cmdDict['amount'] = str(int(cmdDict['amount']))
-        log.logEvents['userCommand'](cmdDict)
     else:
         cmdDict['timestamp'] = str(int(time.time()*1000))
         cmdDict['amount'] = str(int(cmdDict['amount']))
         cmdDict['errorMessage'] = "Insufficient funds. Cannot set buy amount." 
 
-        log.logEvents['errorEvent'](cmdDict)
     
     cmdCompleted(cmdDict, startTime)
 
@@ -371,7 +356,6 @@ def CMD_CancelSetBuy(cmdDict, threadContext, startTime):
         Database.remove(TRIGGER_COLLECT, {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'buy'})
     
     cmdDict['timestamp'] = str(int(time.time()*1000))
-    log.logEvents['userCommand'](cmdDict)
 
     cmdCompleted(cmdDict, startTime)
     
@@ -389,7 +373,6 @@ def CMD_SetBuyTrigger(cmdDict, threadContext, startTime):
 
     cmdDict['timestamp'] = str(int(time.time()*1000))
     cmdDict['amount'] = str(int(cmdDict['amount']))
-    log.logEvents['userCommand'](cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -411,7 +394,7 @@ def CMD_SetSellAmt(cmdDict, threadContext, startTime):
     user_stock = list(user_stock)
 
     # Check if user has enough of stock in account and initialize sell trigger
-    if (user_stock[0]['stocks']['amount'] >= cmdDict['amount']):
+    if user_stock and (user_stock[0]['stocks']['amount'] >= cmdDict['amount']):
         sell_trigger = {
             'user': cmdDict['user'],
             'type': 'sell',
@@ -422,7 +405,6 @@ def CMD_SetSellAmt(cmdDict, threadContext, startTime):
 
     cmdDict['timestamp'] = str(int(time.time()*1000))
     cmdDict['amount'] = str(int(cmdDict['amount']))
-    log.logEvents['userCommand'](cmdDict)
 
     cmdCompleted(cmdDict, startTime)
 
@@ -444,7 +426,6 @@ def CMD_CancelSetSell(cmdDict, threadContext, startTime):
         Database.remove(TRIGGER_COLLECT, {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'sell'})
     
     cmdDict['timestamp'] = str(int(time.time()*1000))
-    log.logEvents['userCommand'](cmdDict)
     cmdCompleted(cmdDict, startTime)
 
 
@@ -469,7 +450,6 @@ def CMD_SetSellTrigger(cmdDict, threadContext, startTime):
 
     cmdDict['timestamp'] = str(int(time.time()*1000))
     cmdDict['amount'] = str(int(cmdDict['amount']))
-    log.logEvents['userCommand'](cmdDict)
     cmdCompleted(cmdDict, startTime)
 
 
@@ -497,7 +477,6 @@ def CMD_Dumplog(cmdDict, threadContext, startTime):
         
     f.close()
     cmdDict['timestamp'] = str(int(time.time()*1000))
-    log.logEvents['userCommand'](cmdDict)
     cmdCompleted(cmdDict, startTime)
 
 
@@ -507,18 +486,18 @@ def CMD_DisplaySummary(cmdDict, threadContext, startTime):
     """
     printCmd(cmdDict)
     
-    user_transactions = list(Database.find(TRANSACT_COLLECT, {'user': cmdDict['user']}))
+    #user_transactions = list(Database.find(TRANSACT_COLLECT, {'user': cmdDict['user']}))
 
-    user_account = list(Database.find(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}))
+    #user_account = list(Database.find(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}))
 
-    user_triggers = list(Database.find(TRIGGER_COLLECT, {'user': cmdDict['user']}))
+    #user_triggers = list(Database.find(TRIGGER_COLLECT, {'user': cmdDict['user']}))
 
-    print("----- User's Transaction History -----\n", user_transactions)
-    print("\n----- User's Current Account Status -----\n", user_account)
-    print("\n----- User's Triggers -----\n", user_triggers)
+    #print("----- User's Transaction History -----\n", user_transactions)
+    #print("\n----- User's Current Account Status -----\n", user_account)
+    #print("\n----- User's Triggers -----\n", user_triggers)
 
     cmdDict['timestamp'] = str(int(time.time()*1000))
-    log.logEvents['userCommand'](cmdDict)
+
     cmdCompleted(cmdDict, startTime)
 
 def CMD_UserDC(cmdDict, threadContext, startTime):  
