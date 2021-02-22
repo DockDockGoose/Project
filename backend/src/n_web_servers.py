@@ -1,6 +1,7 @@
 from web_server import webServer
 import numpy as np
 import os
+import sys
 import subprocess
 #from subprocess import call
 SERV_HOST_NAME  = '127.0.0.1'
@@ -19,5 +20,8 @@ class createWebServers():
       #os.system(osString)
 
 if __name__ == '__main__':
-  N = int(input("How many web servers would you like created? (Default 1): ") or 1)
+  if(len(sys.argv) < 2): 
+    N = int(input("How many web servers would you like created? (Default 1): ") or 1)
+  else:
+    N = int(sys.argv[1])
   createWebServers(N)
