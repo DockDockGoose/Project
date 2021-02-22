@@ -78,7 +78,7 @@ Use `exit` to leave mongo shell.
 
 Shutdown containers using `Ctrl-c` or `docker-compose down`.
 
-To experiment with the current API, head to http://localhost:8000/api/accounts/add and in the textfield in JSON format, enter a string userId and a float amount (the amount field is optional).
+To experiment with the current API, head to http://localhost:8000/api/accounts/add and in the textfield in JSON format, enter a string username and a float amount (the amount field is optional).
 ```
 {
     "username": "pikachu",
@@ -93,8 +93,11 @@ To experiment with the current API, head to http://localhost:8000/api/accounts/a
 - [Django documentation on models and databases.](https://docs.djangoproject.com/en/3.1/topics/db/)
 - [Djongo documentation, specifically model queries and database transactions.](https://www.djongomapper.com/djongonxt-model-query/)
 - [The documentation for the Django user registration/authentication module we are currently using.](https://django-rest-auth.readthedocs.io/en/latest/installation.html)
+- [Awesome slides on MongoDB schema design best practices.](https://speakerdeck.com/joekarlsson/mongodb-schema-design-best-practices?slide=50)
 - [A quick but detailed tutorial for creating API endpoints in Django.](https://www.caktusgroup.com/blog/2019/02/01/creating-api-endpoint-django-rest-framework/)
 - [A tutorial on building a CRUD API (app) with React and Django using DRF (something we could do for the front-end @Daniel)](https://blog.logrocket.com/creating-an-app-with-react-and-django/)
+- [DRF caching viewsets & apiviews](https://www.django-rest-framework.org/api-guide/caching/)
+- [DRF synchronous caching using rq tasks](https://django-cacheback.readthedocs.io/en/latest/)
 
 <em> When developing the app with the docker containers up and running, I find I sometimes have to prune, rebuild and re-up in order to observe all changes. It's not always the case, but it might be worth mentioning. </em>
 
