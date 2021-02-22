@@ -1,3 +1,5 @@
+""" Handles all the logging of commands into the transaction collection """
+
 import time
 import sys
 import pymongo
@@ -17,7 +19,6 @@ class dbLog():
         """
             Log the commands into transaction collection
         """
-        # Want to keep timestamp from quote server for quote server actions
 
         cmdDict['timestamp'] = str(int(time.time() * 1000))
         cmdDict['logType'] = kind
@@ -33,6 +34,9 @@ class dbLog():
             print(f"ERROR! Could not log command into database. Failed with: {err}")
 
     def logQuote(cmdDict):
+        """
+            Log the quote commands into transaction collection
+        """
 
         try:
             Database.insert(TRANSACT_COLLECT, cmdDict)
