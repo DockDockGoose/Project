@@ -1,10 +1,10 @@
 from rest_framework import serializers
 from .models import Account
-from stocks.serializers import SharesSerializer
+from stocks.serializers import StockSerializer
 
 class AccountSerializer(serializers.ModelSerializer):
-    shares = SharesSerializer(many=True)
+    stocks = StockSerializer(many=True)
 
     class Meta:
         model = Account
-        fields = ('username', 'funds', 'pendingFunds', 'shares')
+        fields = ('username', 'funds', 'pendingFunds', 'stocks')

@@ -1,13 +1,8 @@
 from rest_framework import serializers
 from djongo import models
-from .models import Shares, Stock
+from .models import Stock
 
-# class StockSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Stock
-#         fields = ('stockSymbol', 'price', 'quoteServerTime')
-
-class SharesSerializer(serializers.ModelSerializer):
+class StockSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Shares
-        fields = ('sharesAmount', 'stocks')
+        model = Stock
+        fields = ('stockSymbol', 'price', 'quoteServerTime', 'sharesAmount')

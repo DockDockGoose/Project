@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Stock
 from accounts.models import Account
-from stocks.models import Stock, Shares
+from stocks.models import Stock
 from transactions.models import Transaction
 from .mockQuoteServer import MockQuoteServer
 from time import time
@@ -124,7 +124,8 @@ class SellView(APIView):
         account = Account.objects.filter(username=username).first()
 
         # Check if shares amount permit action, log error event to transaction if not
-        if account.shares < amount:
+        sharesAmount = Account.objects.filter(shares_={'stockSymbol':stockSymbol}).get('sharesAmount')
+        if sharesAmount < amount:
             return Response("Insufficient funds :(.", status=status.HTTP_412_PRECONDITION_FAILED)
 
         return Response(status=status.HTTP_200_OK)
