@@ -48,27 +48,3 @@ class QuoteCmd():
             return float(quote_data['price'])
         except:
             pass
-
-    def systemExecute(cmdDict):
-        """
-            Retrieves price of stock for system triggers
-                - does not contain the logging
-        """
-
-        try:
-            # Create quote server (Note: this is the actual version for VM, use mock quote server for local testing by changing to MockQuoteServer instead)
-            qs = MockQuoteServer()
-
-            # query the quote server
-            quote_data = qs.getQuote(cmdDict)
-
-            # Log the results from quote server
-            quote_data['command'] = 'QUOTE'
-            quote_data['logType'] = SYSTEM_LOG
-
-            dbLog.logQuote(quote_data)
-
-            # return the current price of shares
-            return float(quote_data['price'])
-        except:
-            pass

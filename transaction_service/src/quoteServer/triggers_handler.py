@@ -1,9 +1,22 @@
+"""
+    Consistenly calls the quote server and triggers collection to execute any buy/sell triggers
+"""
+"""
+    TODO:
+        - add caching to limit amount of calls to quote server
+        - be incorporated into transaction server or organize it so it can be run independently
+"""
 import time
+import sys
 import pymongo
 
-from transaction_service.src.database.database import Database
-from transaction_service.src.commands.db_log import dbLog
-from transaction_service.src.commands.quote_cmd import *
+from mockQuoteServer import MockQuoteServer
+from quoteServer import QuoteServer
+
+sys.path.append('../../../')
+from database.src.database import Database
+from database.src.db_log import dbLog
+
 
 ACCOUNTS_COLLECT = "accounts"
 TRIGGER_COLLECT = "triggers"
@@ -11,6 +24,24 @@ TRIGGER_COLLECT = "triggers"
 ERROR_LOG = 'errorEvent'
 CMD_LOG = 'userCommand'
 TRANSACT_LOG = 'accountTransaction'
+
+def getQuote(cmdDict):
+    """
+        Retrieves price of stock for system triggers
+            - does not contain the logging
+    """
+
+    try:
+        # Create quote server (Note: this is the actual version for VM, use mock quote server for local testing by changing to MockQuoteServer instead)
+        qs = MockQuoteServer()
+
+        # query the quote server
+        quote_data = qs.getQuote(cmdDict)
+
+        # return the current price of shares
+        return float(quote_data['price'])
+    except:
+        pass
 
 
 def checkTriggers():
@@ -39,7 +70,7 @@ def checkTriggers():
                 }
 
                 # Get current price of stock
-                price = QuoteCmd.systemExecute(quote)
+                price = getQuote(quote)
 
                 # Check commands for specific stock
                 for cmd in cmds:

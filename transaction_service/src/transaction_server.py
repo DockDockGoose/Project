@@ -1,6 +1,11 @@
 """ Contains dictionary of the commands for each user command that can be specified. 
     each user command is set to this function after decoding the packet in the webserver
 """
+"""
+    TODO:
+        - change to server to communicate with web server
+        - add call to trigger handler 
+"""
 
 import socket
 import sys
