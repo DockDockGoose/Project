@@ -27,7 +27,7 @@ class QuoteView(APIView):
     """
     API endpoint that allows a stock to be quoted.
     """
-    def post(self, request):
+    def get(self, request):
         stockSymbol = request.data.get('stockSymbol')
         username = request.data.get('username')
 
@@ -45,6 +45,7 @@ class QuoteView(APIView):
 
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
         quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)
+        # TODO: Cache the recently quoted stock price
 
         #  # Log quoteServer transaction (only increment transactionNum for userCommands?)
         transaction = Transaction(
@@ -91,6 +92,39 @@ class BuyView(APIView):
 
         # Check funds permit action, log error event to transaction if not
         if account.funds < amount:
+            return Response("Insufficient funds :(.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class SellView(APIView):
+    """
+    API endpoint that allows stocks to be sold.
+    """
+    def post(self, request):
+        # Get request data
+        username = request.data.get("username")
+        stockSymbol = request.data.get("stockSymbol")
+        amount = float(request.data.get("amount"))
+        
+        # Log buy request transaction
+        transaction = Transaction(
+                type='userCommand',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = Transaction.objects.last().transactionNum + 1,
+                command='SELL',
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+            )
+        transaction.save()
+
+        # Find user account
+        account = Account.objects.filter(username=username).first()
+
+        # Check if shares amount permit action, log error event to transaction if not
+        if account.shares < amount:
             return Response("Insufficient funds :(.", status=status.HTTP_412_PRECONDITION_FAILED)
 
         return Response(status=status.HTTP_200_OK)
