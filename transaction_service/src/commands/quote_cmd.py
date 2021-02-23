@@ -46,5 +46,6 @@ class QuoteCmd():
 
             # return the current price of shares
             return float(quote_data['price'])
-        except:
-            pass
+        except TypeError as err:
+            print(f"ERROR! Could not complete command {cmdDict['command']} failed with error: {err}")
+            dbLog.log(cmdDict, ERROR_LOG, err)

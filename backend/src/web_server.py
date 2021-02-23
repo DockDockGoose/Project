@@ -17,15 +17,12 @@ import time
 import ast
 import queue
 import re
-
-sys.path.append('../../')
-
-from transaction_service.src.transaction_server import userCommands
-
+import datetime as datetime
 from threading import Lock
 from threading import Thread
 
-import datetime as datetime
+sys.path.append('../../')
+from transaction_service.src.transaction_server import userCommands
 
 # Default server values, but can be inputted by user on class initialization
 SERV_PORT       = 65000

@@ -1,5 +1,6 @@
-""" TODO:
-        - error handling for commands
+""" 
+    TODO:
+        - better handle clearing of collections so it doesn't run everytume connect() is called
 """
 import pymongo
 import sys
