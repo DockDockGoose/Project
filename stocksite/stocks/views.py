@@ -73,8 +73,43 @@ class BuyView(APIView):
         username = request.data.get("username")
         stockSymbol = request.data.get("stockSymbol")
         amount = float(request.data.get("amount"))
-        
-        # Log buy request transaction
+
+        # Find user account
+        account = Account.objects.filter(username=username).first()
+
+        # If account is non-existing, log errorEvent to Transaction
+        if account is None:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = Transaction.objects.last().transactionNum,
+                command='BUY',
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+                errorMessage='Account does not exist.',
+            )
+            transaction.save()
+            return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Check if funds permit action, log error event to transaction if not
+        if account.funds < amount:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = Transaction.objects.last().transactionNum,
+                command='BUY',
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+                errorMessage='Insufficient funds :(.',
+            )
+            transaction.save()
+            return Response("Insufficient funds :(.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Log buy transaction
         transaction = Transaction(
                 type='userCommand',
                 timestamp=int(time()*1000),
@@ -86,13 +121,6 @@ class BuyView(APIView):
                 amount=amount,
             )
         transaction.save()
-
-        # Find user account
-        account = Account.objects.filter(username=username).first()
-
-        # Check funds permit action, log error event to transaction if not
-        if account.funds < amount:
-            return Response("Insufficient funds :(.", status=status.HTTP_412_PRECONDITION_FAILED)
 
         return Response(status=status.HTTP_200_OK)
 
@@ -106,8 +134,44 @@ class SellView(APIView):
         username = request.data.get("username")
         stockSymbol = request.data.get("stockSymbol")
         amount = float(request.data.get("amount"))
-        
-        # Log buy request transaction
+
+        # Find user account
+        account = Account.objects.filter(username=username).first()
+
+        # If account is non-existing, log errorEvent to Transaction
+        if account is None:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = Transaction.objects.last().transactionNum,
+                command='SELL',
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+                errorMessage='Account does not exist.',
+            )
+            transaction.save()
+            return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Check if shares amount permit action, log error event to transaction if not
+        sharesAmount = Account.objects.filter(shares_={'stockSymbol':stockSymbol}).get('sharesAmount')
+        if sharesAmount < amount:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = Transaction.objects.last().transactionNum,
+                command='SELL',
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+                errorMessage='Not enough shares to sell.',
+            )
+            transaction.save()
+            return Response("Not enough shares to sell.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Log sell transaction
         transaction = Transaction(
                 type='userCommand',
                 timestamp=int(time()*1000),
@@ -119,13 +183,5 @@ class SellView(APIView):
                 amount=amount,
             )
         transaction.save()
-
-        # Find user account
-        account = Account.objects.filter(username=username).first()
-
-        # Check if shares amount permit action, log error event to transaction if not
-        sharesAmount = Account.objects.filter(shares_={'stockSymbol':stockSymbol}).get('sharesAmount')
-        if sharesAmount < amount:
-            return Response("Insufficient funds :(.", status=status.HTTP_412_PRECONDITION_FAILED)
 
         return Response(status=status.HTTP_200_OK)
