@@ -25,15 +25,12 @@ class DisplaySumCmd():
 
         try:
             user_transactions = list(Database.find(TRANSACT_COLLECT, {'user': cmdDict['user']}))
-
             user_account = list(Database.find(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}))
-
             user_triggers = list(Database.find(TRIGGER_COLLECT, {'user': cmdDict['user']}))
 
             if (user_transactions == None):
                 err = "Invalid cmd. User does not exist." 
                 dbLog.log(cmdDict, ERROR_LOG, err)
-                exit(1)
             
         # print("----- User's Transaction History -----\n", user_transactions)
         # print("\n----- User's Current Account Status -----\n", user_account)
