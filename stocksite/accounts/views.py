@@ -86,8 +86,8 @@ class AddView(APIView):
             account = Account(username=username, funds=0.00)
 
         account.funds += amount
-        # Test stock values - remove later
-        account.stocks = [{'stockSymbol':"EGGS", 'sharesAmount':250, 'quoteServerTime':int(time()*1000), 'price': 3.50},{'stockSymbol':"TESLA", 'sharesAmount':20.50, 'quoteServerTime':int(time()*1000), 'price': 2.50} ]
+        # Test stock values (uncomment to populate the db) - remove later
+        # account.stocks = [{'stockSymbol':"EGGS", 'sharesAmount':250, 'quoteServerTime':int(time()*1000), 'price': 3.50},{'stockSymbol':"TESLA", 'sharesAmount':20.50, 'quoteServerTime':int(time()*1000), 'price': 2.50} ]
         account.save()
 
         # Log accountTransaction event using Transaction model (create data obj * .save())

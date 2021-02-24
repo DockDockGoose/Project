@@ -194,9 +194,9 @@ class CommitBuyView(APIView):
     def post(self, request):
         # Get request data
         username = request.data.get("username")
-        # Test values
-        stockSymbol = 'NISSAN'
-        amount = 500.00
+        # Test values (uncomment to populate the db)
+        # stockSymbol = 'NISSAN'
+        # amount = 500.00
         
         # Check cache for recent buy transaction (within 60 sec), if non-existent log errorEvent
         # stockSymbol = fromcache
@@ -222,7 +222,6 @@ class CommitBuyView(APIView):
         else:
             # If stock exists in account, add amount/price to stock sharesAmount
             stock['sharesAmount'] += amount/quoteQuery['price']
-            print(stock['sharesAmount'])
 
         account.save()
 
