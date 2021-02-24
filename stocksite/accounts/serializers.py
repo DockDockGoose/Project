@@ -3,7 +3,7 @@ from .models import Account
 from stocks.serializers import StockSerializer
 
 class AccountSerializer(serializers.ModelSerializer):
-    stocks = StockSerializer(many=True)
+    stocks = serializers.JSONField()
 
     class Meta:
         model = Account

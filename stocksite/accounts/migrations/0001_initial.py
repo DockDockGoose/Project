@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('username', models.CharField(max_length=255, unique=True)),
                 ('funds', models.FloatField(default=0.0)),
                 ('pendingFunds', models.FloatField(default=0.0)),
-                ('stocks', djongo.models.fields.EmbeddedField(model_container=stocks.models.Stock)),
+                ('stocks', djongo.models.fields.ArrayField(model_container=stocks.models.Stock)),
                 ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.Group', verbose_name='groups')),
                 ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.Permission', verbose_name='user permissions')),
             ],

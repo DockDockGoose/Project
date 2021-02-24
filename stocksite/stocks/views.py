@@ -155,7 +155,7 @@ class SellView(APIView):
             return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
 
         # Check if shares amount permit action, log error event to transaction if not
-        sharesAmount = Account.objects.filter(shares_={'stockSymbol':stockSymbol}).get('sharesAmount')
+        sharesAmount = Account.objects.filter(stocks={'stockSymbol':stockSymbol}).get('sharesAmount')
         if sharesAmount < amount:
             transaction = Transaction(
                 type='errorEvent',
@@ -185,3 +185,65 @@ class SellView(APIView):
         transaction.save()
 
         return Response(status=status.HTTP_200_OK)
+
+
+class CommitBuyView(APIView):
+    """
+    API endpoint for confirming the buy of a stock.
+    """
+    def post(self, request):
+        # Get request data
+        username = request.data.get("username")
+        # Test values
+        stockSymbol = 'NISSAN'
+        amount = 500.00
+        
+        # Check cache for recent buy transaction (within 60 sec), if non-existent log errorEvent
+        # stockSymbol = fromcache
+        # amount = fromcache
+
+        # Find user account
+        account = Account.objects.filter(username=username).first()
+        
+        # TODO: Check for quote in cache (if not in cache/is stale perform query)
+        # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
+        quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)
+
+        # Remove amount from account funds
+        account.funds -= amount
+
+        # Search account for stock
+        stock = getByStockSymbol(account.stocks, stockSymbol)
+
+        # Create new stock in account if non-existing
+        if stock is None:
+            newStock = {'stockSymbol':stockSymbol, 'price':quoteQuery['price'], 'quoteServerTime':quoteQuery['quoteServerTime'], 'sharesAmount':amount/quoteQuery['price']}
+            account.stocks.append(newStock)
+        else:
+            # If stock exists in account, add amount/price to stock sharesAmount
+            stock['sharesAmount'] += amount/quoteQuery['price']
+            print(stock['sharesAmount'])
+
+        account.save()
+
+        # Log commit buy transaction
+        transaction = Transaction(
+                type='userCommand',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = Transaction.objects.last().transactionNum + 1,
+                command='COMMIT_BUY',
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+            )
+        transaction.save()
+
+        return Response(status=status.HTTP_200_OK)
+
+
+def getByStockSymbol(stocks, stockSymbol): 
+    """
+    Searches for the dictionary containing the correct stockSymbol in the list.
+    """
+    return next((item for item in stocks if item['stockSymbol'] == stockSymbol), None)

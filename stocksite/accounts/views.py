@@ -12,15 +12,14 @@ from time import time
 
 # TODO: Implement Account view logic (change id to UUID), transaction tracking & server mapping
 
-class AccountListView(ListAPIView):
+class AccountListView(APIView):
     """
     API endpoint that lists accounts to be viewed or edited.
     """
-    queryset = Account.objects.all()
-    serializer_class = AccountSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['username', 'funds']
-    ordering = ['username']
+    def get(self, request):
+        all_Accounts = Account.objects.all()
+        serializer = AccountSerializer(all_Accounts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 # class AccountView(APIView):
 #     """
@@ -64,7 +63,7 @@ class AddView(APIView):
         # Serialize data for serving
         serializer = AccountSerializer(account)
 
-        #L Log systemEvent using Transaction model (create data obj & .save())
+        # Log systemEvent using Transaction model (create data obj & .save())
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -87,6 +86,8 @@ class AddView(APIView):
             account = Account(username=username, funds=0.00)
 
         account.funds += amount
+        # Test stock values - remove later
+        account.stocks = [{'stockSymbol':"EGGS", 'sharesAmount':250, 'quoteServerTime':int(time()*1000), 'price': 3.50},{'stockSymbol':"TESLA", 'sharesAmount':20.50, 'quoteServerTime':int(time()*1000), 'price': 2.50} ]
         account.save()
 
         # Log accountTransaction event using Transaction model (create data obj * .save())
@@ -95,7 +96,7 @@ class AddView(APIView):
             timestamp=int(time()*1000),
             server='DOCK1',
             transactionNum=0,
-            command='add',
+            command='ADD',
             username=username,
             amount=amount
         )

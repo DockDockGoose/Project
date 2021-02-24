@@ -9,7 +9,7 @@ class Account(AbstractUser):
     username = models.CharField(blank=False, max_length=255, unique=True)
     funds = models.FloatField(default=0.00)
     pendingFunds = models.FloatField(default=0.00)
-    stocks = djongoModels.EmbeddedField(
+    stocks = djongoModels.ArrayField(
         model_container=Stock
     )
 
