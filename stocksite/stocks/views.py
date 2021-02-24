@@ -47,7 +47,7 @@ class QuoteView(APIView):
         quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)
         # TODO: Cache the recently quoted stock price
 
-        #  # Log quoteServer transaction (only increment transactionNum for userCommands?)
+        #  Log quoteServer transaction (only increment transactionNum for userCommands?)
         transaction = Transaction(
                 type='quoteServer',
                 timestamp=int(time()*1000),
@@ -154,8 +154,25 @@ class SellView(APIView):
             transaction.save()
             return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
 
-        # Check if shares amount permit action, log error event to transaction if not
-        sharesAmount = Account.objects.filter(stocks={'stockSymbol':stockSymbol}).get('sharesAmount')
+        # Search Account for stock, log error event to transaction if doesnt exist
+        stock = getByStockSymbol(account.stocks, stockSymbol)
+        if stock is None:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = Transaction.objects.last().transactionNum,
+                command='BUY',
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+                errorMessage='Stock not owned.',
+            )
+            transaction.save()
+            return Response("Stock not owned.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Check if shares amount permit action, og error event to transaction if not 
+        sharesAmount = stock['sharesAmount']
         if sharesAmount < amount:
             transaction = Transaction(
                 type='errorEvent',
@@ -232,6 +249,48 @@ class CommitBuyView(APIView):
                 server='DOCK1',
                 transactionNum = Transaction.objects.last().transactionNum + 1,
                 command='COMMIT_BUY',
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+            )
+        transaction.save()
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class CommitSellView(APIView):
+    """
+    API endpoint for confirming the sell of a stock.
+    """
+    def post(self, request):
+        # Get request data
+        username = request.data.get("username")
+        # Test values (uncomment to populate the db)
+        # stockSymbol = 'NISSAN'
+        # amount = 300.00
+        
+        # Check cache for recent sell transaction (within 60 sec), if non-existent log errorEvent
+        # stockSymbol = fromcache
+        # amount = fromcache
+
+        # Find user account
+        account = Account.objects.filter(username=username).first()
+
+        # Search account for stock
+        stock = getByStockSymbol(account.stocks, stockSymbol)
+
+        # Subtract amount from stock sharesAmount & add amount to account funds
+        stock['sharesAmount'] -= amount
+        account.funds += amount
+        account.save()
+
+        # Log commit sell transaction
+        transaction = Transaction(
+                type='userCommand',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = Transaction.objects.last().transactionNum + 1,
+                command='COMMIT_SELL',
                 username=username,
                 stockSymbol=stockSymbol,
                 amount=amount,
