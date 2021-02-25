@@ -102,6 +102,7 @@ To experiment with the current API, head to http://localhost:8000/api/accounts/a
 <em> When developing the app with the docker containers up and running, I find I sometimes have to prune, rebuild and re-up in order to observe all changes. It's not always the case, but it might be worth mentioning. </em>
 
 #### TODO: 
+- Update Transactions to log the correct stock object changes.
 - Enable serving multiple concurrent users with nginx & uwsgi.
 - Implement other apps API endpoints.
 - Configure custom user model. (& dynamic url routing)

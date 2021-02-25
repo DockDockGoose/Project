@@ -1,9 +1,9 @@
 from django.urls import path, include
-# from rest_framework import routers
-from .views import BuyView, SellView, QuoteView, CommitBuyView, CommitSellView
-
-# router = routers.DefaultRouter()
-# router.register(r'stocks', SharesViewSet, basename='stocks')
+from .views.quoteView import QuoteView
+from .views.buyView import BuyView
+from .views.sellView import SellView
+from .views.commitBuyView import CommitBuyView
+from .views.commitSellView import CommitSellView
 
 urlpatterns = [
     path('buy/', BuyView.as_view()),
