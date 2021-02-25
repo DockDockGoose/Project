@@ -12,6 +12,7 @@ import sys
 import time
 import ast
 import queue
+import numpy as np
 from threading import Thread
 from threading import Lock
 import datetime as datetime
@@ -206,20 +207,36 @@ if __name__ == '__main__':
 
     print(" ~~~~ WEB SERVER INFORMATION ~~~~")
 
-    while(True):
-        webServAddress  = input("\nEnter hostname (localhost default): ") or "localhost"
-        webServPort     = int(input("Enter port number ({} default): ".format(DEFAULT_WEB_SERV_PORT)) or DEFAULT_WEB_SERV_PORT)
 
-        forwardServers.append([webServAddress, webServPort])
+    if(len(sys.argv) == 2):
+        curr = 65000
+        num = int(sys.argv[1])
+        for i in np.arange(0, num):
+            forwardServers.append(["localhost", curr])
+            curr = curr + 1
+    elif(len(sys.argv) == 3):
+        curr = int(sys.argv[2])
+        num = int(sys.argv[1])
+        for i in np.arange(0, num):
+            forwardServers.append(["localhost", curr])
+            curr = curr + 1
+    else:
 
-        print("\nAdding Webserver Connection: {}:{} \n".format(webServAddress, webServPort))
+        while(True):
+            webServAddress  = input("\nEnter hostname (localhost default): ") or "localhost"
+            webServPort     = int(input("Enter port number ({} default): ".format(DEFAULT_WEB_SERV_PORT)) or DEFAULT_WEB_SERV_PORT)
 
-        if "q" == (input(">> ENTER \'q\' to STOP inputing Web Server port/address: ") or "c"):
-            break
+            forwardServers.append([webServAddress, webServPort])
 
-        DEFAULT_WEB_SERV_PORT += 1
-        NUM_FORWARD_SERVERS   += 1
+            print("\nAdding Webserver Connection: {}:{} \n".format(webServAddress, webServPort))
 
+            if "q" == (input("Enter \'q\' to STOP inputing Web Server port/address: ") or "c"):
+                break
+
+            DEFAULT_WEB_SERV_PORT += 1
+            NUM_FORWARD_SERVERS   += 1
+
+            
     # TODO: Audit Server 
     #print("\n ~~~~ AUDIT SERVER INFORMATION ~~~~")
 
