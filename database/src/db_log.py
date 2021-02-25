@@ -22,7 +22,7 @@ class dbLog():
 
         cmdDict['timestamp'] = str(int(time.time() * 1000))
         cmdDict['logType'] = kind
-        cmdDict['_id'] = cmdDict['user'] + cmdDict['command'] + cmdDict['timestamp'] + cmdDict['logType']
+        cmdDict['_id'] = cmdDict['transactionNumber'] + cmdDict['user'] + cmdDict['command'] + cmdDict['timestamp'] + cmdDict['logType']
 
         if (error != None):
             cmdDict['errorMessage'] = error
