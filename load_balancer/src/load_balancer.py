@@ -160,9 +160,9 @@ class loadBalancer():
                 #print("Producer -- Putting P on Queue")
 
                 self.packetQ.put(userDict)
-
-        print("Client Closed: {}".format(address))
+        conn.shutdown(socket.SHUT_RDWR)
         conn.close()
+        print("Client Closed: {}".format(address))
 
 
     def consumerThread(self):
@@ -170,6 +170,8 @@ class loadBalancer():
     
         """
         print("Starting load balancer CONSUMER thread")
+        currentServ = 0
+        userServerFwds = {}
 
         while self.serverRunning:
             try: 
@@ -180,10 +182,17 @@ class loadBalancer():
                 else:
                     user = "default"
                 
-                serverHash = hash(user) % NUM_FORWARD_SERVERS
-                print("Forwarding Packet: [#{}:{}: --> Serv: {})".format(packet["transactionNumber"], user, serverHash))
-                
-                self.serverSockets[serverHash].send(str(packet).encode())
+                if user in userServerFwds.keys():
+                    fwdServer = userServerFwds[user]
+                else:
+                    fwdServer = currentServ
+                    userServerFwds[user] = currentServ 
+                    currentServ = (currentServ + 1) % NUM_FORWARD_SERVERS
+
+                print("Forwarding Packet: [#{}:{}: --> Serv: {})".format(packet["transactionNumber"], user, fwdServer))
+                requestStr = str(packet).encode()
+
+                self.serverSockets[fwdServer].send(requestStr.ljust(256))
 
                 self.packetQ.task_done()
 
@@ -197,6 +206,7 @@ class loadBalancer():
 if __name__ == '__main__':
 
     print(" ~~~~ WEB SERVER INFORMATION ~~~~")
+
 
     if(len(sys.argv) == 2):
         curr = 65000
@@ -226,6 +236,7 @@ if __name__ == '__main__':
             DEFAULT_WEB_SERV_PORT += 1
             NUM_FORWARD_SERVERS   += 1
 
+            
     # TODO: Audit Server 
     #print("\n ~~~~ AUDIT SERVER INFORMATION ~~~~")
 
