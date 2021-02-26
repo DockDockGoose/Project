@@ -57,6 +57,7 @@ coverage.xml
 .pytest_cache/
 pytestdebug.log
 
+# Generants
 *.txt
 
 # Translations

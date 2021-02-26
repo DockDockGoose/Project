@@ -150,15 +150,22 @@ python3 workload_gen.py ../workloads/WL_2_USER.txt
 ```
 
 
-## Running the Python WebServer
+## Running the Python WebServer & Load Balancer
 This python webserver will immediately spin up and start accepting client requests. 
 
 <em>The default server and port is ```localhost:65432```</em>
 
-To run the server:
+To run the web server call the following command, and input the server address, and port when prompted. 
 ```
-python web_server.py
+python3 web_server.py
 ```
+
+To run the load balancer call the below command. You will be prompted to enter each webservers hostname and port. 
+```
+python3 load_balancer.py
+```
+
+Notes: 
  * to send simulated requests to the webserver see workload generator section above. 
  * To end the server I use (ctrl+ALT+(BREAK/PAUSE)), maybe CRTL+Z, CRTL+C would work for different users
 
