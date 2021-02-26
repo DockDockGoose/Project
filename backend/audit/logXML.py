@@ -41,7 +41,7 @@ def logUserCommand(infoDict):
     if 'amount' in infoDict:
         ElementTree.SubElement(userCommand, 'funds').text = infoDict['amount']
 
-    prettyPrintLog(root)
+    #prettyPrintLog(root)
 
 """ Every hit to the quote server requires a log entry with the results. The price, symbol, 
     username, timestamp and cryptokey are as returned by the quote server.   """
@@ -133,7 +133,7 @@ def logDebugEvent(infoDict):
 
     prettyPrintLog(root)
 
-def prettyPrintLog(element):
+def prettyPrintLog(element=root):
     # Wrap into an ElementTree instance so we can save it as XML
     tree = cElementTree.ElementTree(element)
     # ET.write() doesnt support pretty print so use minidom to prettify XML
