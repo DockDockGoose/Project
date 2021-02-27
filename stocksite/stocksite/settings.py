@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'w^iv#@2kjl(v-z9hh7trkm)nvtt&1s@hy-n*^7%^c-@9u0c7e%'
+SECRET_KEY = os.environ.get("SECRET_KEY", 'foo')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = int(os.environ.get("DEBUG", True))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost 127.0.0.1").split(" ")
 
 
 # Application definition
@@ -96,8 +97,8 @@ WSGI_APPLICATION = 'stocksite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'ENFORCE_SCHEMA': True,
+        'ENGINE': os.environ.get("MONGO_ENGINE", "djongo"),
+        'ENFORCE_SCHEMA': int(os.environ.get("MONGO_ENFORCE_SCHEMA", True)),
         'LOGGING': {
             'version': 1,
             'loggers': {
@@ -107,12 +108,12 @@ DATABASES = {
                 }
             },
         },
-        'NAME': 'mongodb',
         'CLIENT': {
-            'host': 'mongodb://mongodb:27017',
-            # 'port': 27017,
-            'username': 'root',
-            'password': 'dockdockgoose',
+            'host': os.environ.get("MONGO_HOST", "mongodb"),
+            'port': int(os.environ.get("MONGO_PORT", 27017)),
+            'username': os.environ.get("MONGO_USER", "root"),
+            'password': os.environ.get("MONGO_PASSWORD", "dockdockgoose"),
+            'name': os.environ.get("MONGO_DATABASE", "stocksite_db_dev"),
             'authSource': 'admin',
             'authMechanism': 'SCRAM-SHA-1'
         },

@@ -8,10 +8,10 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: 'root'
       MONGO_INITDB_ROOT_PASSWORD: 'dockdockgoose'
-      MONGO_INITDB_DATABASE: 'mongodb'
+      MONGO_DB: 'stocksite_db_dev'
     command: mongod --auth
     volumes:
-      - .mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./stocksite/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - ./data-db:/data/db
     ports: 
       - 27017:27017
@@ -41,46 +41,20 @@ services:
       - localnet
 
   web:
-    build: .
+    build: ./stocksite
     restart: always
     container_name: web
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/code
+      - ./stocksite/:/code
     ports:
       - "8000:8000"
     links:
       - mongodb
-    depends_on:
-      - migration
     networks: 
       - localnet
-
-  migration:
-    container_name: migration
-    build: .
-    command: python manage.py migrate
-    volumes:
-      - .:/code
-    links:
-      - mongodb
-    depends_on:
-      - makemigrations
-    networks: 
-      - localnet
-      
-  makemigrations:
-    container_name: makemigrations
-    build: .
-    command: python manage.py makemigrations
-    volumes:
-      - .:/code
-    links:
-      - mongodb
-    depends_on:
-      - mongodb
-    networks:
-      - localnet
+    env_file: 
+      - ./.env.dev
 
 networks:
   localnet:

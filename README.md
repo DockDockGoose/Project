@@ -47,9 +47,8 @@ As it is a linked volume, please ensure that the stocksite/data-db directory has
 There might be a better way to set up mongo and docker but for now, this works so yay!
 
 
-Go into stocksite directory and run the application:
+Run the application:
 ```
-cd stocksite
 docker-compose build
 docker-compose up
 ```
