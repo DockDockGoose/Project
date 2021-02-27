@@ -50,10 +50,9 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': [
-    # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly', 
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
+    # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     # 'rest_framework.permissions.DjangoModelPermissions',
-    'rest_framework.permissions.AllowAny' ],
     # Paginate results
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 50,
@@ -104,7 +103,7 @@ DATABASES = {
             'loggers': {
                 'djongo': {
                     'level': 'DEBUG',
-                    'propogate': False,                        
+                    'propogate': False,
                 }
             },
         },
@@ -159,4 +158,5 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = "/staticfiles/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")

@@ -7,11 +7,11 @@ SENG 468 - Software Scalability</em>
 
 ##  Setup Stock Site on Docker with MongoDB !!!
 
+### Environment
 In order to use Docker, ensure you have pip, docker and mongo installed.
 
-Before running docker-compose, we have to be in the Django virtual environment. Daniel had previously set up `django-project` but I faced some issues with using/activating that, so I created another venv called `django-env`.  
+Before running docker-compose, ensure you are in a [python virtual environment](https://docs.djangoproject.com/en/3.1/howto/windows/#setting-up-a-virtual-environment). For example, I created a venv called `django-env`.  
 
-If you face any issues with the following command, simply [create your own venv for Django](https://docs.djangoproject.com/en/3.1/howto/windows/#setting-up-a-virtual-environment).
 
 On Windows from the Project directory:
 ```
@@ -21,6 +21,8 @@ On Linux/Mac from the Project directory:
 ```
 source django-env\Scripts\activate 
 ```
+
+### Docker Cleanup
 
 Due to changes made to the docker containers, the previous containers need to be removed. This can be done through Docker Desktop by removing the containers under stocksite app. It can be removed through the CLI by using the commands
 ```
@@ -42,12 +44,13 @@ Note that mongo-express will initially fail in connecting to the mongo container
 This user is created through the docker entrypoint script that is mounted as mongo-init.js. 
 In order for the script and dockerfiles to run correctly, we have to run a fresh docker instance of the database. 
 
-As it is a linked volume, please ensure that the stocksite/data-db directory has been deleted prior to running the docker-compose for the first time since docker tries to preserve as much data as it can and thus retains the no root user db. By deleting, it can be freshly created by docker-compose.
+As it is a linked volume, please ensure that the stocksite/data-db directory has been deleted prior to running the docker-compose for the first time since docker tries to preserve as much data as it can and thus retains the no root user db. By deleting, it can be freshly created by docker-compose. You can automate this db flush by uncommenting `python manage.py flush --no-input` from entrypoint.sh. The web server now waits for mongodb to be all setup before starting thanks to entrypoint.sh. 
 
 There might be a better way to set up mongo and docker but for now, this works so yay!
 
+### Local Docker Development
 
-Run the application:
+To run the development config of the application:
 ```
 docker-compose build
 docker-compose up
@@ -77,6 +80,29 @@ Use `exit` to leave mongo shell.
 
 Shutdown containers using `Ctrl-c` or `docker-compose down`.
 
+
+### Production
+
+For production environments, we are trying Gunicorn, a production-grade WSGI server, and Nginx to act as a reverse proxy for Gunicorn to handle client requests as well as serve up static files.
+
+To run the production containers (-d = daemon mode):
+```
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+Head to http://localhost:80/ to see application running 🎉
+
+To view logs from containers in daemon mode:
+```
+docker-compose -f docker-compose.prod.yml logs -f  
+```
+Spin down the production containers:
+```
+docker-compose -f docker-compose.prod.yml down -v   
+```
+
+### API Reference
+
 To experiment with the current API, head to http://localhost:8000/api/accounts/add and in the textfield in JSON format, enter a string username and a float amount (the amount field is optional).
 ```
 {
@@ -84,6 +110,7 @@ To experiment with the current API, head to http://localhost:8000/api/accounts/a
     "amount": 9.11
 }
 ```
+For further reference, view the README.md in the stocksite directory. You might also find the `sampleCMDS.txt` file useful when working with the API.
 
 ### REST-ful resources 😉:
 
@@ -97,39 +124,21 @@ To experiment with the current API, head to http://localhost:8000/api/accounts/a
 - [A tutorial on building a CRUD API (app) with React and Django using DRF (something we could do for the front-end @Daniel)](https://blog.logrocket.com/creating-an-app-with-react-and-django/)
 - [DRF caching viewsets & apiviews](https://www.django-rest-framework.org/api-guide/caching/)
 - [DRF synchronous caching using rq tasks](https://django-cacheback.readthedocs.io/en/latest/)
+- [Dockerizing Django with Gunicron and NGINX](https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/)
+- [NGINX - Django app gateway guide](https://docs.nginx.com/nginx/admin-guide/web-server/app-gateway-uwsgi-django/)
 
 <em> When developing the app with the docker containers up and running, I find I sometimes have to prune, rebuild and re-up in order to observe all changes. It's not always the case, but it might be worth mentioning. </em>
 
 #### TODO: 
-- Update Transactions to log the correct stock object changes.
-- Enable serving multiple concurrent users with nginx & uwsgi.
+- Add env files to gitignore. Keep secret variables secret!
+- Upload app images to dockerhub registry.
+- Finetune NGINX setup, look into Docker Swarm to deploy replicas of app.
 - Implement other apps API endpoints.
 - Configure custom user model. (& dynamic url routing)
 - Refactor Workload Generator to send JSON requests to stocksite django app.
 - Look into caching stock prices (shared cache) & local cache for recent buy/sell cmd before commits
 - Look into mongodb database sharding (horizontally scale our db)
 
-## Local Setup Information
- [Follow these instructions to set up Django](https://docs.djangoproject.com/en/3.1/topics/install/#installing-official-release)
- 
-Make sure you have [pip](https://pip.pypa.io/en/stable/) installed.
-
-Project is in the stocksite folder. 
-
-Before running a local instance, you have to run 
-
-```
-django-project\Scripts\activate
-```
-
-then you can go into 
-```
-stocksite/
-```
-and run 
-```
-python manage.py runserver
-```
 
 ## Workload Generator
 Takes workload input file and partitions commands per user, retaining transaction number, 

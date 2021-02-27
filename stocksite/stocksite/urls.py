@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-urlpatterns = [ 
+urlpatterns = [
     path('api/stocks/', include('stocks.urls')),
     path('api/accounts/', include('accounts.urls')),
     path('api/', include('transactions.urls')),
