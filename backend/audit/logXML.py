@@ -22,7 +22,6 @@ from xml.dom import minidom
 
 auditNum = "1"
 root = ElementTree.Element('log')
-auditFile = '../audit/logs/logfile' + auditNum + '.xml'        # Relative path from backend/src
 
 """ User commands come from the user command files or from manual entries in the students' web forms.   """
 def logUserCommand(infoDict):
@@ -39,9 +38,7 @@ def logUserCommand(infoDict):
     if 'filename' in infoDict:
         ElementTree.SubElement(userCommand, 'filename').text = infoDict['filename']
     if 'amount' in infoDict:
-        ElementTree.SubElement(userCommand, 'funds').text = infoDict['amount']
-
-    #prettyPrintLog(root)
+        ElementTree.SubElement(userCommand, 'funds').text = '%.2f' % infoDict['amount']
 
 """ Every hit to the quote server requires a log entry with the results. The price, symbol, 
     username, timestamp and cryptokey are as returned by the quote server.   """
@@ -53,9 +50,8 @@ def logQuoteServer(infoDict):
     ElementTree.SubElement(quoteServer, 'price').text = infoDict['price']
     ElementTree.SubElement(quoteServer, 'stockSymbol').text = infoDict['stockSymbol']
     ElementTree.SubElement(quoteServer, 'username').text = infoDict['user']
-    ElementTree.SubElement(quoteServer, 'quoteServerTime').text = infoDict['timestamp']
+    ElementTree.SubElement(quoteServer, 'quoteServerTime').text = infoDict['quoteServerTime']
     ElementTree.SubElement(quoteServer, 'cryptokey').text = infoDict['cryptokey']
-    prettyPrintLog(root)
 
 """ Any time a user's account is touched, an account message is printed.  
     Appropriate actions are "add" or "remove".  """
@@ -66,8 +62,7 @@ def logAccountTransaction(infoDict):
     ElementTree.SubElement(accountTransaction, 'transactionNum').text = infoDict['transactionNumber']
     ElementTree.SubElement(accountTransaction, 'action').text = infoDict['command']         #should be add or remove
     ElementTree.SubElement(accountTransaction, 'username').text = infoDict['user']
-    ElementTree.SubElement(accountTransaction, 'funds').text = infoDict['amount']
-    prettyPrintLog(root)
+    ElementTree.SubElement(accountTransaction, 'funds').text = '%.2f' % infoDict['amount']
 
 """ System events can be current user commands, interserver communications, 
     or the execution of previously set triggers.    """
@@ -85,9 +80,7 @@ def logSystemEvent(infoDict):
     if 'filename' in infoDict:
         ElementTree.SubElement(systemEvent, 'filename').text = infoDict['filename']
     if 'amount' in infoDict:
-        ElementTree.SubElement(systemEvent, 'funds').text = infoDict['amount']
-
-    prettyPrintLog(root)
+        ElementTree.SubElement(systemEvent, 'funds').text = '%.2f' % infoDict['amount']
 
 """ Error messages contain all the information of user commands, in 
     addition to an optional error message.  """
@@ -105,11 +98,9 @@ def logErrorEvent(infoDict):
     if 'filename' in infoDict:
         ElementTree.SubElement(errorEvent, 'filename').text = infoDict['filename']
     if 'amount' in infoDict:
-        ElementTree.SubElement(errorEvent, 'funds').text = infoDict['amount']
+        ElementTree.SubElement(errorEvent, 'funds').text = '%.2f' % infoDict['amount']
     if 'errorMessage' in infoDict:
         ElementTree.SubElement(errorEvent, 'errorMessage').text = infoDict['errorMessage']
-
-    prettyPrintLog(root)
 
 """ Debugging messages contain all the information of user commands, in 
     addition to an optional debug message.  """
@@ -127,13 +118,14 @@ def logDebugEvent(infoDict):
     if 'filename' in infoDict:
         ElementTree.SubElement(debugEvent, 'filename').text = infoDict['filename']
     if 'amount' in infoDict:
-        ElementTree.SubElement(debugEvent, 'funds').text = infoDict['amount']
+        ElementTree.SubElement(debugEvent, 'funds').text = '%.2f' % infoDict['amount']
     if 'debugMessage' in infoDict:
         ElementTree.SubElement(debugEvent, 'debugMessage').text = infoDict['debugMessage']
 
-    prettyPrintLog(root)
-
 def prettyPrintLog(element=root):
+    auditNum = str(input("Enter user audit number for filename (1 default): ")) or auditNum
+    # Relative path from backend/src
+    auditFile = '../audit/logs/logfile' + auditNum + '.xml'        
     # Wrap into an ElementTree instance so we can save it as XML
     tree = cElementTree.ElementTree(element)
     # ET.write() doesnt support pretty print so use minidom to prettify XML
