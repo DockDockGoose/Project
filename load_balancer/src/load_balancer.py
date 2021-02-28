@@ -26,7 +26,7 @@ AUDIT_SERV_ADDY = '127.0.0.1'
 AUDIT_SERV_PORT = 50000
 DEFAULT_WEB_SERV_PORT = 65000
 
-NUM_FORWARD_SERVERS = 1
+NUM_FORWARD_SERVERS = 0
 
 # Table of open web servers to forward packet requests too. 
 #    - user IDs are key- hashed and modulos with NUM of servers
