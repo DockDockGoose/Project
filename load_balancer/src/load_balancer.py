@@ -214,12 +214,14 @@ if __name__ == '__main__':
         for i in np.arange(0, num):
             forwardServers.append(["localhost", curr])
             curr = curr + 1
+            NUM_FORWARD_SERVERS  += 1
     elif(len(sys.argv) == 3):
         curr = int(sys.argv[2])
         num = int(sys.argv[1])
         for i in np.arange(0, num):
             forwardServers.append(["localhost", curr])
             curr = curr + 1
+            NUM_FORWARD_SERVERS  += 1
     else:
 
         while(True):
