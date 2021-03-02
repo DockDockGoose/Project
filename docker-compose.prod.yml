@@ -5,6 +5,7 @@ services:
     build:
       context: ./stocksite
       dockerfile: Dockerfile.prod
+    image: stocksite-webapp     # Specify name & tag for the image that is built
     command: gunicorn stocksite.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - static_volume:/home/app/web/staticfiles
@@ -36,8 +37,9 @@ services:
     ports:
       - 8081:8081
     volumes:
-      - ./data-db
+      - data-db:/data/db
     environment:
+      ME_CONFIG_MONGODB_SERVER: 'mongo'
       ME_CONFIG_MONGODB_ENABLE_ADMIN: 'true'
       ME_CONFIG_MONGODB_BASICAUTH_USERNAME: 'admin'
       ME_CONFIG_MONGODB_BASICAUTH_PASSWORD: 'duck'
@@ -52,6 +54,7 @@ services:
 
   nginx:
     build: ./nginx
+    image: stocksite-nginx
     volumes:
       - static_volume:/home/app/web/staticfiles
     ports:

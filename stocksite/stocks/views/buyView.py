@@ -18,6 +18,7 @@ class BuyView(APIView):
 
         # Find user account
         account = Account.objects.filter(username=username).first()
+        transactionNum = Transaction.objects.last().transactionNum
 
         # If account is non-existing, log errorEvent to Transaction
         if account is None:
@@ -25,7 +26,7 @@ class BuyView(APIView):
                 type='errorEvent',
                 timestamp=int(time()*1000),
                 server='DOCK1',
-                transactionNum = Transaction.objects.last().transactionNum,
+                transactionNum = transactionNum,
                 command='BUY',
                 username=username,
                 stockSymbol=stockSymbol,
@@ -41,7 +42,7 @@ class BuyView(APIView):
                 type='errorEvent',
                 timestamp=int(time()*1000),
                 server='DOCK1',
-                transactionNum = Transaction.objects.last().transactionNum,
+                transactionNum = transactionNum,
                 command='BUY',
                 username=username,
                 stockSymbol=stockSymbol,
@@ -56,7 +57,7 @@ class BuyView(APIView):
                 type='userCommand',
                 timestamp=int(time()*1000),
                 server='DOCK1',
-                transactionNum = Transaction.objects.last().transactionNum + 1,
+                transactionNum = transactionNum + 1,
                 command='BUY',
                 username=username,
                 stockSymbol=stockSymbol,
