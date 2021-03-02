@@ -14,10 +14,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from . import views
+from django.urls import path, include
 
 urlpatterns = [
+    path('api/stocks/', include('stocks.urls')),
+    path('api/accounts/', include('accounts.urls')),
+    path('api/', include('transactions.urls')),
     path('admin/', admin.site.urls),
-    path('stonks/', views.index)
+    # # Additionally, we include login URLs for the browsable API.
+    # path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
