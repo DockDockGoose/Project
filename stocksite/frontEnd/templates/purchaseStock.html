@@ -1,0 +1,15 @@
+<form
+  target="_blank"
+  action="http://localhost:8000/api/stocks/buy/"
+  method="post"
+>
+{% csrf_token %}
+  User: <input name="username" id="username" type="text" value="daniel"></input> <br>
+  Stock (Symbol): <input name="stockSymbol" id="stockSymbol" type="text" value="{{stock.stockSymbol}}"></input> <br>
+  Amount of stock: <input name="amount" id="amount" type="number"></input> <br>
+  <input
+    onclick="window.location.href = /viewStocks;"
+    type="submit"
+    value="Purchase"
+    >
+</form>
