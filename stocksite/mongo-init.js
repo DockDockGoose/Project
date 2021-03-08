@@ -1,10 +1,10 @@
-db = db.getSiblingDB("mongodb");
+db = db.getSiblingDB("stocksite_db_dev");
 
 db.createUser(
     {
         user: "root",
         pwd: "dockdockgoose",
-        roles: [ { role: "dbOwner", db: "mongodb" }, { role: "userAdminAnyDatabase", db: "mongodb" } ]
+        roles: [ { role: "dbOwner", db: "stocksite_db_dev" }, { role: "userAdminAnyDatabase", db: "stocksite_db_dev" } ]
     }
 )
 

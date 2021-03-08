@@ -7,11 +7,11 @@ SENG 468 - Software Scalability</em>
 
 ##  Setup Stock Site on Docker with MongoDB !!!
 
+### Environment
 In order to use Docker, ensure you have pip, docker and mongo installed.
 
-Before running docker-compose, we have to be in the Django virtual environment. Daniel had previously set up `django-project` but I faced some issues with using/activating that, so I created another venv called `django-env`.  
+Before running docker-compose, ensure you are in a [python virtual environment](https://docs.djangoproject.com/en/3.1/howto/windows/#setting-up-a-virtual-environment). For example, I created a venv called `django-env`.  
 
-If you face any issues with the following command, simply [create your own venv for Django](https://docs.djangoproject.com/en/3.1/howto/windows/#setting-up-a-virtual-environment).
 
 On Windows from the Project directory:
 ```
@@ -21,6 +21,8 @@ On Linux/Mac from the Project directory:
 ```
 source django-env\Scripts\activate 
 ```
+
+### Docker Cleanup
 
 Due to changes made to the docker containers, the previous containers need to be removed. This can be done through Docker Desktop by removing the containers under stocksite app. It can be removed through the CLI by using the commands
 ```
@@ -42,14 +44,14 @@ Note that mongo-express will initially fail in connecting to the mongo container
 This user is created through the docker entrypoint script that is mounted as mongo-init.js. 
 In order for the script and dockerfiles to run correctly, we have to run a fresh docker instance of the database. 
 
-As it is a linked volume, please ensure that the stocksite/data-db directory has been deleted prior to running the docker-compose for the first time since docker tries to preserve as much data as it can and thus retains the no root user db. By deleting, it can be freshly created by docker-compose.
+As it is a linked volume, please ensure that the stocksite/data-db directory has been deleted prior to running the docker-compose for the first time since docker tries to preserve as much data as it can and thus retains the no root user db. By deleting, it can be freshly created by docker-compose. You can automate this db flush by uncommenting `python manage.py flush --no-input` from entrypoint.sh. The web server now waits for mongodb to be all setup before starting thanks to entrypoint.sh. 
 
 There might be a better way to set up mongo and docker but for now, this works so yay!
 
+### Local Docker Development
 
-Go into stocksite directory and run the application:
+To run the development config of the application:
 ```
-cd stocksite
 docker-compose build
 docker-compose up
 ```
@@ -78,6 +80,65 @@ Use `exit` to leave mongo shell.
 
 Shutdown containers using `Ctrl-c` or `docker-compose down`.
 
+
+### Production
+
+For production environments, we are trying Gunicorn, a production-grade WSGI server, and Nginx to act as a reverse proxy for Gunicorn to handle client requests as well as serve up static files.
+
+To run the production containers (-d = daemon mode):
+```
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+Head to http://localhost:80/ to see application running 🎉
+
+To view logs from containers in daemon mode:
+```
+docker-compose -f docker-compose.prod.yml logs -f  
+```
+Spin down the production containers:
+```
+docker-compose -f docker-compose.prod.yml down -v   
+```
+
+### DockerHub
+
+Images of our system can be found hosted on [DockerHub's](https://hub.docker.com/) registry. We have an account `dckdockgoose` with a few repositories containing images of our system, tagging each version as we develop it. To push updated versions of the images to our repositories follow the steps below.
+
+If you are on Windows and are already logged into Docker Desktop, you wont be prompted to enter our credentials, otherwise enter them after this command:
+```
+docker login
+```
+First we have to tag the newest image containing the changes that we want to push to the registry:
+```
+docker tag <image-name> <repo-name>:<tag>
+eg. docker tag stocksite-webapp dckdockgoose/stocksite-webapp:1.1
+```
+Then we can push our tagged image:
+```
+docker push <repo-name>:<tag>
+eg. docker push dckdockgoose/stocksite-webapp:1.1
+```
+
+### Docker Images
+
+Image               | Base              | Usage
+--------------------| ------------------| ------------- 
+stocksite-nginx     | nginx:latest      | Load balancer & frontend reverse proxy for Django
+stocksite-webapp    | python:3          | Django stocksite API web app
+<i>stocksite-mongo  | <i>mongo:latest   | <i>mongo database for Django
+<i>stocksite-redis  | <i>redis:latest   | <i>cache for Django
+
+- To follow best practice each image should be built to run as a **non-root** user and support Docker secrets.
+- Eventually remove mongo-express.
+- I believe we pull the base mongo image for swarm nodes, so we don't need to push a custom mongo image, I could be wrong..
+- Change to overlay network for swarm.
+
+### Docker Swarm
+
+
+### API Reference
+
 To experiment with the current API, head to http://localhost:8000/api/accounts/add and in the textfield in JSON format, enter a string username and a float amount (the amount field is optional).
 ```
 {
@@ -85,6 +146,7 @@ To experiment with the current API, head to http://localhost:8000/api/accounts/a
     "amount": 9.11
 }
 ```
+For further reference, view the README.md in the stocksite directory. You might also find the `sampleCMDS.txt` file useful when working with the API.
 
 ### REST-ful resources 😉:
 
@@ -98,39 +160,22 @@ To experiment with the current API, head to http://localhost:8000/api/accounts/a
 - [A tutorial on building a CRUD API (app) with React and Django using DRF (something we could do for the front-end @Daniel)](https://blog.logrocket.com/creating-an-app-with-react-and-django/)
 - [DRF caching viewsets & apiviews](https://www.django-rest-framework.org/api-guide/caching/)
 - [DRF synchronous caching using rq tasks](https://django-cacheback.readthedocs.io/en/latest/)
+- [Dockerizing Django with Gunicron and NGINX](https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/)
+- [NGINX - Django app gateway guide](https://docs.nginx.com/nginx/admin-guide/web-server/app-gateway-uwsgi-django/)
 
 <em> When developing the app with the docker containers up and running, I find I sometimes have to prune, rebuild and re-up in order to observe all changes. It's not always the case, but it might be worth mentioning. </em>
 
 #### TODO: 
-- Update Transactions to log the correct stock object changes.
-- Enable serving multiple concurrent users with nginx & uwsgi.
+- Add env files to gitignore. Keep secret variables secret!
+- Finetune NGINX setup, look into Docker Swarm to deploy replicas of app.
 - Implement other apps API endpoints.
+- Update transactionNum query for all views. (maybe time var too)
 - Configure custom user model. (& dynamic url routing)
 - Refactor Workload Generator to send JSON requests to stocksite django app.
 - Look into caching stock prices (shared cache) & local cache for recent buy/sell cmd before commits
 - Look into mongodb database sharding (horizontally scale our db)
 
-## Local Setup Information
- [Follow these instructions to set up Django](https://docs.djangoproject.com/en/3.1/topics/install/#installing-official-release)
- 
-Make sure you have [pip](https://pip.pypa.io/en/stable/) installed.
 
-Project is in the stocksite folder. 
-
-Before running a local instance, you have to run 
-
-```
-django-project\Scripts\activate
-```
-
-then you can go into 
-```
-stocksite/
-```
-and run 
-```
-python manage.py runserver
-```
 
 ## Workload Generator
 Takes workload input file and partitions commands per user, retaining transaction number, 
@@ -148,75 +193,3 @@ To run using a specific workload file (eg. WL_2_USER.txt):
 ```
 python3 workload_gen.py ../workloads/WL_2_USER.txt
 ```
-
-
-## Running the Python WebServer & Load Balancer
-This python webserver will immediately spin up and start accepting client requests. 
-
-<em>The default server and port is ```localhost:65432```</em>
-
-To run the web server call the following command, and input the server address, and port when prompted. 
-Optional:
-N: How many web servers you want to launch.
-```
-python3 web_server.py *N*
-```
-
-To run the load balancer call the below command. You will be prompted to enter each webservers hostname and port.
-A couple options:
-N: How many web servers you want to attach to the load balancer.
-start-port: Where the web servers port starts. So if you type in python3 load_balancer 45, 6750, it would connect to web servers on ports 6750 to 6795.
-```
-python3 load_balancer.py *N* *start-port*
-```
-
-Notes: 
- * to send simulated requests to the webserver see workload generator section above. 
- * To end the server I use (ctrl+ALT+(BREAK/PAUSE)), maybe CRTL+Z, CRTL+C would work for different users
-
-### Testing Workload Generator with Database on VM
-If you want to test the workload generator and see the commands run on the database, here is what to do. 
-First ensure you have mongodb installed and pymongo to interact with the databse (reference: https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-ubuntu-18-04 )
-
-```
-sudo apt update
-
-sudo apt install -y mongodb
-
-sudo apt install python3-pip
-
-pip3 install pymango
-
-```
-
-The installation should automatically starts a mongodb instance. Here are some commands to check that it is  running properly. 
-```
-
-# Check status to make sure it is running
-sudo systemctl status mongod
-# Check the database has the right server address and port
-mongo --eval 'db.runCommand({ connectionStatus: 1 })'
-# Connect to mongo db instance
-mongo 
-```
-
-To look at our database and its collections (reference: https://docs.mongodb.com/manual/reference/mongo-shell/ )
-```
-show dbs
-use mongodb
-show collections
-```
-Use `exit` to leave mongo shell. 
-
-If the mongodb instance is not running, here the is command to start it:
-```
-sudo systemctl start mongod
-
-```
-
-Command to shutdown mongodb instance
-```
-sudo systemctl stop mongodb
-```
-
-I would also highly recommend Mongodb Compass. It is a GUI for Mongodb: https://www.mongodb.com/try/download/compass 

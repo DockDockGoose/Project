@@ -202,8 +202,6 @@ class WorkloadGenerator:
             request['amount'] = amount
         if filename:
             request['filename'] = filename
-
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 
         try:
             packetQ.put(request)

@@ -1,0 +1,46 @@
+[
+    {
+        "username": "pikachu",
+        "funds": 78318.22,
+        "pendingFunds": 0.0,
+        "stocks": [
+            {
+                "stockSymbol": "GME",
+                "price": 3.5,
+                "quoteServerTime": 1614206203442,
+                "sharesAmount": 550.0
+            },
+            {
+                "stockSymbol": "TESLA",
+                "price": 2.5,
+                "quoteServerTime": 1614206203442,
+                "sharesAmount": 68.11904761904762
+            },
+            {
+                "stockSymbol": "NISSAN",
+                "price": 10.5,
+                "quoteServerTime": 1614207529565,
+                "sharesAmount": 747.6190476190477
+            }
+        ]
+    },
+    {
+        "username": "santa",
+        "funds": 911.0,
+        "pendingFunds": 0.0,
+        "stocks": [
+            {
+                "stockSymbol": "GME",
+                "price": 3.5,
+                "quoteServerTime": 1614206459197,
+                "sharesAmount": 250.0
+            },
+            {
+                "stockSymbol": "TESLA",
+                "price": 2.5,
+                "quoteServerTime": 1614206459197,
+                "sharesAmount": 20.5
+            }
+        ]
+    }
+]
