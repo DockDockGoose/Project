@@ -38,9 +38,13 @@ def viewMyTransactions(request):
     }
     return render(request, 'transactions.html', context)
 
-def viewIndividualTransaction(request, transactionNum):
-    response = "You're looking at transaction %s"
-    return HttpResponse(response % transactionNum)
+def viewIndividualTransaction(request, transactionNu):
+    transaction_list = Transaction.objects.filter(transactionNum=transactionNu)
+    print(transaction_list)
+    context = {
+        'transactionNum': transactionNu
+    }
+    return render(request, 'viewIndividualTransaction.html', context)
 
 def purchaseStockView(request, stockId):
     stock_list = FrontEndStock.objects.filter(id=stockId)

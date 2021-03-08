@@ -7,7 +7,7 @@ urlpatterns = [
     path('viewStocks', views.viewStocks),
     path('viewTransactions', views.viewTransactions),
     path('viewMyTransactions', views.viewMyTransactions),
-    path('transaction/<int:transactionNum>', views.viewIndividualTransaction),
+    path('transaction/<int:transactionNu>', views.viewIndividualTransaction),
     path('purchaseStock/<int:stockId>', views.purchaseStockView),
     path('confirmPurchase/', views.confirmPurchaseStock),
     path('confirmPurchase/confirmed/', views.processPurchase)

@@ -4,6 +4,8 @@
 <title>View My Account</title>
 <link rel="stylesheet" href="{% static 'viewMyTransactions/viewMyTransactions.css' %}">
 <link rel="stylesheet" href="{% static 'home/home.css' %}">
+<link rel="stylesheet" href="{% static 'material-style/input.css' %}">
+<link rel="stylesheet" href="{% static 'material-style/button.css' %}">
 <style>
     html,
     body,
@@ -50,13 +52,19 @@
         <h3>Funds available: ${{account.funds}}</h3>
         <h3>Pending Funds: ${{account.pendingFunds}}</h3>
         <form>
-            <input type="number">
-            <button>Add Funds</button>
+            <div class="group">      
+                <input type="text" required>
+                <span class="highlight"></span>
+                <span class="bar"></span>
+                <label>Funds (CAD)</label>
+              </div>
+            <button class="btn">Add Funds</button>
         </form>
 
         {% if account.stocks == null %} 
             <h3>You currently don't own any stocks!</h3>
         {% else %}
+            <h1 class="recent-text">Your Stocks</h1>
             <div class="cards-container">
                 {% for stock in account.stocks %}
                 <div class="card-container">
@@ -72,7 +80,7 @@
     <div class="cards-container">
         {% if transaction_list %}
             {% for transaction in transaction_list %}
-                {% if transaction.command == "BUY" or transaction.command == "BUY" %}
+                {% if transaction.command == "BUY" or transaction.command == "BUY" or transaction.command == "ADDFUNDS" %}
                     <a class="card" href="transaction/{{transaction.id}}">
                         <div class="card-container">
                             {% if transaction.command == "BUY" %}
@@ -85,6 +93,9 @@
                                 <h3>Sold for: ${{transaction.price}}</h3>
                                 <h3>Date: {{transaction.timestamp}}</h3>
                                 <h3></h3>
+                            {% else %}
+                                <h3> You added {{transaction.amount}} to your account</h3>
+                                <h3>Date: {{transaction.timestamp}}</h3>
                             {% endif %}
                         </div>
                     </a>
