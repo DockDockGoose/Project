@@ -1,15 +1,17 @@
 from django.urls import path, include
-from .views.quoteView import QuoteView
-from .views.buyView import BuyView
-from .views.sellView import SellView
-from .views.commitBuyView import CommitBuyView
-from .views.commitSellView import CommitSellView
+from .views.setBuyAmountView import SetBuyAmountView
+from .views.setBuyTriggerView import SetBuyTriggerView
+from .views.cancelSetBuyView import CancelSetBuyView
+from .views.setSellAmountView import SetSellAmountView
+from .views.setSellTriggerView import SetSellTriggerView
+from .views.cancelSetSellView import CancelSetSellView
 
 urlpatterns = [
-    path('buy/', BuyView.as_view()),
-    path('commitbuy/', CommitBuyView.as_view()),
-    path('commitsell/', CommitSellView.as_view()),
-    path('sell/', SellView.as_view()),
-    path('quote/', QuoteView.as_view()),
+    path('setbuyamount/', SetBuyAmountView.as_view()),
+    path('setbuytrigger/', SetBuyTriggerView.as_view()),
+    path('cancelsetbuy/', CancelSetBuyView.as_view()),
+    path('setsellamount/', SetSellAmountView.as_view()),
+    path('setselltrigger/', SetSellTriggerView.as_view()),
+    path('cancelsetsell/', CancelSetSellView.as_view()),
     # path('', include(router.urls)),
 ]
