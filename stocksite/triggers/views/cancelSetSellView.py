@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import Account
 from transactions.models import Transaction
-from .models import Trigger
+from triggers.models import Trigger
 from .utils import getByStockSymbol
 from time import time
 

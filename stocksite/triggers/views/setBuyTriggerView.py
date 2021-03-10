@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from transactions.models import Transaction
-from .models import Trigger
+from triggers.models import Trigger
 from time import time
 
 

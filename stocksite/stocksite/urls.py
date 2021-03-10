@@ -19,6 +19,7 @@ from django.urls import path, include
 urlpatterns = [
     path('api/stocks/', include('stocks.urls')),
     path('api/accounts/', include('accounts.urls')),
+    path('api/triggers/', include('triggers.urls')),
     path('api/', include('transactions.urls')),
     path('admin/', admin.site.urls),
     # # Additionally, we include login URLs for the browsable API.
