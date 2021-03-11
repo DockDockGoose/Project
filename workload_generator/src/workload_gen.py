@@ -21,7 +21,7 @@ defaultTestFile = "../workloads/WL_1_USER.txt"
 serverAddress   = "localhost"
 serverPort      = "8000"
 
-serverURL       = "http://" + serverAddress ":" + serverPort + "/"
+serverURL       = "http://" + serverAddress  + ":" + serverPort + "/"
 
 url1                = "api/stocks/"
 url2                = "api/accounts/"
@@ -212,7 +212,8 @@ class WorkloadGenerator:
 
         requestString = serverURL + reqType
         try:
-            r = requests.post(requestString, json=command_dict)
+            print(requestString)
+            #r = requests.post(requestString, json=command_dict)
 
         except socket.error as err:
             logging.error(f"Queue Put failured with: {err}")
