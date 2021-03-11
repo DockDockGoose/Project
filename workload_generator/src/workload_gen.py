@@ -13,7 +13,7 @@ import socket
 import logging
 import queue
 import time
-#import requests
+import requests
 from threading import Thread
 
 defaultTestFile = "../workloads/WL_1_USER.txt"
@@ -227,9 +227,9 @@ class WorkloadGenerator:
             request['filename'] = filename
         print(postUrl)
 
-        #r = requests.post(postUrl, json=command_dict)
+        r = requests.post(postUrl, json=command_dict)
         # TODO: might need r.close() if get error with too many files open or open sockets. 
-        #print("HTTP Status:  {}".format(r.status_code))
+        print("HTTP Status:  {}".format(r.status_code))
 
 
 def spawnHandlers(userList, handler):
