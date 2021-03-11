@@ -211,9 +211,9 @@ class WorkloadGenerator:
             request['filename'] = filename
 
         requestString = serverURL + reqType
+        
         try:
-            print(requestString)
-            #r = requests.post(requestString, json=command_dict)
+            r = requests.post(requestString, json=command_dict)
 
         except socket.error as err:
             logging.error(f"Queue Put failured with: {err}")
