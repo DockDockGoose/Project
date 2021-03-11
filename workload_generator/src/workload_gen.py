@@ -13,28 +13,36 @@ import socket
 import logging
 import queue
 import time
+import requests
 from threading import Thread
 
 defaultTestFile = "../workloads/WL_1_USER.txt"
-serverAddress   = "localhost"
-serverPort      = 60000
 
-ADD = "ADD"
-QUOTE = "QUOTE"
-BUY = "BUY"
-COMMIT_BUY = "COMMIT_BUY"
-CANCEL_BUY = "CANCEL_BUY"
-SELL = "SELL"
-COMMIT_SELL = "COMMIT_SELL"
-CANCEL_SELL = "CANCEL_SELL"
-SET_BUY_AMOUNT = "SET_BUY_AMOUNT"
-CANCEL_SET_BUY = "CANCEL_SET_BUY"
-SET_BUY_TRIGGER = "SET_BUY_TRIGGER"
-SET_SELL_AMOUNT = "SET_SELL_AMOUNT"
-SET_SELL_TRIGGER = "SET_SELL_TRIGGER"
-CANCEL_SET_SELL = "CANCEL_SET_SELL"
-DUMPLOG = "DUMPLOG"
-DISPLAY_SUMMARY = "DISPLAY_SUMMARY"
+serverAddress   = "localhost"
+serverPort      = "8000"
+
+serverURL       = "http://" + serverAddress ":" + serverPort + "/"
+
+url1                = "api/stocks/"
+url2                = "api/accounts/"
+url3                = "TODO"
+
+ADD                 = "ADD"
+QUOTE               = "QUOTE"
+BUY                 = "BUY"
+COMMIT_BUY          = "COMMITBUY"
+CANCEL_BUY          = "CANCELBUY"
+SELL                = "SELL"
+COMMIT_SELL         = "COMMITSELL"
+CANCEL_SELL         = "CANCELSELL"
+SET_BUY_AMOUNT      = "SET_BUY_AMOUNT"
+CANCEL_SET_BUY      = "CANCEL_SET_BUY"
+SET_BUY_TRIGGER     = "SET_BUY_TRIGGER"
+SET_SELL_AMOUNT     = "SET_SELL_AMOUNT"
+SET_SELL_TRIGGER    = "SET_SELL_TRIGGER"
+CANCEL_SET_SELL     = "CANCEL_SET_SELL"
+DUMPLOG             = "DUMPLOG"
+DISPLAY_SUMMARY     = "DISPLAY_SUMMARY"
 
 userQ = queue.Queue()
 packetQ = queue.Queue()
@@ -123,75 +131,74 @@ class WorkloadGenerator:
 
             if command == BUY:
                 (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
-                self.performRequest(pid, transactionNumber, command, user, stockSymbol, amount)
+                self.performRequest(url1, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SELL:
                 (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
-                self.performRequest(pid, transactionNumber, command, user, stockSymbol, amount)
+                self.performRequest(url1, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_BUY_AMOUNT:
                 (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
-                self.performRequest(pid, transactionNumber, command, user, stockSymbol, amount)
+                self.performRequest(url1, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_BUY_TRIGGER :
                 (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
-                self.performRequest(pid, transactionNumber, command, user, stockSymbol, amount)
+                self.performRequest(url1, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_SELL_AMOUNT:
                 (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
-                self.performRequest(pid, transactionNumber, command, user, stockSymbol, amount)
+                self.performRequest(url1, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_SELL_TRIGGER:
                 (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
-                self.performRequest(pid, transactionNumber, command, user, stockSymbol, amount)
+                self.performRequest(url1, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == QUOTE:
                 stockSymbol = requestInfo[2].strip("\n")
-                self.performRequest(pid, transactionNumber, command, user, stockSymbol)
+                self.performRequest(url1, transactionNumber, command, user, stockSymbol)
 
             elif command == CANCEL_SET_BUY:
                 stockSymbol = requestInfo[2].strip("\n")
-                self.performRequest(pid, transactionNumber, command, user, stockSymbol)
+                self.performRequest(url1, transactionNumber, command, user, stockSymbol)
 
             elif command == CANCEL_SET_SELL:
                 stockSymbol = requestInfo[2].strip("\n")
-                self.performRequest(pid, transactionNumber, command, user, stockSymbol)
+                self.performRequest(url1, transactionNumber, command, user, stockSymbol)
 
             elif command == ADD:
                 amount = float(requestInfo[2].strip("\n"))
-                self.performRequest(pid, transactionNumber, command, user, amount=amount)
+                self.performRequest(url2, transactionNumber, command, user, amount=amount)
 
             elif command == COMMIT_BUY:
-                self.performRequest(pid, transactionNumber, command, user)
+                self.performRequest(url1, transactionNumber, command, user)
 
             elif command == CANCEL_BUY:
-                self.performRequest(pid, transactionNumber, command, user)
+                self.performRequest(url1, transactionNumber, command, user)
 
             elif command == COMMIT_SELL:
-                self.performRequest(pid, transactionNumber, command, user)
+                self.performRequest(url1, transactionNumber, command, user)
 
             elif command == CANCEL_SELL:
-                self.performRequest(pid, transactionNumber, command, user)
+                self.performRequest(url1, transactionNumber, command, user)
 
             elif command == DISPLAY_SUMMARY:
-                self.performRequest(pid, transactionNumber, command, user)
+                self.performRequest(url2, transactionNumber, command, user)
 
             elif command == DUMPLOG:
                 if len(requestInfo) == 3:
                     (user, filename) = (requestInfo[1], requestInfo[2])
-                    self.performRequest(pid, transactionNumber, command, user, filename=filename)
+                    self.performRequest(url2, transactionNumber, command, user, filename=filename)
                     
                 elif len(requestInfo) == 2:
                     filename = requestInfo[1]
-                    self.performRequest(pid, transactionNumber, command, filename=filename)
+                    self.performRequest(url2, transactionNumber, command, filename=filename)
             
             else:
                 logging.warning(f"Invalid request: {requestInfo}")
 
         f.close()
 
-        
-    def performRequest(self, pid, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
+    def performRequest(self, reqType, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
         request = {'transactionNumber': transactionNumber, 'command': command}
 
         if user:
@@ -202,40 +209,17 @@ class WorkloadGenerator:
             request['amount'] = amount
         if filename:
             request['filename'] = filename
-                
+
+        requestString = serverURL + reqType
         try:
-            packetQ.put(request)
+            r = requests.post(requestString, json=command_dict)
+
         except socket.error as err:
             logging.error(f"Queue Put failured with: {err}")
             sys.exit()
 
-def consumerThread():
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((serverAddress, serverPort))
-
-    while True:
-        try:
-            # set get to throw exception if no packet in 5 seconds
-            request = packetQ.get(True, 2)
-        except:
-            break
-
-        requestStr = str(request).encode()
-
-        s.sendall(requestStr.ljust(256))
-
-        packetQ.task_done()
-    
-    time.sleep(2)
-    s.shutdown(socket.SHUT_RDWR)
-    s.close()
-    print("Consumer Thread Finished!")
-
 
 def spawnHandlers(userList, handler):
-
-    cThread = Thread(target=consumerThread)
-    cThread.start()
 
     for i, user in enumerate(userList):
         t = Thread(target=handler, args=(i,))
