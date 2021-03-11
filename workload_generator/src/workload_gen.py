@@ -30,11 +30,11 @@ url3                = "TODO"
 ADD                 = "ADD"
 QUOTE               = "QUOTE"
 BUY                 = "BUY"
-COMMIT_BUY          = "COMMITBUY"
-CANCEL_BUY          = "CANCELBUY"
+COMMIT_BUY          = "COMMIT_BUY"
+CANCEL_BUY          = "CANCEL_BUY"
 SELL                = "SELL"
-COMMIT_SELL         = "COMMITSELL"
-CANCEL_SELL         = "CANCELSELL"
+COMMIT_SELL         = "COMMIT_SELL"
+CANCEL_SELL         = "CANCEL_SELL"
 SET_BUY_AMOUNT      = "SET_BUY_AMOUNT"
 CANCEL_SET_BUY      = "CANCEL_SET_BUY"
 SET_BUY_TRIGGER     = "SET_BUY_TRIGGER"
@@ -45,7 +45,6 @@ DUMPLOG             = "DUMPLOG"
 DISPLAY_SUMMARY     = "DISPLAY_SUMMARY"
 
 userQ = queue.Queue()
-packetQ = queue.Queue()
 
 class WorkloadGenerator:
     def __init__(self, testFile):
@@ -211,13 +210,10 @@ class WorkloadGenerator:
             request['filename'] = filename
 
         requestString = serverURL + reqType
-        
-        try:
-            r = requests.post(requestString, json=command_dict)
 
-        except socket.error as err:
-            logging.error(f"Queue Put failured with: {err}")
-            sys.exit()
+        r = requests.post(requestString, json=command_dict)
+        # TODO: might need r.close() if get error with too many files open or open sockets. 
+        print("HTTP Status:  {}".format(r.status_code))
 
 
 def spawnHandlers(userList, handler):
@@ -243,4 +239,3 @@ if __name__ == '__main__':
         userQ.put(user)
 
     userQ.join()
-    packetQ.join()
