@@ -103,19 +103,17 @@ class WorkloadGenerator:
         
         return userList
 
-    def workloadHandler(self, pid):
-        while(1):
-            flag = 0
 
+    def workloadHandler(self, pid):
+        while True:
             try: 
-                user = userQ.get(block=False, timeout=0.5)
+                user = userQ.get()
                 self.sendWorkload(user, pid)
-                flag = 1
-                print("Finished User {}:ON/OFF {}".format(user,flag))
                 userQ.task_done()
-            except:
-                print("ERROR ERROR ON/OFF {}".format(flag))
-                break
+            except queue.Empty:
+                if userQ.empty():
+                    break
+
 
     def sendWorkload(self, user, pid):
         translation = {91: None, 93: None}
@@ -149,7 +147,11 @@ class WorkloadGenerator:
 
             elif command == SET_BUY_TRIGGER :
                 postUrl += API_TRIGGERS_PATH +  "setbuytrigger/"
-                (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
+                try:
+                    amount = float(requestInfo[3].strip("\n"))
+                except ValueError:
+                    amount = 0.00
+                stockSymbol = (requestInfo[2])
                 self.performRequest(postUrl, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_SELL_AMOUNT:
@@ -159,7 +161,11 @@ class WorkloadGenerator:
 
             elif command == SET_SELL_TRIGGER:
                 postUrl += API_TRIGGERS_PATH + "setselltrigger/"
-                (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
+                try:
+                    amount = float(requestInfo[3].strip("\n"))
+                except ValueError:
+                    amount = 0.00
+                stockSymbol = (requestInfo[2])
                 self.performRequest(postUrl, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == QUOTE:
@@ -217,8 +223,10 @@ class WorkloadGenerator:
 
         f.close()
 
+
     def performRequest(self, postUrl, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
         request = {'transactionNumber': transactionNumber, 'command': command}
+
         if user:
             request['user'] = user
         if stockSymbol:
@@ -228,14 +236,12 @@ class WorkloadGenerator:
         if filename:
             request['filename'] = filename
 
-        #print(postUrl)
-
+        print(postUrl)
         #print(request)
 
-
-        #r = requests.post(postUrl, json=request)
+        r = requests.post(postUrl, json=request)
         # TODO: might need r.close() if get error with too many files open or open sockets. 
-        #print("HTTP Status:  {}".format(r.status_code))
+        print("HTTP Status:  {}".format(r.status_code))
 
 
 def spawnHandlers(userList, handler):
@@ -245,6 +251,7 @@ def spawnHandlers(userList, handler):
         t.start()
 
     print("Started {} user handlers".format(i))
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -258,14 +265,14 @@ if __name__ == '__main__':
     wg = WorkloadGenerator(testFile)
     print("... Success!")
 
-    print("User Count: {}".format( len(wg.userList)))
+    print("\nUser Count: {}".format( len(wg.userList)))
 
     for user in wg.userList:
         userQ.put(user)
 
-    print("Spawning User Handlers...")
+    print("\nSpawning User Handlers...")
     spawnHandlers(wg.userList, wg.workloadHandler)
 
+    print("\nWaiting for all tasks to finish...")
     userQ.join()
-
     print("\n\n\nWorkload Generator Finished!!")
