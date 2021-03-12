@@ -13,7 +13,7 @@ import socket
 import logging
 import queue
 import time
-import requests
+#import requests
 from threading import Thread
 
 defaultTestFile = "../workloads/WL_1_USER.txt"
@@ -45,6 +45,8 @@ DUMPLOG             = "DUMPLOG"
 DISPLAY_SUMMARY     = "DISPLAY_SUMMARY"
 
 userQ = queue.Queue()
+COUNT = 0
+userList = []
 
 class WorkloadGenerator:
     def __init__(self, testFile):
@@ -101,18 +103,19 @@ class WorkloadGenerator:
         
         return userList
 
-
     def workloadHandler(self, pid):
+        while(1):
+            flag = 0
 
-        while True: 
             try: 
-                user = userQ.get()
+                user = userQ.get(block=False, timeout=0.5)
                 self.sendWorkload(user, pid)
+                flag = 1
+                print("Finished User {}:ON/OFF {}".format(user,flag))
                 userQ.task_done()
             except:
+                print("ERROR ERROR ON/OFF {}".format(flag))
                 break
-
-
 
     def sendWorkload(self, user, pid):
         translation = {91: None, 93: None}
@@ -216,7 +219,6 @@ class WorkloadGenerator:
 
     def performRequest(self, postUrl, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
         request = {'transactionNumber': transactionNumber, 'command': command}
-
         if user:
             request['user'] = user
         if stockSymbol:
@@ -225,20 +227,24 @@ class WorkloadGenerator:
             request['amount'] = amount
         if filename:
             request['filename'] = filename
-        print(postUrl)
 
-        r = requests.post(postUrl, json=command_dict)
+        #print(postUrl)
+
+        #print(request)
+
+
+        #r = requests.post(postUrl, json=request)
         # TODO: might need r.close() if get error with too many files open or open sockets. 
-        print("HTTP Status:  {}".format(r.status_code))
+        #print("HTTP Status:  {}".format(r.status_code))
 
 
 def spawnHandlers(userList, handler):
-
     for i, user in enumerate(userList):
         t = Thread(target=handler, args=(i,))
         t.daemon = True
         t.start()
-        
+
+    print("Started {} user handlers".format(i))
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -248,10 +254,18 @@ if __name__ == '__main__':
         testFile = sys.argv[1]
         logging.warning(f"Workload Generator will use: {testFile}")
 
+    print("\nCreating Workload Generator User Command Files...")
     wg = WorkloadGenerator(testFile)
-    spawnHandlers(wg.userList, wg.workloadHandler)
+    print("... Success!")
+
+    print("User Count: {}".format( len(wg.userList)))
 
     for user in wg.userList:
         userQ.put(user)
 
+    print("Spawning User Handlers...")
+    spawnHandlers(wg.userList, wg.workloadHandler)
+
     userQ.join()
+
+    print("\n\n\nWorkload Generator Finished!!")
