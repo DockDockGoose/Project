@@ -5,6 +5,11 @@ from transactions.models import Transaction
 from .utils import MockQuoteServer
 from time import time
 
+from django.core.cache import cache
+from django.conf import settings
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
+ 
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 class QuoteView(APIView):
     """
@@ -27,7 +32,7 @@ class QuoteView(APIView):
         transaction.save()
 
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
-        quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)
+        quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)            
         # TODO: Cache the recently quoted stock price
 
         #  Log quoteServer transaction (only increment transactionNum for userCommands?)
