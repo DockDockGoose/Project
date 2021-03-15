@@ -36,7 +36,6 @@ DISPLAY_SUMMARY = "DISPLAY_SUMMARY"
 userQ = queue.Queue()
 packetQ = queue.Queue()
 
-
 class WorkloadGenerator:
     def __init__(self, testFile):
         self.testFile = testFile
@@ -91,7 +90,7 @@ class WorkloadGenerator:
     def workloadHandler(self, pid):
         while True:
             try: 
-                user = userQ.get()
+                user = userQ.get(True, timeout=0.5)
                 self.sendWorkload(user, pid)
                 userQ.task_done()
             except queue.Empty:
@@ -235,14 +234,14 @@ def consumerThread():
 
 def spawnHandlers(userList, handler):
 
-    cThread = Thread(target=consumerThread)
-    cThread.start()
-
     for i, user in enumerate(userList):
         t = Thread(target=handler, args=(i,))
         t.daemon = True
         t.start()
     print("Started {} user handlers".format(i))
+
+    cThread = Thread(target=consumerThread)
+    cThread.start()
 
 
 if __name__ == '__main__':
