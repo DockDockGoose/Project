@@ -19,6 +19,19 @@ class SetBuyAmountView(APIView):
         transactionNum = request.data.get("transactionNumber")
         command = request.data.get("command")
 
+        # Log set buy amount transaction
+        transaction = Transaction(
+                type='userCommand',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command=command,
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+            )
+        transaction.save()
+
         # Find user account
         account = Account.objects.filter(username=username).first()
 
@@ -54,8 +67,16 @@ class SetBuyAmountView(APIView):
             transaction.save()
             return Response("Insufficient funds for buy trigger :(.", status=status.HTTP_412_PRECONDITION_FAILED)
 
-        # Add new trigger buy command and remove funds from account
-        trigger = Trigger(username=username, type='buy', stockSymbol=stockSymbol, amount=amount)
+        # Check if stock had a previous trigger
+        trigger = Trigger.objects.filter(username=username, type='buy', stockSymbol=stockSymbol).first()
+
+        if trigger is None:
+            # Add new trigger buy command
+            id = username + stockSymbol + 'buy'
+            trigger = Trigger(id=id,username=username, type='buy', stockSymbol=stockSymbol, sharesAmount=amount)
+        else:
+            # Update the stocks buy trigger command
+            trigger.sharesAmount = amount
         trigger.save()
 
         # Remove funds from user account and put into pending
@@ -63,26 +84,13 @@ class SetBuyAmountView(APIView):
         account.pendingFunds += amount
         account.save()
 
-        # Log set buy amount transaction
-        transaction = Transaction(
-                type='userCommand',
-                timestamp=int(time()*1000),
-                server='DOCK1',
-                transactionNum = transactionNum,
-                command=command,
-                username=username,
-                stockSymbol=stockSymbol,
-                amount=amount,
-            )
-        transaction.save()
-
         # Also log account transaction change
         transaction = Transaction(
                 type='accountTransaction',
                 timestamp=int(time()*1000),
                 server='DOCK1',
                 transactionNum = transactionNum,
-                command='remove',
+                action='remove',
                 username=username,
                 stockSymbol=stockSymbol,
                 amount=amount,

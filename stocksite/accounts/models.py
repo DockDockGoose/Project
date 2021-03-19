@@ -12,7 +12,12 @@ class Account(AbstractUser):
     stocks = djongoModels.ArrayField(
         model_container=Stock
     )
-
+    buy = djongoModels.EmbeddedField(
+        model_container=Stock
+    )
+    sell = djongoModels.EmbeddedField(
+        model_container=Stock
+    )
     objects = AccountManager()
 
     def __str__(self):

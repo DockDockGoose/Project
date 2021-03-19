@@ -7,7 +7,7 @@ from .utils import MockQuoteServer, getByStockSymbol
 from time import time
 
 
-class CancelSellView(APIView):
+class CancelBuyView(APIView):
     """
     API endpoint for cancelling the buy of a stock.
     """
@@ -46,6 +46,23 @@ class CancelSellView(APIView):
             )
             transaction.save()
             return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
-            
+        
+        # Check that user has buy command
+        if account.buy is None:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command=command,
+                username=username,
+                errorMessage='Buy command does not exist.',
+            )
+            transaction.save()
+            return Response("Buy command doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Remove buy command from user's account
+        account.buy = None
+        account.save()
 
         return Response(status=status.HTTP_200_OK)

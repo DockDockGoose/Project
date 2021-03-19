@@ -46,6 +46,23 @@ class CancelSellView(APIView):
             )
             transaction.save()
             return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
-            
+        
+        # Check that user has sell command
+        if account.sell is None:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command=command,
+                username=username,
+                errorMessage='Sell command does not exist.',
+            )
+            transaction.save()
+            return Response("Sell command doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Remove sell command from user's account
+        account.sell = None
+        account.save()
 
         return Response(status=status.HTTP_200_OK)

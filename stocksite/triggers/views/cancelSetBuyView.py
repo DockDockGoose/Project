@@ -18,10 +18,20 @@ class CancelSetBuyView(APIView):
         transactionNum = request.data.get("transactionNumber")
         command = request.data.get("command")
 
+        # First log cancel set buy command
+        transaction = Transaction(
+                type='userCommand',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command=command,
+                username=username,
+                stockSymbol=stockSymbol,
+            )
+        transaction.save()
+
         # Find previous buy trigger
         trigger = Trigger.objects.filter(username=username, type='buy', stockSymbol=stockSymbol).first()
-        # Find user account
-        account = Account.objects.filter(username=username).first()
 
         # If account is non-existing, log errorEvent to Transaction
         if trigger is None:
@@ -37,27 +47,16 @@ class CancelSetBuyView(APIView):
             )
             transaction.save()
             return Response("Buy trigger doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
+        # Find user account
+        account = Account.objects.filter(username=username).first()
 
         # Add funds back into user account
-        amount = trigger.amount
-        account.pendingFunds -= amount
-        account.funds += amount
+        account.pendingFunds -= trigger.sharesAmount
+        account.funds += trigger.sharesAmount
         account.save()
 
         # Delete trigger
         trigger.delete()
-
-        # Log set buy amount transaction
-        transaction = Transaction(
-                type='userCommand',
-                timestamp=int(time()*1000),
-                server='DOCK1',
-                transactionNum = transactionNum,
-                command=command,
-                username=username,
-                stockSymbol=stockSymbol,
-            )
-        transaction.save()
 
         # Also log account transaction change
         transaction = Transaction(
@@ -65,10 +64,10 @@ class CancelSetBuyView(APIView):
                 timestamp=int(time()*1000),
                 server='DOCK1',
                 transactionNum = transactionNum,
-                command='add',
+                action='add',
                 username=username,
                 stockSymbol=stockSymbol,
-                amount=amount,
+                amount=trigger.sharesAmount,
             )
         transaction.save()
 

@@ -28,11 +28,11 @@ def logUserCommand(infoDict):
     userCommand = ElementTree.SubElement(root, 'userCommand')
     ElementTree.SubElement(userCommand, 'timestamp').text = infoDict['timestamp']
     ElementTree.SubElement(userCommand, 'server').text = infoDict['server']
-    ElementTree.SubElement(userCommand, 'transactionNum').text = infoDict['transactionNumber']
+    ElementTree.SubElement(userCommand, 'transactionNum').text = infoDict['transactionNum']
     ElementTree.SubElement(userCommand, 'command').text = infoDict['command']
     
-    if 'user' in infoDict:
-        ElementTree.SubElement(userCommand, 'username').text = infoDict['user']
+    if 'username' in infoDict:
+        ElementTree.SubElement(userCommand, 'username').text = infoDict['username']
     if 'stockSymbol' in infoDict:
         ElementTree.SubElement(userCommand, 'stockSymbol').text = infoDict['stockSymbol']
     if 'filename' in infoDict:
@@ -46,10 +46,10 @@ def logQuoteServer(infoDict):
     quoteServer = ElementTree.SubElement(root, 'quoteServer')
     ElementTree.SubElement(quoteServer, 'timestamp').text = infoDict['timestamp']
     ElementTree.SubElement(quoteServer, 'server').text = infoDict['server']
-    ElementTree.SubElement(quoteServer, 'transactionNum').text = infoDict['transactionNumber']
+    ElementTree.SubElement(quoteServer, 'transactionNum').text = infoDict['transactionNum']
     ElementTree.SubElement(quoteServer, 'price').text = infoDict['price']
     ElementTree.SubElement(quoteServer, 'stockSymbol').text = infoDict['stockSymbol']
-    ElementTree.SubElement(quoteServer, 'username').text = infoDict['user']
+    ElementTree.SubElement(quoteServer, 'username').text = infoDict['username']
     ElementTree.SubElement(quoteServer, 'quoteServerTime').text = infoDict['quoteServerTime']
     ElementTree.SubElement(quoteServer, 'cryptokey').text = infoDict['cryptokey']
 
@@ -59,9 +59,9 @@ def logAccountTransaction(infoDict):
     accountTransaction = ElementTree.SubElement(root, 'accountTransaction')
     ElementTree.SubElement(accountTransaction, 'timestamp').text = infoDict['timestamp']
     ElementTree.SubElement(accountTransaction, 'server').text = infoDict['server']
-    ElementTree.SubElement(accountTransaction, 'transactionNum').text = infoDict['transactionNumber']
-    ElementTree.SubElement(accountTransaction, 'action').text = infoDict['command']         #should be add or remove
-    ElementTree.SubElement(accountTransaction, 'username').text = infoDict['user']
+    ElementTree.SubElement(accountTransaction, 'transactionNum').text = infoDict['transactionNum']
+    ElementTree.SubElement(accountTransaction, 'action').text = infoDict['action']         #should be add or remove
+    ElementTree.SubElement(accountTransaction, 'username').text = infoDict['username']
     ElementTree.SubElement(accountTransaction, 'funds').text = '%.2f' % infoDict['amount']
 
 """ System events can be current user commands, interserver communications, 
@@ -70,11 +70,11 @@ def logSystemEvent(infoDict):
     systemEvent = ElementTree.SubElement(root, 'systemEvent')
     ElementTree.SubElement(systemEvent, 'timestamp').text = infoDict['timestamp']
     ElementTree.SubElement(systemEvent, 'server').text = infoDict['server']
-    ElementTree.SubElement(systemEvent, 'transactionNum').text = infoDict['transactionNumber']
+    ElementTree.SubElement(systemEvent, 'transactionNum').text = infoDict['transactionNum']
     ElementTree.SubElement(systemEvent, 'command').text = infoDict['command']
 
-    if 'user' in infoDict:
-        ElementTree.SubElement(systemEvent, 'username').text = infoDict['user']
+    if 'username' in infoDict:
+        ElementTree.SubElement(systemEvent, 'username').text = infoDict['username']
     if 'stockSymbol' in infoDict:
         ElementTree.SubElement(systemEvent, 'stockSymbol').text = infoDict['stockSymbol']
     if 'filename' in infoDict:
@@ -88,11 +88,11 @@ def logErrorEvent(infoDict):
     errorEvent = ElementTree.SubElement(root, 'errorEvent')
     ElementTree.SubElement(errorEvent, 'timestamp').text = infoDict['timestamp']
     ElementTree.SubElement(errorEvent, 'server').text = infoDict['server']
-    ElementTree.SubElement(errorEvent, 'transactionNum').text = infoDict['transactionNumber']
+    ElementTree.SubElement(errorEvent, 'transactionNum').text = infoDict['transactionNum']
     ElementTree.SubElement(errorEvent, 'command').text = infoDict['command']
 
-    if 'user' in infoDict:
-        ElementTree.SubElement(errorEvent, 'username').text = infoDict['user']
+    if 'username' in infoDict:
+        ElementTree.SubElement(errorEvent, 'username').text = infoDict['username']
     if 'stockSymbol' in infoDict:
         ElementTree.SubElement(errorEvent, 'stockSymbol').text = infoDict['stockSymbol']
     if 'filename' in infoDict:
@@ -108,11 +108,11 @@ def logDebugEvent(infoDict):
     debugEvent = ElementTree.SubElement(root, 'debugEvent')
     ElementTree.SubElement(debugEvent, 'timestamp').text = infoDict['timestamp']
     ElementTree.SubElement(debugEvent, 'server').text = infoDict['server']
-    ElementTree.SubElement(debugEvent, 'transactionNum').text = infoDict['transactionNumber']
+    ElementTree.SubElement(debugEvent, 'transactionNum').text = infoDict['transactionNum']
     ElementTree.SubElement(debugEvent, 'command').text = infoDict['command']
 
-    if 'user' in infoDict:
-        ElementTree.SubElement(debugEvent, 'username').text = infoDict['user']
+    if 'username' in infoDict:
+        ElementTree.SubElement(debugEvent, 'username').text = infoDict['username']
     if 'stockSymbol' in infoDict:
         ElementTree.SubElement(debugEvent, 'stockSymbol').text = infoDict['stockSymbol']
     if 'filename' in infoDict:

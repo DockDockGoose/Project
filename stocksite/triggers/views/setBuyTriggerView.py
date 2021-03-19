@@ -18,6 +18,19 @@ class SetBuyTriggerView(APIView):
         transactionNum = request.data.get("transactionNumber")
         command = request.data.get("command")
 
+        # First log set buy trigger
+        transaction = Transaction(
+                type='userCommand',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command=command,
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+            )
+        transaction.save()
+
         # Find previous buy trigger
         trigger = Trigger.objects.filter(username=username, type='buy', stockSymbol=stockSymbol).first()
 
@@ -38,20 +51,7 @@ class SetBuyTriggerView(APIView):
             return Response("Buy trigger doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
 
         # Update trigger to include trigger price
-        trigger.triggerPrice = amount
+        trigger.price = amount
         trigger.save()
-
-        # Log set buy amount transaction
-        transaction = Transaction(
-                type='userCommand',
-                timestamp=int(time()*1000),
-                server='DOCK1',
-                transactionNum = transactionNum,
-                command=command,
-                username=username,
-                stockSymbol=stockSymbol,
-                amount=amount,
-            )
-        transaction.save()
 
         return Response(status=status.HTTP_200_OK)

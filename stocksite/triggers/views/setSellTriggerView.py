@@ -20,6 +20,19 @@ class SetSellTriggerView(APIView):
         transactionNum = request.data.get("transactionNumber")
         command = request.data.get("command")
 
+        # First log set sell trigger command
+        transaction = Transaction(
+                type='userCommand',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command=command,
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+            )
+        transaction.save()
+
         # Find previous sell trigger
         trigger = Trigger.objects.filter(username=username, type='sell', stockSymbol=stockSymbol).first()
 
@@ -41,28 +54,15 @@ class SetSellTriggerView(APIView):
 
 
         # Update trigger to include trigger price
-        trigger.triggerPrice = amount
+        trigger.price = amount
         trigger.save()
 
         # Decrease the number of stock shares in user's account 
         account = Account.objects.filter(username=username).first()
         stock = getByStockSymbol(account.stocks, stockSymbol)
-        stock['sharesAmount'] -= trigger.amount * amount
+        stock['sharesAmount'] -= trigger.sharesAmount * amount
 
         account.save()
-
-        # Log buy transaction
-        transaction = Transaction(
-                type='userCommand',
-                timestamp=int(time()*1000),
-                server='DOCK1',
-                transactionNum = transactionNum + 1,
-                command=command,
-                username=username,
-                stockSymbol=stockSymbol,
-                amount=amount,
-            )
-        transaction.save()
 
         # Also log account transaction change
         transaction = Transaction(
@@ -70,7 +70,7 @@ class SetSellTriggerView(APIView):
                 timestamp=int(time()*1000),
                 server='DOCK1',
                 transactionNum = transactionNum,
-                command='remove',
+                action='remove',
                 username=username,
                 stockSymbol=stockSymbol,
                 amount=amount,

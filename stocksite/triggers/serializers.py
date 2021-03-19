@@ -4,11 +4,11 @@ from .models import Trigger
 
 class TriggerSerializer(serializers.Serializer):
     username = models.CharField(max_length=50)
-    kind = models.CharField(max_length=50)
+    type = models.CharField(max_length=50)
     stockSymbol = models.CharField(max_length=50)
     price = models.FloatField()
     sharesAmount = models.FloatField()
 
     class Meta:
         model = Trigger
-        fields = ('username', 'kind', 'stockSymbol', 'price', 'sharesAmount')
+        fields = ('username', 'type', 'stockSymbol', 'price', 'sharesAmount')

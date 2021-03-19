@@ -23,8 +23,8 @@ class MockQuoteServer:
 		
 		quote_data = {
 				'price': 10.50,
-				'stockSymbol': 'stockSymbol',
-				'username': 'username',
+				'stockSymbol': stockSymbol,
+				'username': username,
 				'quoteServerTime': int(time()*1000),
 				'cryptoKey': mockCryptoKey
 		}

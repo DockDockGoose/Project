@@ -16,10 +16,21 @@ class CancelSetSellView(APIView):
         # Get request data
         username = request.data.get("username")
         stockSymbol = request.data.get("stockSymbol")
-        amount = float(request.data.get("amount"))
         transactionNum = request.data.get("transactionNumber")
         command = request.data.get("command")
 
+        # First log cancel set sell command
+        transaction = Transaction(
+                type='userCommand',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command=command,
+                username=username,
+                stockSymbol=stockSymbol,
+            )
+        transaction.save()
+        
         # Find previous sell trigger
         trigger = Trigger.objects.filter(username=username, type='sell', stockSymbol=stockSymbol).first()
 
@@ -33,7 +44,6 @@ class CancelSetSellView(APIView):
                 command=command,
                 username=username,
                 stockSymbol=stockSymbol,
-                amount=amount,
                 errorMessage='Sell trigger does not exist.',
             )
             transaction.save()
@@ -42,25 +52,12 @@ class CancelSetSellView(APIView):
         # Decrease the number of stock shares in user's account 
         account = Account.objects.filter(username=username).first()
         stock = getByStockSymbol(account.stocks, stockSymbol)
-        stock['sharesAmount'] += trigger.amount * trigger.triggerPrice
+        stock['sharesAmount'] += trigger.sharesAmount * trigger.price
 
         account.save()
 
         # Delete trigger
         trigger.delete()
-
-        # Log buy transaction
-        transaction = Transaction(
-                type='userCommand',
-                timestamp=int(time()*1000),
-                server='DOCK1',
-                transactionNum = transactionNum + 1,
-                command=command,
-                username=username,
-                stockSymbol=stockSymbol,
-                amount=amount,
-            )
-        transaction.save()
 
         # Also log account transaction change
         transaction = Transaction(
@@ -68,10 +65,10 @@ class CancelSetSellView(APIView):
                 timestamp=int(time()*1000),
                 server='DOCK1',
                 transactionNum = transactionNum,
-                command='add',
+                action='add',
                 username=username,
                 stockSymbol=stockSymbol,
-                amount=amount,
+                amount=trigger.sharesAmount * trigger.price,
             )
         transaction.save()
 

@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from transactions.models import Transaction
 from transactions.serializers import TransactionSerializer
+from triggers.models import Trigger
 from triggers.serializers import TriggerSerializer
 from .models import Account
 from .serializers import AccountSerializer
@@ -122,7 +123,7 @@ class AddView(APIView):
             timestamp=int(time()*1000),
             server='DOCK1',
             transactionNum=transactionNum,
-            command='add',
+            action='add',
             username=username,
             amount=amount
         )
@@ -186,16 +187,16 @@ class DisplaySummary(APIView):
         # Get users transaction, account, and triggers
         user_transactions = Transaction.objects.filter(username=username)
         user_account = Account.objects.filter(username=username).first()
-        user_triggers = Trigger.objects.filter(username=username)
+        #user_triggers = Trigger.objects.filter(username=username)
 
         # Serialize the data and send back response
         
-        transactions_serializer = TransactionSerializer(user_transactions)
-        triggers_serializer = TriggerSerializer(user_triggers)
-        account_serializer = AccountSerializer(user_account)
-
-        print(transactions_serializer)
+        # transactions_serializer = TransactionSerializer(user_transactions)
+        # triggers_serializer = TriggerSerializer(user_triggers)
+        # account_serializer = AccountSerializer(user_account)
 
         # TODO: Add all the data together and send back to user
 
-        return Response(status=status.HTTP_200_OK)
+        result = "Data"
+
+        return Response(result, status=status.HTTP_200_OK)

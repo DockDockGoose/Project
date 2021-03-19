@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import Account
 from transactions.models import Transaction
+from stocks.models import Stock
+from .utils import MockQuoteServer
 from time import time
 
 
@@ -10,7 +12,7 @@ class BuyView(APIView):
     """
     API endpoint that allows stocks to be bought.
     """
-    def post(self, request):
+    def put(self, request):
         # Get request data
         username = request.data.get("username")
         stockSymbol = request.data.get("stockSymbol")
@@ -58,7 +60,7 @@ class BuyView(APIView):
                 timestamp=int(time()*1000),
                 server='DOCK1',
                 transactionNum = transactionNum,
-                command='BUY',
+                command=command,
                 username=username,
                 stockSymbol=stockSymbol,
                 amount=amount,
@@ -67,5 +69,14 @@ class BuyView(APIView):
             transaction.save()
             return Response("Insufficient funds :(.", status=status.HTTP_412_PRECONDITION_FAILED)
 
+        
+        # TODO: Check for quote in cache (if not in cache/is stale perform query)
+        # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
+        quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)
+
+        # Set a buy command to the user
+        newStock = {'stockSymbol':stockSymbol, 'price':quoteQuery['price'], 'quoteServerTime':quoteQuery['quoteServerTime'], 'sharesAmount':amount/quoteQuery['price']}
+        account.buy = newStock
+        account.save()
 
         return Response(status=status.HTTP_200_OK)
