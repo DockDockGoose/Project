@@ -10,3 +10,4 @@ django-rest-auth==0.9.5
 django-filter==2.4.0
 gunicorn==20.0.4
 requests==2.25.1
+django-debug-toolbar==3.2
