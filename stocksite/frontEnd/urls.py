@@ -10,5 +10,6 @@ urlpatterns = [
     path('transaction/<int:transactionNu>', views.viewIndividualTransaction),
     path('purchaseStock/<int:stockId>', views.purchaseStockView),
     path('confirmPurchase/', views.confirmPurchaseStock),
-    path('confirmPurchase/confirmed/', views.processPurchase)
+    path('confirmPurchase/confirmed/', views.processPurchase),
+    path('past_prices_chart/<int:stockId>', views.past_prices_chart, name='past_prices_chart'),
 ]

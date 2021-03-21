@@ -8,6 +8,7 @@ class FrontEndStock(djongoModels.Model):
     stockSymbol = djongoModels.CharField(max_length=50, blank=False)
     price = djongoModels.FloatField(default=0.00)
     quoteServerTime = djongoModels.BigIntegerField(default=0)
+    prevPrice = djongoModels.FloatField(default=0.00)
     #sharesAmount = djongoModels.FloatField(default=0.00)
 
     def __str__(self):

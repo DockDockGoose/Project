@@ -51,6 +51,11 @@
     <div class="card-container">
       <h3>{{stock.stockSymbol}}</h3>
       <h4>${{stock.price}}</h4>
+      {% if stock.prevPrice|add:"1" < stock.price|add:"1" %}
+        <img src="{% static 'pngs/up-arrow.png' %}" alt="Up arrow" height="20" width="20"> 
+      {% elif stock.prevPrice|add:"1" > stock.price|add:"1" %}
+        <img src="{% static 'pngs/down-arrow.png' %}" alt="Down arrow" height="20" width="20">
+      {% endif %}
     </div>
   </a>
 

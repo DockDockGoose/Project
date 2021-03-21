@@ -1,10 +1,10 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from transactions.models import Transaction
 from accounts.models import Account
 from frontEndStocks.models import FrontEndStock
-from datetime import datetime
+import datetime
 
 
 def index(request):
@@ -48,10 +48,29 @@ def viewIndividualTransaction(request, transactionNu):
 
 def purchaseStockView(request, stockId):
     stock_list = FrontEndStock.objects.filter(id=stockId)
+    data = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    labels = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
     context = {
-        "stock": stock_list[0]
+        "stock": stock_list[0],
+        "data": data,
+        "labels": labels
     }
     return render(request, 'purchaseStock.html', context)
+
+def past_prices_chart(request, stockId):
+    stock_list = FrontEndStock.objects.filter(id=stockId)
+    data = stock_list[0].prevPrices
+    labels = []
+    time = datetime.datetime.now()
+    time = time - datetime.timedelta(seconds=(len(data) * 60))
+    for price in data:
+        labels.append(time.strftime("%H:%M:%S"))
+        time = time + datetime.timedelta(seconds=60)
+
+    return JsonResponse(data={
+        'labels': labels,
+        'data': data,
+    })
 
 def confirmPurchaseStock(request):
 

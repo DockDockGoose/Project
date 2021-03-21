@@ -18,6 +18,50 @@
       }
   </style>
 
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+  <script>
+
+    $(function () {
+
+      var $populationChart = $("#past_prices_chart");
+      $.ajax({
+        url: $populationChart.data("url"),
+        success: function (data) {
+
+          var ctx = $populationChart[0].getContext("2d");
+          var options = {
+            responsive: true,
+              legend: {
+                position: 'top',
+              },
+              title: {
+                display: true,
+                text: '{{stock.stockSymbol}} Price Chart'
+              },
+              fill: false,
+          }
+
+          new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: data.labels,
+              datasets: [{
+                label: 'Price ($USD)',
+                data: data.data
+              }],
+              fill: false          
+            },
+            options: options
+          });
+
+        }
+      });
+
+    });
+
+  </script>
+
 <body class="light-grey">
 
   <!-- Sidebar/menu -->
@@ -36,9 +80,9 @@
       <div class="bar-block">
           <a href="#" class="bar-item button padding-16 hide-large dark-grey hover-black" onclick="close()"
               title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
-          <a href="/frontEnd/viewMyTransactions" class="bar-item button padding grey"><img
+          <a href="/frontEnd/viewMyTransactions" class="bar-item button padding"><img
                   src="https://img.icons8.com/nolan/64/merchant-account.png" /><i class=""></i>  Account</a>
-          <a href="/frontEnd/viewStocks" class="bar-item button padding"><img src="https://img.icons8.com/nolan/64/stocks.png" /><i
+          <a href="/frontEnd/viewStocks" class="bar-item button padding grey"><img src="https://img.icons8.com/nolan/64/stocks.png" /><i
                   class=""></i>  Stocks</a>
           <a href="#" class="bar-item button padding"><img src="https://img.icons8.com/nolan/64/settings-3.png" /><i
                   class=""></i>  Settings</a>
@@ -54,6 +98,7 @@
       method="post"
     >
     {% csrf_token %}
+    <canvas id="past_prices_chart" data-url="/frontEnd/past_prices_chart/{{stock.id}}"></canvas> 
       <h3>You are purchasing {{stock.stockSymbol}}</h3>
       <h3>Currently priced at ${{stock.price}} per share</h3>
       <div class="group">      
