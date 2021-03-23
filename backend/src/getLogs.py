@@ -24,12 +24,15 @@ auditNum = ""
 def consumerThread():
     auditFileName = '../audit/logs/logfile' + auditNum + '.xml'
     logFile = open(auditFileName, "a")
-    logFile.writelines(["<?xml version='1.0' encoding='us-ascii'?>", "<log>"])
+    logFile.writelines(["<?xml version='1.0' encoding='us-ascii'?>\n", "<log>\n"])
 
     while True:
         try:
             # set get to throw exception if no packet in 5 seconds
-            filename    = fileNameQ.get(True, 2)
+            filename    = fileNameQ.get(True, 30)
+
+            print("Writing to file: {}".format(filename))
+            
             with open(filename) as tmpLogFile:
                 fileContent = tmpLogFile.readlines()
 
