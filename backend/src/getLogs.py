@@ -24,7 +24,7 @@ auditNum = ""
 def consumerThread():
     auditFileName = '../audit/logs/logfile' + auditNum + '.xml'
     logFile = open(auditFileName, "a")
-    logFile.writelines("<?xml version='1.0' encoding='us-ascii'?>", "<log>")
+    logFile.writelines(["<?xml version='1.0' encoding='us-ascii'?>", "<log>"])
 
     while True:
         try:
