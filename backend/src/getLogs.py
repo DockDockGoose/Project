@@ -83,7 +83,7 @@ print("Processing transactions...")
 processing = 0
 for transact in transactions:
     try:
-        print("    index: {}".format(processing))
+        #print("    index: {}".format(processing))
         processing = processing + 1
 
         # Remove the admin user from dumplog commands
