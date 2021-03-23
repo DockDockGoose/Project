@@ -37,7 +37,7 @@ def consumerThread():
                 fileContent = tmpLogFile.readlines()
 
                 # Take only the logFile content
-                fileContent = fileContent[2:-2]
+                fileContent = fileContent[2:-1]
 
                 # Position logfile at end of file. 
                 logFile.seek(0,2)
