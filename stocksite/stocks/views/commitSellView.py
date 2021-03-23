@@ -33,12 +33,14 @@ class CommitSellView(APIView):
         account.funds += amount
         account.save()
 
+        transactionNumber  = request.data.get("transactionNumber")
+
         # Log commit sell transaction
         transaction = Transaction(
                 type='userCommand',
                 timestamp=int(time()*1000),
                 server='DOCK1',
-                transactionNum = Transaction.objects.last().transactionNum + 1,
+                transactionNum = transactionNum + 1,
                 command='COMMIT_SELL',
                 username=username,
                 stockSymbol=stockSymbol,
