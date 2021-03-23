@@ -32,7 +32,7 @@ def consumerThread():
             filename    = fileNameQ.get(True, 30)
 
             print("Writing to file: {}".format(filename))
-            
+
             with open(filename) as tmpLogFile:
                 fileContent = tmpLogFile.readlines()
 
@@ -44,8 +44,10 @@ def consumerThread():
 
                 logFile.writelines(fileContent)
 
-            os.remove(auditFileName)
+            os.remove(filename)
+
             fileNameQ.task_done()
+
         except queue.Empty:
             if fileNameQ.empty():
                 break
