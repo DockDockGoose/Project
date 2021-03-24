@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'transactions',
     'stocks',
     'frontEnd',
-    'frontEndStocks'
+    'frontEndStocks',
+    'prevPrices'
 ]
 
 REST_FRAMEWORK = {

@@ -22,6 +22,7 @@ urlpatterns = [
     path('api/accounts/', include('accounts.urls')),
     path('api/', include('transactions.urls')),
     path('api/', include('frontEndStocks.urls')),
+    path('api/', include('prevPrices.urls')),
     path('frontEnd/', include('frontEnd.urls')),
     #path('frontEnd/viewTransactions', views.viewTransactions),
     path('admin/', admin.site.urls),
