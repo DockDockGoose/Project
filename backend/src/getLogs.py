@@ -98,8 +98,7 @@ for transact in transactions:
         elif (transact['logType'] == TRANSACT_LOG):
             log.logEvents[TRANSACT_LOG](transact)
         
-        #if (processing % 100000):
-        if not (processing % 25000):
+        if not (processing % 50000):
             log.prettyPrintLog(fileName=processing)
             fileNameQ.put('../audit/logs/tmp/logfile' + str(processing) + '.xml')
 
