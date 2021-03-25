@@ -2,11 +2,20 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import Account
+from accounts.serializers import AccountSerializer
+from django.core import serializers
 from transactions.models import Transaction
 from stocks.models import Stock
 from .utils import MockQuoteServer
 from time import time
 
+from django.conf import settings
+import redis
+import json
+
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
+
+CACHE_TTL = 60
 
 class BuyView(APIView):
     """
@@ -35,7 +44,25 @@ class BuyView(APIView):
         transaction.save()
 
         # Find user account
-        account = Account.objects.filter(username=username).first()
+
+        if username in cache:
+            account = cache.get(username)
+            account = json.loads(account)
+        else:
+            account = Account.objects.filter(username=username).first()
+
+            # change account to string in order to cache
+            new_account = {
+                'username': account.username,
+                'funds': account.funds,
+                'pendingFunds': account.pendingFunds,
+                'stocks': account.stocks,
+                'buy': account.buy,
+                'sell': account.sell,
+            }
+
+            str_account = json.dumps(new_account)
+            cache.set(username, str_account)
 
         # If account is non-existing, log errorEvent to Transaction
         if account is None:
