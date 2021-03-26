@@ -47,7 +47,7 @@ RUN pip install -r /home/app/requirements.txt
 
 # copy entrypoint-prod.sh
 COPY ./entrypoint.prod.sh $APP_HOME
-RUN chmod +x ${APP_HOME}/entrypoint.sh
+RUN chmod +x ${APP_HOME}/entrypoint.prod.sh
 
 # copy project
 COPY . $APP_HOME
