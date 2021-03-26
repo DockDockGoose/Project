@@ -30,16 +30,27 @@ class MockQuoteServer:
             Use intead of getQuote when you are not connected to server
             Will return dummy data.
         """
+        # First check the cache for quote
+        quote_data = cache.hgetall(stockSymbol)
+        
+        if not quote_data:
+            quote_data = {
+                'price': 10.50,
+                'stockSymbol': stockSymbol,
+                'username': username,
+                'quoteServerTime': int(time() * 1000),
+                'cryptoKey': mockCryptoKey
+            }
 
-        quote_data = {
-            'price': 10.50,
-            'stockSymbol': stockSymbol,
-            'username': username,
-            'quoteServerTime': int(time() * 1000),
-            'cryptoKey': mockCryptoKey
-        }
+            cache.hmset(stockSymbol, quote_data)
+            cache.expire(stockSymbol, CACHE_TTL)
 
-        return quote_data
+            return quote_data
+        else:
+            quote_data['price'] = float(quote_data['price'])
+            quote_data['quoteServerTime'] = float(quote_data['quoteServerTime'])
+            return quote_data
+            
 
 
 """ The quote server. Will return an actual quote."""
@@ -74,11 +85,9 @@ class QuoteServer:
         """
 
         # First check the cache for quote
-        if stockSymbol in cache:
-            quote_data = cache.hgetall(stockSymbol)
-            return quote_data
-        else:
+        quote_data = cache.hgetall(stockSymbol)
 
+        if not quote_data:
             # Connect to quote server
             self.connect()
 
@@ -112,6 +121,10 @@ class QuoteServer:
                 print('Connection to server closed')
                 # close the connection, and the socket
                 self.socket.close()
+        else:
+            quote_data['price'] = float(quote_data['price'])
+            quote_data['quoteServerTime'] = int(quote_data['quoteServerTime'])
+            return quote_data
 
 
 def getByStockSymbol(stocks, stockSymbol):
