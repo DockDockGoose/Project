@@ -33,8 +33,10 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
+
 def force_show_toolbar(request):
-    return True # Always show toolbar, remove for demo
+    return True     # Always show toolbar, remove for demo
+
 
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': force_show_toolbar,    # Force b/c docker container IP's are hard to predict

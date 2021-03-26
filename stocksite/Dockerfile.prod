@@ -16,7 +16,7 @@ ENV PYTHONUNBUFFERED 1
 
 # lint
 RUN pip install --upgrade pip
-RUN pip install flake8
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org flake8
 COPY . .
 RUN flake8 --ignore=E501,F401 ./stocksite
 
@@ -43,12 +43,11 @@ WORKDIR $APP_HOME
 
 # install dependencies
 COPY ./requirements.txt /home/app
-RUN pip install --upgrade pip
-RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org
 RUN pip install -r /home/app/requirements.txt
 
 # copy entrypoint-prod.sh
 COPY ./entrypoint.prod.sh $APP_HOME
+RUN chmod +x ${APP_HOME}/entrypoint.sh
 
 # copy project
 COPY . $APP_HOME
