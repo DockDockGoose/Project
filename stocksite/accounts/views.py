@@ -139,7 +139,7 @@ class DumplogView(APIView):
     def get(self, request):
         username = request.data.get("username")
         command = request.data.get("command")
-        transactionNum = request.data.get("transactionNumber")
+        transactionNum = request.data.get("transactionNum")
 
         # First thing log the command
         transaction = Transaction(
@@ -172,7 +172,7 @@ class DisplaySummary(APIView):
     def get(self, request):
         username = request.data.get("username")
         command = request.data.get("command")
-        transactionNum = request.data.get("transactionNumber")
+        transactionNum = request.data.get("transactionNum")
         # First thing log the command
         transaction = Transaction(
                 type='userCommand',

@@ -15,7 +15,7 @@ class CancelSetBuyView(APIView):
         # Get request data
         username = request.data.get("username")
         stockSymbol = request.data.get("stockSymbol")
-        transactionNum = request.data.get("transactionNumber")
+        transactionNum = request.data.get("transactionNum")
         command = request.data.get("command")
 
         # First log cancel set buy command

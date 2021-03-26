@@ -19,7 +19,7 @@ from threading import Thread
 defaultTestFile = "../workloads/WL_1_USER.txt"
 
 serverAddress   = "localhost"
-serverPort      = "8000"
+serverPort      = "80"
 
 serverURL       = "http://" + serverAddress  + ":" + serverPort + "/"
 
@@ -228,7 +228,8 @@ class WorkloadGenerator:
 
 
     def performRequest(self, url, method, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
-        request = {'transactionNumber': transactionNumber, 'command': command}
+        request = {'transactionNum': transactionNumber, 'command': command}
+        print(request)
 
         if user:
             request['username'] = user
