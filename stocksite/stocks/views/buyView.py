@@ -44,25 +44,26 @@ class BuyView(APIView):
         transaction.save()
 
         # Find user account
+        account = Account.objects.filter(username=username).first()
 
-        if username in cache:
-            account = cache.get(username)
-            account = json.loads(account)
-        else:
-            account = Account.objects.filter(username=username).first()
 
-            # change account to string in order to cache
-            new_account = {
-                'username': account.username,
-                'funds': account.funds,
-                'pendingFunds': account.pendingFunds,
-                'stocks': account.stocks,
-                'buy': account.buy,
-                'sell': account.sell,
-            }
+        # if username in cache:
+        #     account = cache.get(username)
+        #     account = json.loads(account)
+        # else:
 
-            str_account = json.dumps(new_account)
-            cache.set(username, str_account)
+        #     # change account to string in order to cache
+        #     new_account = {
+        #         'username': account.username,
+        #         'funds': account.funds,
+        #         'pendingFunds': account.pendingFunds,
+        #         'stocks': account.stocks,
+        #         'buy': account.buy,
+        #         'sell': account.sell,
+        #     }
+
+        #     str_account = json.dumps(new_account)
+        #     cache.set(username, str_account)
 
         # If account is non-existing, log errorEvent to Transaction
         if account is None:
