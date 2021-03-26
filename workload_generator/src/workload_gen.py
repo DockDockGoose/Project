@@ -238,7 +238,7 @@ class WorkloadGenerator:
         if amount:
             request['amount'] = amount
         if filename:
-            request['filename'] = filename
+            request['fileName'] = filename
 
         print(url)
         if method == GET:
