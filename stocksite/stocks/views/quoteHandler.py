@@ -29,7 +29,7 @@ class QuoteServer:
             self.socket.close()
             sys.exit(1)
 
-    def getQuote(self, cmdDict):
+    def getQuote(self, stockSymbol, user):
         """
             Get a quote from the quote server
         """
@@ -37,7 +37,7 @@ class QuoteServer:
         self.connect()
 
         # Get query and send to quote server
-        quote = cmdDict['stockSymbol'] + ',' + cmdDict['user'] + "\n"
+        quote = stockSymbol + ',' + user + "\n"
 
         self.socket.send(quote.encode())
 
