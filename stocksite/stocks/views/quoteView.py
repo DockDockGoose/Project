@@ -4,6 +4,7 @@ from rest_framework import status
 from transactions.models import Transaction
 from transactions.serializers import TransactionSerializer
 from .utils import MockQuoteServer
+from .quoteHandler import QuoteServer
 from time import time
 
 # from django.core.cache import cache
@@ -35,7 +36,8 @@ class QuoteView(APIView):
         transaction.save()
 
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
-        quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)            
+        # quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)    
+        quoteQuery = QuoteServer.getQuote(username, stockSymbol)        
         # TODO: Cache the recently quoted stock price
 
         #  Log quoteServer transaction (only increment transactionNum for userCommands?)
