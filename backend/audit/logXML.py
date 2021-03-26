@@ -31,15 +31,12 @@ def logUserCommand(infoDict):
     ElementTree.SubElement(userCommand, 'transactionNum').text = str(infoDict['transactionNum'])
     ElementTree.SubElement(userCommand, 'command').text = infoDict['command']
     
-    if infoDict['transactionNum'] is 'None':
-        ElementTree.SubElement()
-
     if infoDict['username']:
         ElementTree.SubElement(userCommand, 'username').text = infoDict['username']
     if infoDict['stockSymbol']:
         ElementTree.SubElement(userCommand, 'stockSymbol').text = infoDict['stockSymbol']
     if infoDict['fileName']:
-        ElementTree.SubElement(userCommand, 'fileName').text = infoDict['fileName']
+        ElementTree.SubElement(userCommand, 'filename').text = infoDict['fileName']
     if infoDict['amount'] is not None:
         ElementTree.SubElement(userCommand, 'funds').text = '%.2f' % infoDict['amount']
 
@@ -81,7 +78,7 @@ def logSystemEvent(infoDict):
     if infoDict['stockSymbol']:
         ElementTree.SubElement(systemEvent, 'stockSymbol').text = infoDict['stockSymbol']
     if infoDict['fileName']:
-        ElementTree.SubElement(systemEvent, 'fileName').text = infoDict['fileName']
+        ElementTree.SubElement(systemEvent, 'filename').text = infoDict['fileName']
     if infoDict['amount'] is not None:
         ElementTree.SubElement(systemEvent, 'funds').text = '%.2f' % infoDict['amount']
 
@@ -99,7 +96,7 @@ def logErrorEvent(infoDict):
     if infoDict['stockSymbol']:
         ElementTree.SubElement(errorEvent, 'stockSymbol').text = infoDict['stockSymbol']
     if infoDict['fileName']:
-        ElementTree.SubElement(errorEvent, 'fileName').text = infoDict['fileName']
+        ElementTree.SubElement(errorEvent, 'filename').text = infoDict['fileName']
     if infoDict['amount'] is not None:
         ElementTree.SubElement(errorEvent, 'funds').text = '%.2f' % infoDict['amount']
     if infoDict['errorMessage']:
@@ -119,7 +116,7 @@ def logDebugEvent(infoDict):
     if infoDict['stockSymbol']:
         ElementTree.SubElement(debugEvent, 'stockSymbol').text = infoDict['stockSymbol']
     if infoDict['fileName']:
-        ElementTree.SubElement(debugEvent, 'fileName').text = infoDict['fileName']
+        ElementTree.SubElement(debugEvent, 'filename').text = infoDict['fileName']
     if infoDict['amount'] is not None:
         ElementTree.SubElement(debugEvent, 'funds').text = '%.2f' % infoDict['amount']
     if infoDict['debugMessage']:
