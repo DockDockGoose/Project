@@ -255,7 +255,7 @@ class WorkloadGenerator:
 
         # TODO: might need r.close() if get error with too many files open or open sockets. 
         print("HTTP Status:  {}".format(r.status_code))
-        print("HTTP Status:  {}".format(r.text))
+        print("Command Number:  {}".format(request['transactionNumber']))
 
 
 def spawnHandlers(userList, handler):

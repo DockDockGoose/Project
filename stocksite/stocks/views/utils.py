@@ -48,7 +48,7 @@ class MockQuoteServer:
             return quote_data
         else:
             quote_data['price'] = float(quote_data['price'])
-            quote_data['quoteServerTime'] = float(quote_data['quoteServerTime'])
+            quote_data['quoteServerTime'] = int(quote_data['quoteServerTime'])
             return quote_data
             
 
