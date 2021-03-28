@@ -4,9 +4,9 @@ import urllib.parse
 sys.path.append('..')
 from audit import logXML as log
 
-DB_NAME = 'stocksite_db_dev'
+DB_NAME = 'stocksite_db_prod'
 DB_PORT = 27017
-HOST = 'localhost'
+HOST = 'localhost:27018'        # Ran production setup and WL Gen in Windows 10 and Docker got confused.. had to expose a different port than mongo uses internally.
 
 ERROR_LOG = 'errorEvent'
 CMD_LOG = 'userCommand'
@@ -23,8 +23,8 @@ try:
     print("-----CONNECTED TO MONGODB DB-----")
 
 except pymongo.errors.ConnectionFailure as err:
-        print(f"ERROR! Could not connect to database {DB_NAME} failed with error: {err}")
-        sys.exit(1)
+    print(f"ERROR! Could not connect to database {DB_NAME} failed with error: {err}")
+    sys.exit(1)
 
 for coll in Database.list_collection_names():
     print(coll)
@@ -35,6 +35,7 @@ processing = 0
 for transact in transactions:
     try:
         print(processing)
+        # print(transact)
         processing = processing + 1
         # Remove the admin user from dumplog commands
         if (transact['username'] == 'admin'):

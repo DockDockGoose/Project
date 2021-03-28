@@ -9,5 +9,4 @@ django-rest-auth==0.9.5
 django-filter==2.4.0
 django-redis==4.12.1
 markdown==3.3.3
-redis==6.2.1
 requests==2.25.1

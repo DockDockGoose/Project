@@ -10,7 +10,7 @@ services:
     volumes:
       - static_volume:/home/app/web/staticfiles
     expose:
-      - 8000
+      - "8000"
     env_file: 
       - ./.env.prod
     depends_on: 
@@ -22,6 +22,7 @@ services:
   mongo:
     image: mongo
     restart: always
+    command: --quiet
     volumes:
       - .mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - data-db:/data/db
@@ -29,6 +30,8 @@ services:
       - ./.env.prod.db
     networks: 
       - localnet
+    ports: 
+      - "27018:27017"    # Remove for security - (only used for collecting logs from the dockerized database)
 
   redis:
     restart: always
@@ -44,7 +47,7 @@ services:
     restart: always
     container_name: mongo-express
     ports:
-      - 8081:8081
+      - "8081:8081"
     volumes:
       - data-db:/data/db
     environment:
@@ -67,7 +70,7 @@ services:
     volumes:
       - static_volume:/home/app/web/staticfiles
     ports:
-      - 80:80
+      - "80:80"
     depends_on:
       - web
     networks: 

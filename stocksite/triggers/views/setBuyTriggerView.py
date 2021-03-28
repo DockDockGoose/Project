@@ -15,7 +15,7 @@ class SetBuyTriggerView(APIView):
         username = request.data.get("username")
         stockSymbol = request.data.get("stockSymbol")
         amount = float(request.data.get("amount"))
-        transactionNum = request.data.get("transactionNumber")
+        transactionNum = request.data.get("transactionNum")
         command = request.data.get("command")
 
         # First log set buy trigger
