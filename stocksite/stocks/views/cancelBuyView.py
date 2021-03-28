@@ -19,10 +19,10 @@ class CancelBuyView(APIView):
     """
     def delete(self, request):
         # Get request data
-        username = request.data.get("username")
-        stockSymbol = request.data.get("stockSymbol")
-        transactionNum = request.data.get("transactionNum")
-        command = request.data.get("command")
+        username        = request.data.get("username")
+        stockSymbol     = request.data.get("stockSymbol")
+        transactionNum  = request.data.get("transactionNum")
+        command         = request.data.get("command")
 
         # First log the delete sell transaction
         transaction = Transaction(

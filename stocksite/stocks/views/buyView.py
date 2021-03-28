@@ -23,11 +23,11 @@ class BuyView(APIView):
     """
     def put(self, request):
         # Get request data
-        username = request.data.get("username")
-        stockSymbol = request.data.get("stockSymbol")
-        amount = float(request.data.get("amount"))
-        transactionNum = request.data.get("transactionNum")
-        command = request.data.get("command")
+        username        = request.data.get("username")
+        stockSymbol     = request.data.get("stockSymbol")
+        amount          = float(request.data.get("amount"))
+        transactionNum  = request.data.get("transactionNum")
+        command         = request.data.get("command")
 
 
         # First thing log buy transaction

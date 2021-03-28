@@ -18,10 +18,10 @@ class QuoteView(APIView):
     API endpoint that allows a stock to be quoted.
     """
     def get(self, request):
-        stockSymbol = request.data.get('stockSymbol')
-        username = request.data.get('username')
-        transactionNum = request.data.get('transactionNum')
-        command =  request.data.get('command')
+        stockSymbol     = request.data.get('stockSymbol')
+        username        = request.data.get('username')
+        transactionNum  = request.data.get('transactionNum')
+        command         =  request.data.get('command')
 
         # Log the quote command transaction
         transaction = Transaction(

@@ -20,9 +20,9 @@ class CommitBuyView(APIView):
     """
     def post(self, request):
         # Get request data
-        username = request.data.get("username")
-        transactionNum = request.data.get("transactionNum")
-        command = request.data.get("command")
+        username        = request.data.get("username")
+        transactionNum  = request.data.get("transactionNum")
+        command         = request.data.get("command")
 
         # Log commit buy transaction
         transaction = Transaction(

@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import Account
 from transactions.models import Transaction
+from .quoteHandler import QuoteServer
 from .utils import MockQuoteServer, getByStockSymbol
 from time import time
 
@@ -20,13 +21,13 @@ class SellView(APIView):
     """
     def put(self, request):
         # Get request data
-        username = request.data.get("username")
-        stockSymbol = request.data.get("stockSymbol")
-        amount = float(request.data.get("amount"))
-        transactionNum = request.data.get("transactionNum")
-        command = request.data.get("command")
+        username        = request.data.get("username")
+        stockSymbol     = request.data.get("stockSymbol")
+        amount          = float(request.data.get("amount"))
+        transactionNum  = request.data.get("transactionNum")
+        command         = request.data.get("command")
 
-        # First thing gog sell transaction
+        # First thing log sell transaction
         transaction = Transaction(
                 type='userCommand',
                 timestamp=int(time()*1000),
@@ -111,7 +112,7 @@ class SellView(APIView):
 
         # TODO: Check for quote in cache (if not in cache/is stale perform query)
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
-        quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)
+        quoteQuery = QuoteServer.getQuote(username, stockSymbol)
 
         # Set a sell command to the cache
         new_stock = {
