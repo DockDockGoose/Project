@@ -4,6 +4,7 @@ from django.template import loader
 from transactions.models import Transaction
 from accounts.models import Account
 from frontEndStocks.models import FrontEndStock
+from prevPrices.models import PrevPrices
 import datetime
 
 
@@ -59,13 +60,18 @@ def purchaseStockView(request, stockId):
 
 def past_prices_chart(request, stockId):
     stock_list = FrontEndStock.objects.filter(id=stockId)
-    data = stock_list[0].prevPrices
+    prevPrices = PrevPrices.objects.filter(stockSymbol=stock_list[0].stockSymbol)
+    data = []
+    
     labels = []
+    for p in prevPrices:
+        data.append(p.price)
+        labels.append(p.quoteServerTime)
+
     time = datetime.datetime.now()
-    time = time - datetime.timedelta(seconds=(len(data) * 60))
-    for price in data:
-        labels.append(time.strftime("%H:%M:%S"))
-        time = time + datetime.timedelta(seconds=60)
+    
+    data.append(stock_list[0].price)
+    labels.append(time.strftime("%H:%M:%S"))
 
     return JsonResponse(data={
         'labels': labels,
@@ -82,8 +88,6 @@ def confirmPurchaseStock(request):
 
     s = Stock(stockSymbol=stockBought, price=500.0, quoteServerTime=0, sharesAmount=10000)
     s.save()
-    for x in range(int(request.POST["amount"])):
-        user.stocks.append(s)
 
 
     context = {
