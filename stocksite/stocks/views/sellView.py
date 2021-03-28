@@ -12,9 +12,10 @@ class SellView(APIView):
     """
     def post(self, request):
         # Get request data
-        username = request.data.get("username")
-        stockSymbol = request.data.get("stockSymbol")
-        amount = float(request.data.get("amount"))
+        username            = request.data.get("username")
+        stockSymbol         = request.data.get("stockSymbol")
+        amount              = float(request.data.get("amount"))
+        transactionNumber   = request.data.get("transactionNumber")
 
         # Find user account
         account = Account.objects.filter(username=username).first()
@@ -25,7 +26,7 @@ class SellView(APIView):
                 type='errorEvent',
                 timestamp=int(time()*1000),
                 server='DOCK1',
-                transactionNum = Transaction.objects.last().transactionNum,
+                transactionNum = transactionNumber,
                 command='SELL',
                 username=username,
                 stockSymbol=stockSymbol,
@@ -42,7 +43,7 @@ class SellView(APIView):
                 type='errorEvent',
                 timestamp=int(time()*1000),
                 server='DOCK1',
-                transactionNum = Transaction.objects.last().transactionNum,
+                transactionNum = transactionNumber,
                 command='BUY',
                 username=username,
                 stockSymbol=stockSymbol,
@@ -59,7 +60,7 @@ class SellView(APIView):
                 type='errorEvent',
                 timestamp=int(time()*1000),
                 server='DOCK1',
-                transactionNum = Transaction.objects.last().transactionNum,
+                transactionNum = transactionNumber,
                 command='SELL',
                 username=username,
                 stockSymbol=stockSymbol,
@@ -74,7 +75,7 @@ class SellView(APIView):
                 type='userCommand',
                 timestamp=int(time()*1000),
                 server='DOCK1',
-                transactionNum = Transaction.objects.last().transactionNum + 1,
+                transactionNum = transactionNumber + 1,
                 command='SELL',
                 username=username,
                 stockSymbol=stockSymbol,

@@ -36,7 +36,7 @@ class QuoteView(APIView):
                 type='userCommand',
                 timestamp=int(time()*1000),
                 server='DOCK1',
-                transactionNum = Transaction.objects.last().transactionNum + 1,
+                transactionNum = Transaction.objects.last().transactionNum + 1, # ?
                 command='QUOTE',
                 username=username,
                 stockSymbol=stockSymbol,

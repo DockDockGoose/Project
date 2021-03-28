@@ -12,13 +12,13 @@ class BuyView(APIView):
     """
     def post(self, request):
         # Get request data
-        username = request.data.get("username")
-        stockSymbol = request.data.get("stockSymbol")
-        amount = float(request.data.get("amount"))
+        username        = request.data.get("username")
+        stockSymbol     = request.data.get("stockSymbol")
+        transactionNum  = request.data.get("transactionNumber")
+        amount          = float(request.data.get("amount"))
 
         # Find user account
         account = Account.objects.filter(username=username).first()
-        transactionNum = Transaction.objects.last().transactionNum
 
         # If account is non-existing, log errorEvent to Transaction
         if account is None:
