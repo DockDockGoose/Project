@@ -4,6 +4,11 @@ from rest_framework import status
 from transactions.models import Transaction
 from triggers.models import Trigger
 from time import time
+from django.conf import settings
+import redis
+import json
+
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
 
 class SetBuyTriggerView(APIView):
@@ -31,11 +36,12 @@ class SetBuyTriggerView(APIView):
             )
         transaction.save()
 
-        # Find previous buy trigger
-        trigger = Trigger.objects.filter(username=username, type='buy', stockSymbol=stockSymbol).first()
+        # Check if stock had a previous trigger
+        key = username + stockSymbol + 'buy'
+        trigger_data = cache.hgetall(key)
 
         # If account is non-existing, log errorEvent to Transaction
-        if trigger is None:
+        if not trigger_data:
             transaction = Transaction(
                 type='errorEvent',
                 timestamp=int(time()*1000),
@@ -51,7 +57,7 @@ class SetBuyTriggerView(APIView):
             return Response("Buy trigger doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
 
         # Update trigger to include trigger price
-        trigger.price = amount
-        trigger.save()
+        trigger_data["price"] = amount
+        cache.hmset(key, trigger_data)
 
         return Response(status=status.HTTP_200_OK)
