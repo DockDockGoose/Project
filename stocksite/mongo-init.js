@@ -1,3 +1,5 @@
+var db = connect("mongodb://root:dockdockgoose@localhost:27017/admin");
+
 db = db.getSiblingDB("stocksite_db_prod");
 
 db.createUser(
