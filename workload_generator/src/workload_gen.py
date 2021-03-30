@@ -230,7 +230,6 @@ class WorkloadGenerator:
 
     def performRequest(self, url, method, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
         request = {'postUrl': url, 'method': method, 'transactionNum': transactionNumber, 'command': command}
-        print(request)
 
         if user:
             request['username'] = user
@@ -274,8 +273,10 @@ def consumerThread():
             r = requests.delete(request['postUrl'], json=request)
 
         # TODO: might need r.close() if get error with too many files open or open sockets. 
-        print("HTTP Status:  {}".format(r.status_code))
-        print("Command Number:  {}".format(request['transactionNum']))
+        if (r.status_code != 200)
+            print("Command Number:  {}".format(request['transactionNum']))
+            print("HTTP Status:  {}".format(r.status_code))
+            
 
         packetQ.task_done()
 
