@@ -6,6 +6,7 @@ from accounts.serializers import AccountSerializer
 from django.core import serializers
 from transactions.models import Transaction
 from stocks.models import Stock
+from .quoteHandler import QuoteServer
 from .utils import MockQuoteServer
 from time import time
 
