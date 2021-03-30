@@ -21,3 +21,6 @@ use mongodb
 show collections
 
 exit
+
+python3 load_balancer.py 20
+gzip logfile.xml into logfile.xml.gz
