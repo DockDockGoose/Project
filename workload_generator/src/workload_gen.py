@@ -273,7 +273,7 @@ def consumerThread():
             r = requests.delete(request['postUrl'], json=request)
 
         # TODO: might need r.close() if get error with too many files open or open sockets. 
-        if (r.status_code != 200)
+        if (r.status_code != 200):
             print("Command Number:  {}".format(request['transactionNum']))
             print("HTTP Status:  {}".format(r.status_code))
             
