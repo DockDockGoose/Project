@@ -209,14 +209,14 @@ if __name__ == '__main__':
                 print("... Success!")
                 print("\nSpawning User Handlers...")
                 for user in user_commands:
-                    t = threading.Thread(target=send_requests, args=tuple(user_commands[user]))
+                    t = Thread(target=send_requests, args=tuple(user_commands[user]))
                     t.start()
                     threads.append(t)
 
                 for t in threads:
                     t.join()
 
-                dump_t = threading.Thread(target=send_requests, args=tuple([line]))
+                dump_t = Thread(target=send_requests, args=tuple([line]))
                 dump_t.start()
                 dump_t.join()
                 user_commands = {}
