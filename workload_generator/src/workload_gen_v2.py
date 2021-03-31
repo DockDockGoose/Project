@@ -152,7 +152,7 @@ def sendWorkload(line):
     else:
         logging.warning(f"Invalid request: {requestInfo}")
 
-def performRequest(self, url, method, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
+def performRequest(url, method, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
     request = {'postUrl': url, 'method': method, 'transactionNum': transactionNumber, 'command': command}
     if user:
         request['username'] = user
