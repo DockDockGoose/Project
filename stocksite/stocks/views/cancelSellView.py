@@ -6,6 +6,12 @@ from transactions.models import Transaction
 from .utils import MockQuoteServer, getByStockSymbol
 from time import time
 
+from django.conf import settings
+import redis
+import json
+
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
+
 
 class CancelSellView(APIView):
     """
@@ -13,10 +19,10 @@ class CancelSellView(APIView):
     """
     def delete(self, request):
         # Get request data
-        username = request.data.get("username")
-        stockSymbol = request.data.get("stockSymbol")
-        transactionNum = request.data.get("transactionNum")
-        command = request.data.get("command")
+        username        = request.data.get("username")
+        stockSymbol     = request.data.get("stockSymbol")
+        transactionNum  = request.data.get("transactionNum")
+        command         = request.data.get("command")
 
         # First log the delete sell transaction
         transaction = Transaction(
@@ -30,39 +36,9 @@ class CancelSellView(APIView):
             )
         transaction.save()
 
-        # Find user account
-        account = Account.objects.filter(username=username).first()
+        # Delete buy command from the cache
+        key = username + 'sell'
 
-        if account is None:
-            transaction = Transaction(
-                type='errorEvent',
-                timestamp=int(time()*1000),
-                server='DOCK1',
-                transactionNum = transactionNum,
-                command=command,
-                username=username,
-                stockSymbol=stockSymbol,
-                errorMessage='Account does not exist.',
-            )
-            transaction.save()
-            return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
-        
-        # Check that user has sell command
-        if account.sell is None:
-            transaction = Transaction(
-                type='errorEvent',
-                timestamp=int(time()*1000),
-                server='DOCK1',
-                transactionNum = transactionNum,
-                command=command,
-                username=username,
-                errorMessage='Sell command does not exist.',
-            )
-            transaction.save()
-            return Response("Sell command doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
-
-        # Remove sell command from user's account
-        account.sell = None
-        account.save()
+        cache.hdel(*key)
 
         return Response(status=status.HTTP_200_OK)

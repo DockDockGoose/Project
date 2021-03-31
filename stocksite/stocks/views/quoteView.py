@@ -7,21 +7,21 @@ from .utils import MockQuoteServer
 from .quoteHandler import QuoteServer
 from time import time
 
-# from django.core.cache import cache
-# from django.conf import settings
-# from django.core.cache.backends.base import DEFAULT_TIMEOUT
+from django.core.cache import cache
+from django.conf import settings
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
  
-# CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 class QuoteView(APIView):
     """
     API endpoint that allows a stock to be quoted.
     """
     def get(self, request):
-        stockSymbol = request.data.get('stockSymbol')
-        username = request.data.get('username')
-        transactionNum = request.data.get('transactionNum')
-        command =  request.data.get('command')
+        stockSymbol     = request.data.get('stockSymbol')
+        username        = request.data.get('username')
+        transactionNum  = request.data.get('transactionNum')
+        command         =  request.data.get('command')
 
         # Log the quote command transaction
         transaction = Transaction(

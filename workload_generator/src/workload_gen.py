@@ -50,6 +50,7 @@ PUT                 = "PUT"
 DELETE              = "DELETE"
 
 userQ = queue.Queue()
+packetQ = queue.Queue()
 
 class WorkloadGenerator:
     def __init__(self, testFile):
@@ -228,7 +229,7 @@ class WorkloadGenerator:
 
 
     def performRequest(self, url, method, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
-        request = {'transactionNum': transactionNumber, 'command': command}
+        request = {'postUrl': url, 'method': method, 'transactionNum': transactionNumber, 'command': command}
         print(request)
 
         if user:
@@ -240,21 +241,7 @@ class WorkloadGenerator:
         if filename:
             request['fileName'] = filename
 
-        print(url)
-        if method == GET:
-            r = requests.get(url, json=request)
-        elif method == POST:
-            r = requests.post(url, json=request)
-        elif method == PUT:
-            r = requests.put(url, json=request)
-        elif method == DELETE:
-            r = requests.delete(url, json=request)
-
-        
-
-        # TODO: might need r.close() if get error with too many files open or open sockets. 
-        print("HTTP Status:  {}".format(r.status_code))
-        print("HTTP Status:  {}".format(r.text))
+        packetQ.put(request)
 
 
 def spawnHandlers(userList, handler):
@@ -263,7 +250,37 @@ def spawnHandlers(userList, handler):
         t.daemon = True
         t.start()
 
+    cThread = Thread(target=consumerThread)
+    cThread.start()
     print("Started {} user handlers".format(i))
+
+def consumerThread():
+    while True:
+        try:
+            # set get to throw exception if no packet in 5 seconds
+            request = packetQ.get(True, 2)
+        except queue.Empty:
+            if userQ.empty():
+                    break
+
+        
+        if request['method'] == GET:
+            r = requests.get(request['postUrl'], json=request)
+        elif request['method'] == POST:
+            r = requests.post(request['postUrl'], json=request)
+        elif request['method'] == PUT:
+            r = requests.put(request['postUrl'], json=request)
+        elif request['method'] == DELETE:
+            r = requests.delete(request['postUrl'], json=request)
+
+        # TODO: might need r.close() if get error with too many files open or open sockets. 
+        print("HTTP Status:  {}".format(r.status_code))
+        print("Command Number:  {}".format(request['transactionNum']))
+
+        packetQ.task_done()
+
+    r.close()
+    print("Consumer Thread Finished!")
 
 
 if __name__ == '__main__':
@@ -288,4 +305,5 @@ if __name__ == '__main__':
 
     print("\nWaiting for all tasks to finish...")
     userQ.join()
+    packetQ.join()
     print("\n\n\nWorkload Generator Finished!!")

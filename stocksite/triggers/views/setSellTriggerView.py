@@ -6,6 +6,11 @@ from transactions.models import Transaction
 from triggers.models import Trigger
 from .utils import getByStockSymbol
 from time import time
+from django.conf import settings
+import redis
+import json
+
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
 
 class SetSellTriggerView(APIView):
@@ -33,11 +38,12 @@ class SetSellTriggerView(APIView):
             )
         transaction.save()
 
-        # Find previous sell trigger
-        trigger = Trigger.objects.filter(username=username, type='sell', stockSymbol=stockSymbol).first()
+        # Check if stock had a previous trigger
+        key = username + stockSymbol + 'sell'
+        trigger_data = cache.hgetall(key)
 
         # If trigger is non-existing, log errorEvent to Transaction
-        if trigger is None:
+        if not trigger_data:
             transaction = Transaction(
                 type='errorEvent',
                 timestamp=int(time()*1000),
@@ -52,15 +58,14 @@ class SetSellTriggerView(APIView):
             transaction.save()
             return Response("Sell trigger does not exist.", status=status.HTTP_412_PRECONDITION_FAILED)
 
-
         # Update trigger to include trigger price
-        trigger.price = amount
-        trigger.save()
+        trigger_data['price'] = amount
+        cache.hmset(key, trigger_data)
 
         # Decrease the number of stock shares in user's account 
         account = Account.objects.filter(username=username).first()
         stock = getByStockSymbol(account.stocks, stockSymbol)
-        stock['sharesAmount'] -= trigger.sharesAmount * amount
+        stock['sharesAmount'] -= float(trigger_data['sharesAmount']) * amount
 
         account.save()
 

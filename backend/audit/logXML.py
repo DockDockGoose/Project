@@ -122,16 +122,28 @@ def logDebugEvent(infoDict):
     if infoDict['debugMessage']:
         ElementTree.SubElement(debugEvent, 'debugMessage').text = infoDict['debugMessage']
 
-def prettyPrintLog(element=root):
-    auditNum = str(input("Enter user audit number for fileName (1 default): ")) or DEFAULT_AUDIT
+def prettyPrintLog(element=root, fileName=-1):
+    if (fileName == -1):
+        auditNum = str(input("Enter user audit number for filename (1 default): ")) or auditNum
+    else:
+        auditNum = str(fileName)
+        print("Creating file: ../audit/logs/logfile{}.xml".format(fileName))
+
     # Relative path from backend/src
-    auditFile = '../audit/logs/logfile' + auditNum + '.xml'        
+    auditFile = '../audit/logs/tmp/logfile' + auditNum + '.xml'
+
     # Wrap into an ElementTree instance so we can save it as XML
     tree = cElementTree.ElementTree(element)
+
     # ET.write() doesnt support pretty print so use minidom to prettify XML
     t = minidom.parseString(ElementTree.tostring(element)).toprettyxml()
+
     xmlTree = ElementTree.ElementTree(ElementTree.fromstring(t))
+
     xmlTree.write(auditFile, encoding='us-ascii', xml_declaration=True)
+
+    # Clear the element tree after write operation. 
+    root.clear()
 
 logEvents = {
     'userCommand'           :       logUserCommand,

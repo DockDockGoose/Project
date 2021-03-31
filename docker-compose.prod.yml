@@ -17,6 +17,7 @@ services:
       - ./.env.prod
     depends_on: 
       - mongo
+      - redis
     networks: 
       - localnet
 
@@ -34,6 +35,14 @@ services:
     ports: 
       - "27018:27017"    # Remove for security - (only used for collecting logs from the dockerized database)
 
+  redis:
+    restart: always
+    image: redis
+    container_name: redis
+    ports:
+      - 6379:6379
+    networks: 
+      - localnet
 
   mongo-express:
     image: mongo-express

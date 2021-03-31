@@ -6,6 +6,11 @@ from transactions.models import Transaction
 from triggers.models import Trigger
 from .utils import getByStockSymbol
 from time import time
+from django.conf import settings
+import redis
+import json
+
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
 
 class CancelSetSellView(APIView):
@@ -32,10 +37,11 @@ class CancelSetSellView(APIView):
         transaction.save()
         
         # Find previous sell trigger
-        trigger = Trigger.objects.filter(username=username, type='sell', stockSymbol=stockSymbol).first()
+        key = username + stockSymbol + 'sell'
+        trigger_data = cache.hgetall(key)
 
         # If trigger is non-existing, log errorEvent to Transaction
-        if trigger is None:
+        if not trigger_data:
             transaction = Transaction(
                 type='errorEvent',
                 timestamp=int(time()*1000),
@@ -52,12 +58,12 @@ class CancelSetSellView(APIView):
         # Decrease the number of stock shares in user's account 
         account = Account.objects.filter(username=username).first()
         stock = getByStockSymbol(account.stocks, stockSymbol)
-        stock['sharesAmount'] += trigger.sharesAmount * trigger.price
+        stock['sharesAmount'] += float(trigger_data['sharesAmount']) * float(trigger_data['price'])
 
         account.save()
 
         # Delete trigger
-        trigger.delete()
+        cache.hdel(*key)
 
         # Also log account transaction change
         transaction = Transaction(
@@ -68,7 +74,7 @@ class CancelSetSellView(APIView):
                 action='add',
                 username=username,
                 stockSymbol=stockSymbol,
-                amount=trigger.sharesAmount * trigger.price,
+                amount=float(trigger_data['sharesAmount']) * float(trigger_data['price']),
             )
         transaction.save()
 

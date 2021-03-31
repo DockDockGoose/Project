@@ -2,6 +2,14 @@
 
 import socket
 import sys
+import redis
+from django.conf import settings
+
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT,
+                          db=0)
+
+CACHE_TTL = 60
+
 
 QUOTE_PORT = 4444
 QUOTE_HOST_NAME = '192.168.4.2'
@@ -33,33 +41,46 @@ class QuoteServer:
         """
             Get a quote from the quote server
         """
-        # Connect to quote server
-        self.connect()
+        # First check the cache for quote
+        quote_data = cache.hgetall(stockSymbol)
 
-        # Get query and send to quote server
-        quote = stockSymbol + ',' + user + "\n"
+        if not quote_data:
+            # Connect to quote server
+            self.connect()
 
-        self.socket.send(quote.encode())
+            # Get query and send to quote server
+            quote = stockSymbol + ',' + user + "\n"
 
-        # Read and send back 1k of data.
-        try:
+            self.socket.send(quote.encode())
 
-            data = self.socket.recv(PACKET_SIZE)
-            data = data.decode().split(",")
+            # Read and send back 1k of data.
+            try:
 
-            quote_data = {
-                'price': data[0],
-                'stockSymbol': data[1],
-                'user': data[2],
-                'quoteServerTime': data[3],
-                'cryptoKey': data[4]
-            }
+                data = self.socket.recv(PACKET_SIZE)
+                data = data.decode().split(",")
 
-            # close quote server connection and send back data
-            self.socket.close()
+                quote_data = {
+                    'price': data[0],
+                    'stockSymbol': data[1],
+                    'user': data[2],
+                    'quoteServerTime': data[3],
+                    'cryptoKey': data[4]
+                }
+                
+                # Add quote data to cache for 60s
+                cache.hmset(stockSymbol, quote_data)
+                cache.expire(stockSymbol, CACHE_TTL)
+
+                # close quote server connection and send back data
+                self.socket.close()
+                return quote_data
+
+            except:
+                print('Connection to server closed')
+                # close the connection, and the socket
+                self.socket.close()
+        else:
+            quote_data['price'] = float(quote_data['price'])
+            quote_data['quoteServerTime'] = int(quote_data['quoteServerTime'])
             return quote_data
 
-        except:
-            print('Connection to server closed')
-            # close the connection, and the socket
-            self.socket.close()
