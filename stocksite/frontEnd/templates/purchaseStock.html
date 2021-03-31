@@ -91,28 +91,32 @@
       </div>
   </nav>
 
+  <iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>
+
   <div class="form-container">
     <form
-      target="_blank"
       action="http://localhost:8000/api/stocks/buy/"
       method="post"
+      target="dummyframe"
     >
     {% csrf_token %}
     <canvas id="past_prices_chart" data-url="/frontEnd/past_prices_chart/{{stock.id}}"></canvas> 
       <h3>You are purchasing {{stock.stockSymbol}}</h3>
       <h3>Currently priced at ${{stock.price}} per share</h3>
       <div class="group">      
-        <input type="text" value="{{stock.stockSymbol}}" required>
+        <input name="stockSymbol" type="text" value="{{stock.stockSymbol}}" required>
         <span class="highlight"></span>
         <span class="bar"></span>
         <label>Stock Symbol</label>
       </div>
       <div class="group">      
-        <input type="number" required>
+        <input name="amount" type="number" required>
         <span class="highlight"></span>
         <span class="bar"></span>
         <label>Amount</label>
       </div>
+      <input name="username" value="daniel" style="display: none;">
+      <input name="price" value="{{stock.price}}" style="display: none;">
       <button style="width: 200px;" class="btn" type="submit">Confirm Purchase</button>
     </form>
   </div>

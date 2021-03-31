@@ -15,10 +15,13 @@ class BuyView(APIView):
         username = request.data.get("username")
         stockSymbol = request.data.get("stockSymbol")
         amount = float(request.data.get("amount"))
+        price = float(request.data.get("price"))
 
         # Find user account
         account = Account.objects.filter(username=username).first()
         transactionNum = Transaction.objects.last().transactionNum
+
+        totalPrice = amount * price
 
         # If account is non-existing, log errorEvent to Transaction
         if account is None:
@@ -37,7 +40,7 @@ class BuyView(APIView):
             return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
 
         # Check if funds permit action, log error event to transaction if not
-        if account.funds < amount:
+        if account.funds < totalPrice:
             transaction = Transaction(
                 type='errorEvent',
                 timestamp=int(time()*1000),
@@ -62,7 +65,19 @@ class BuyView(APIView):
                 username=username,
                 stockSymbol=stockSymbol,
                 amount=amount,
+                price=price,
             )
         transaction.save()
+
+        fun = float(account.funds)
+        account.funds = fun - totalPrice
+
+        if(account.stocks == None):
+            account.stocks = [{'stockSymbol': stockSymbol, 'price': price, 'quoteServerTime': 1, 'sharesAmount': amount}]
+        else:
+            arr = account.stocks
+            arr.append({'stockSymbol': stockSymbol, 'price': price, 'quoteServerTime': 1, 'sharesAmount': amount})
+        
+        account.save()
 
         return Response(status=status.HTTP_200_OK)

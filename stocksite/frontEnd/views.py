@@ -31,11 +31,30 @@ def viewTransactions(request):
     return render(request, 'transactions.html', context)
 
 def viewMyTransactions(request):
-    transaction_list = Transaction.objects.filter(username="daniel")[0:10]
-    myAccount = Account.objects.filter(username="daniel")
+    transaction_list = Transaction.objects.filter(username="daniel")
+    myAccount = Account.objects.filter(username="daniel").first()
+    
+    stocks = {}
+    if myAccount.stocks == None:
+        print ("none")
+    else:
+        for stock in myAccount.stocks:
+            sym = stock['stockSymbol']
+            if sym in stocks:
+               stocks[sym]["amount"] += int(stock["sharesAmount"])
+               stocks[sym]["totalPrice"] += int(stock["sharesAmount"]) * int(stock["price"])
+            else:
+                stocks[sym] = {}
+                stocks[sym]["amount"] = 0
+                stocks[sym]["totalPrice"] = 0
+    for key in stocks:
+        stocks[key]["avgPrice"] = stocks[key]["totalPrice"] / stocks[sym]["amount"]
+    
+
     context = {
         'transaction_list': transaction_list,
-        'account': myAccount[0]
+        'account': myAccount,
+        'purchasedStocks': stocks
     }
     return render(request, 'transactions.html', context)
 
@@ -49,12 +68,8 @@ def viewIndividualTransaction(request, transactionNu):
 
 def purchaseStockView(request, stockId):
     stock_list = FrontEndStock.objects.filter(id=stockId)
-    data = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    labels = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
     context = {
         "stock": stock_list[0],
-        "data": data,
-        "labels": labels
     }
     return render(request, 'purchaseStock.html', context)
 
@@ -119,27 +134,31 @@ def confirmPurchaseStock(request):
     user.save()
     return render(request, 'confirmPurchase.html', context)
 
-def processPurchase(request):
-    print(request.POST.get('user'))
-    '''postObject= {
-        "Type": "buy",
-        #"Timestamp": time(),
-        "Server": "localhost:8000",
-        "TransactionNum": 5,
-        "Command": "buy",
-        "Username": request.POST["user"],
-        "StockSymbol": request.POST["stockSymbol"],
-        "FileName": "",
-        "Action": "buy",
-        "Amount": request.POST["amount"],
-        "Price": 500,
-        "quoteServerTime": 0,
-        "cryptoKey": "",
-        "systemEvent": "",
-        "errorEvent": "",
-        "errorMessage": "",
-        "debugEvent": "",
-        "debugMessage": ""
+def sellStock(request, stockSymbol):
 
-    }'''
+    myAccount = Account.objects.filter(username="daniel").first()
+    stock = FrontEndStock.objects.filter(stockSymbol=stockSymbol).first()
+    
+    stockFacts = {}
+    stockFacts["sym"] = stockSymbol
+    stockFacts["currentPrice"] = stock.price
+    stockFacts["amount"] = 0
+    if myAccount.stocks == None:
+        print ("none")
+    else:
+        for stock in myAccount.stocks:
+            sym = stock['stockSymbol']
+            if sym == stockFacts['sym']:
+               stockFacts["amount"] += int(stock["sharesAmount"])
+
+    stockFacts["currValue"] = stockFacts["amount"] * stockFacts["currentPrice"]
+    
+    context = {
+        'stock': stockFacts
+    }
+
+    return render(request, 'sellStock.html', context)
+
+def processPurchase(request):
     return HttpResponse("Processing purchase")
+
