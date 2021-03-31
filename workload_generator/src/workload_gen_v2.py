@@ -155,6 +155,7 @@ def sendWorkload(line):
 
 def performRequest(url, method, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
     request = {'postUrl': url, 'method': method, 'transactionNum': transactionNumber, 'command': command}
+    
     if user:
         request['username'] = user
     if stockSymbol:
@@ -165,14 +166,14 @@ def performRequest(url, method, transactionNumber, command, user=None, stockSymb
         request['fileName'] = filename
 
     if method == GET:
-        r = requests.get(request['postUrl'], json=request)
+        r = requests.get(url, json=request)
     elif method == POST:
-        r = requests.post(request['postUrl'], json=request)
+        r = requests.post(url, json=request)
     elif method == PUT:
-        r = requests.put(request['postUrl'], json=request)
+        r = requests.put(url, json=request)
     elif method == DELETE:
-        r = requests.delete(request['postUrl'], json=request)
-
+        r = requests.delete(url, json=request)
+    print(url)
     if (r.status_code != 200):
         print("Command Number:  {}".format(request['transactionNum']))
         print("HTTP Status:     {}".format(r.status_code))

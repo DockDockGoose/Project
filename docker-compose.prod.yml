@@ -6,7 +6,7 @@ services:
       context: ./stocksite
       dockerfile: Dockerfile.prod
     image: stocksite-webapp     # Specify name & tag for the image that is built
-    command: gunicorn stocksite.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn stocksite.wsgi:application --bind 0.0.0.0:8000 -k gevent --worker-connections=1000 --workers=5
     volumes:
       - static_volume:/home/app/web/staticfiles
     expose:
