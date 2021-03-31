@@ -174,10 +174,11 @@ def performRequest(url, method, transactionNumber, command, user=None, stockSymb
     elif method == DELETE:
         r = requests.delete(url, json=request)
     
-    if (r.status_code >= 400):
-        print("\nCMD #: {} STATUS: {}".format(request['transactionNum'], r.status_code))
-    else:
-        print("CMD #: {}".format(request['transactionNum']))
+    #if (r.status_code >= 400):
+    #    print("\nCMD #: {} STATUS: {}".format(request['transactionNum'], r.status_code))
+    #else:
+    
+    print("CMD #: {}".format(transactionNumber))
 
     r.close()
 
