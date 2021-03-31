@@ -44,7 +44,9 @@ services:
       - swarmnet
 
   redis:
-    restart_policy:
+    deploy:
+      replicas: 1
+      restart_policy:
         condition: on-failure
     image: redis
     networks: 
