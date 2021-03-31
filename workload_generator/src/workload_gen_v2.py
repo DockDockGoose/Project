@@ -173,10 +173,13 @@ def performRequest(url, method, transactionNumber, command, user=None, stockSymb
         r = requests.put(url, json=request)
     elif method == DELETE:
         r = requests.delete(url, json=request)
-    print(url)
+    
     if (r.status_code != 200):
+        print(request)
         print("Command Number:  {}".format(request['transactionNum']))
         print("HTTP Status:     {}".format(r.status_code))
+    else:
+        print("Success!!..")
 
     r.close()
 
