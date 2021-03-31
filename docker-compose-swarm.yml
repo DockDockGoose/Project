@@ -44,10 +44,9 @@ services:
       - swarmnet
 
   redis:
-    restart: always
+    restart_policy:
+        condition: on-failure
     image: redis
-    ports:
-      - 6379:6379
     networks: 
       - swarmnet
 
