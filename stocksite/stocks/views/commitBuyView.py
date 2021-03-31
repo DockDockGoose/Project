@@ -44,13 +44,14 @@ class CommitBuyView(APIView):
             stock['sharesAmount'] += amount/quoteQuery['price']
 
         account.save()
+        transactionNumber  = request.data.get("transactionNumber")
 
         # Log commit buy transaction
         transaction = Transaction(
                 type='userCommand',
                 timestamp=int(time()*1000),
                 server='DOCK1',
-                transactionNum = Transaction.objects.last().transactionNum + 1,
+                transactionNum = transactionNum + 1,
                 command='COMMIT_BUY',
                 username=username,
                 stockSymbol=stockSymbol,

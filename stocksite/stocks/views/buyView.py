@@ -16,10 +16,10 @@ class BuyView(APIView):
         stockSymbol = request.data.get("stockSymbol")
         amount = float(request.data.get("amount"))
         price = float(request.data.get("price"))
+        transactionNum  = request.data.get("transactionNumber")
 
         # Find user account
         account = Account.objects.filter(username=username).first()
-        transactionNum = Transaction.objects.last().transactionNum
 
         totalPrice = amount * price
 
