@@ -154,7 +154,7 @@ def sendWorkload(line):
         logging.warning(f"Invalid request: {requestInfo}")
 
 def performRequest(url, method, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
-    request = {'postUrl': url, 'method': method, 'transactionNum': transactionNumber, 'command': command}
+    request = {'method': method, 'transactionNum': transactionNumber, 'command': command}
     
     if user:
         request['username'] = user
@@ -174,13 +174,10 @@ def performRequest(url, method, transactionNumber, command, user=None, stockSymb
     elif method == DELETE:
         r = requests.delete(url, json=request)
     
-    if (r.status_code != 200):
-        print("Command Number:  {}".format(request['transactionNum']))
-        print("HTTP Status:     {}".format(r.status_code))
-        print(request)
+    if (r.status_code >= 400):
+        print("\nCMD #: {} STATUS: {}".format(request['transactionNum'], r.status_code))
     else:
-        print("\nSuccess!!..")
-        print(request)
+        print("CMD #: {}".format(request['transactionNum']))
 
     r.close()
 
