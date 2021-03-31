@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.9"
    
 services:
   web:
@@ -44,7 +44,6 @@ services:
   redis:
     restart: always
     image: redis
-    container_name: redis
     ports:
       - 6379:6379
     networks: 
