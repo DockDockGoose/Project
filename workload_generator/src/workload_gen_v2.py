@@ -59,6 +59,7 @@ def sendWorkload(line):
     transactionNumber   = tokens[0].translate(translation)
     requestInfo         = tokens[1].split(",")
     command             = requestInfo[0]
+    user                = requestInfo[1]
     url                 = serverURL
 
     if command == BUY:
