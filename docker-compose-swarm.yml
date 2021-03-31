@@ -38,6 +38,8 @@ services:
       - data-db:/data/db
     env_file: 
       - ./.env.prod.db
+    ports: 
+      - "27017:27017"
     networks: 
       - swarmnet
 
