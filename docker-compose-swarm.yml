@@ -19,6 +19,7 @@ services:
       - ./.env.prod
     depends_on: 
       - mongo
+      - redis
     networks: 
       - swarmnet
 
@@ -39,29 +40,14 @@ services:
     networks: 
       - swarmnet
 
-
-  mongo-express:
-    image: mongo-express
+  redis:
     restart: always
-    container_name: mongo-express
+    image: redis
+    container_name: redis
     ports:
-      - "8081:8081"
-    volumes:
-      - data-db:/data/db
-    environment:
-      ME_CONFIG_MONGODB_SERVER: 'mongo'
-      ME_CONFIG_MONGODB_ENABLE_ADMIN: 'true'
-      ME_CONFIG_MONGODB_BASICAUTH_USERNAME: 'admin'
-      ME_CONFIG_MONGODB_BASICAUTH_PASSWORD: 'duck'
-      ME_CONFIG_MONGODB_ADMINUSERNAME: 'root'
-      ME_CONFIG_MONGODB_ADMINPASSWORD: 'dockdockgoose'
-    depends_on: 
-      - mongo
-    links:
-      - mongo
+      - 6379:6379
     networks: 
-      - localnet
-
+      - swarmnet
 
   nginx:
     image: dckdockgoose/stocksite-nginx:1.3
