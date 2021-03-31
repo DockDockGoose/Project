@@ -81,45 +81,45 @@ services:
     restart: unless-stopped
 
 
-  nginx-vts-exporter:
-    container_name: nginx-vts-exporter
-    image: sophos/nginx-vts-exporter
-    networks:
-      - localnet
-    ports:
-      - "9913:9913"
-    environment:
-      - NGINX_STATUS=http://nginx/status/format/json
-      - NGINX_HOST=nginx:80
+  # nginx-vts-exporter:
+  #   container_name: nginx-vts-exporter
+  #   image: sophos/nginx-vts-exporter
+  #   networks:
+  #     - localnet
+  #   ports:
+  #     - "9913:9913"
+  #   environment:
+  #     - NGINX_STATUS=http://nginx/status/format/json
+  #     - NGINX_HOST=nginx:80
 
 
-  prometheus:
-    container_name: prometheus
-    image: prom/prometheus:v2.14.0
-    volumes:
-      - ./prometheus/:/etc/prometheus/
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    ports:
-      - "9090:9090"
-    networks: 
-      - localnet
+  # prometheus:
+  #   container_name: prometheus
+  #   image: prom/prometheus:v2.14.0
+  #   volumes:
+  #     - ./prometheus/:/etc/prometheus/
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #   ports:
+  #     - "9090:9090"
+  #   networks: 
+  #     - localnet
   
-  grafana:
-    container_name: grafana
-    image: grafana/grafana:6.5.2
-    ports:
-      - "3060:3000"
-    volumes:
-      - ./graf_data:/var/lib/grafana
-    environment:
-       # Disable authentication
-      - GF_AUTH_DISABLE_LOGIN_FORM=true
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_DASHBOARDS_JSON_ENABLED=true
+  # grafana:
+  #   container_name: grafana
+  #   image: grafana/grafana:6.5.2
+  #   ports:
+  #     - "3060:3000"
+  #   volumes:
+  #     - ./graf_data:/var/lib/grafana
+  #   environment:
+  #      # Disable authentication
+  #     - GF_AUTH_DISABLE_LOGIN_FORM=true
+  #     - GF_AUTH_ANONYMOUS_ENABLED=true
+  #     - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+  #     - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+  #     - GF_USERS_ALLOW_SIGN_UP=false
+  #     - GF_DASHBOARDS_JSON_ENABLED=true
 
 volumes:
   data-db:
