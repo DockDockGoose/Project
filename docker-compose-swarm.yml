@@ -4,7 +4,8 @@ services:
   web:
     image: dckdockgoose/stocksite-webapp:1.5    # Build this image
     # command: ["gunicorn", "--bind", "0.0.0.0:8000", "stocksite.wsgi:application", "-k", "gevent", "--workers=5"]
-    command: gunicorn stocksite.wsgi:application --bind 0.0.0.0:8000 -k gevent --worker-connections=1000 --workers=5    # workers= num_cpu_cores * 2 + 1
+    # workers= num_cpu_cores * 2 + 1
+    command: gunicorn stocksite.wsgi:application --bind 0.0.0.0:8000 -k gevent --worker-connections=1000 --workers=5 --timeout 120 
     volumes:
       - static_volume:/home/app/web/staticfiles
     deploy:
