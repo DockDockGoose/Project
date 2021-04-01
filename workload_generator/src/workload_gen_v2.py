@@ -46,6 +46,8 @@ POST                = "POST"
 PUT                 = "PUT"
 DELETE              = "DELETE"
 
+packetQ = queue.Queue()
+
 def send_requests(*uCmdList):
     for cmd in uCmdList:
         sendWorkload(cmd)
@@ -172,7 +174,7 @@ def consumerThread():
             # set get to throw exception if no packet in 5 seconds
             request = packetQ.get(True, 2)
         except queue.Empty:
-            if userQ.empty():
+            if packetQ.empty():
                     break
 
         if request['method'] == GET:
