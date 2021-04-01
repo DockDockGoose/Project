@@ -10,8 +10,7 @@ from django.core.cache import cache
 from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
  
-CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
-
+ 
 class QuoteView(APIView):
     """
     API endpoint that allows a stock to be quoted.

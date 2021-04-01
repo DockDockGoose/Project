@@ -1,21 +1,16 @@
 """ Used to query quotes from the quote server. """
-
 import socket
 import sys
-import redis
-import time
+from time import time
 from transactions.models import Transaction
 from django.conf import settings
+import redis
 
 cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT,
                           db=0)
-
 CACHE_TTL = 60
-
-
 QUOTE_PORT = 4444
 QUOTE_HOST_NAME = '192.168.4.2'
-
 PACKET_SIZE = 1024
 
 
@@ -71,16 +66,16 @@ class QuoteServer:
 
                 #  Log quoteServer transaction (only increment transactionNum for userCommands?)
                 transaction = Transaction(
-                        type='quoteServer',
-                        timestamp=int(time()*1000),
-                        server='DOCK1',
-                        transactionNum = transactionNum,
-                        price=quote_data['price'],
-                        username=username,
-                        stockSymbol=stockSymbol,
-                        quoteServerTime=int(quote_data['quoteServerTime']),
-                        cryptoKey=quote_data['cryptoKey']
-                    )
+                    type='quoteServer',
+                    timestamp=int(time()*1000),
+                    server='DOCK1',
+                    transactionNum = transactionNum,
+                    price=quote_data['price'],
+                    username=username,
+                    stockSymbol=stockSymbol,
+                    quoteServerTime=int(quote_data['quoteServerTime']),
+                    cryptoKey=quote_data['cryptoKey']
+                )
                 transaction.save()
                 
                 # Add quote data to cache for 60s
