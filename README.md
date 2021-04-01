@@ -169,6 +169,15 @@ For further reference, view the README.md in the stocksite directory. You might 
 https://hub.docker.com/r/sophos/nginx-vts-exporter
 https://github.com/vozlt/nginx-module-vts
 
+### FastAPI alternative
+Install [Poetry](https://python-poetry.org/docs/) (dependency manager)
+
+
+##### Resources:
+https://testdriven.io/courses/tdd-fastapi/getting-started/
+https://github.com/tiangolo/full-stack-fastapi-postgresql
+https://www.valentinog.com/blog/traefik/
+
 #### TODO: 
 - Add env files to gitignore. Keep secret variables secret!
 - Finetune NGINX setup, look into Docker Swarm to deploy replicas of app.
