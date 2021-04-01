@@ -3,6 +3,8 @@
 import socket
 import sys
 import redis
+import time
+from transactions.models import Transaction
 from django.conf import settings
 
 cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT,
@@ -37,7 +39,7 @@ class QuoteServer:
             self.socket.close()
             sys.exit(1)
 
-    def getQuote(self, stockSymbol, user):
+    def getQuote(self, username, stockSymbol, transactionNum):
         """
             Get a quote from the quote server
         """
@@ -49,7 +51,7 @@ class QuoteServer:
             self.connect()
 
             # Get query and send to quote server
-            quote = stockSymbol + ',' + user + "\n"
+            quote = stockSymbol + ',' + username + "\n"
 
             self.socket.send(quote.encode())
 
@@ -66,6 +68,20 @@ class QuoteServer:
                     'quoteServerTime': data[3],
                     'cryptoKey': data[4]
                 }
+
+                #  Log quoteServer transaction (only increment transactionNum for userCommands?)
+                transaction = Transaction(
+                        type='quoteServer',
+                        timestamp=int(time()*1000),
+                        server='DOCK1',
+                        transactionNum = transactionNum,
+                        price=quote_data['price'],
+                        username=username,
+                        stockSymbol=stockSymbol,
+                        quoteServerTime=int(quote_data['quoteServerTime']),
+                        cryptoKey=quote_data['cryptoKey']
+                    )
+                transaction.save()
                 
                 # Add quote data to cache for 60s
                 cache.hmset(stockSymbol, quote_data)

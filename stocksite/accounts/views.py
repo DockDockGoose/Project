@@ -60,25 +60,6 @@ class AccountListView(APIView):
     
 
 class AddView(APIView):
-    """
-    API endpoint that allows funds to be viewed or added to accounts.
-    """
-    def get(self, request):
-        """
-        Get account & funds data.
-        """
-        username = request.data.get("username")
-
-        # Find account
-        account = Account.objects.filter(username=username,).first()
-
-        # Serialize data for serving
-        serializer = AccountSerializer(account)
-
-        # Log systemEvent using Transaction model (create data obj & .save())
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
     def post(self, request):
         """
         Add funds to a new or existing account.

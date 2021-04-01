@@ -2,14 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import Account
-from accounts.serializers import AccountSerializer
-from django.core import serializers
 from transactions.models import Transaction
-from stocks.models import Stock
 from .quoteHandler import QuoteServer
-from .utils import MockQuoteServer
+from .utils import MockQuoteServer, getByStockSymbol
 from time import time
-
 from django.conf import settings
 import redis
 import json
@@ -20,7 +16,7 @@ CACHE_TTL = 60
 
 class BuyView(APIView):
     """
-    API endpoint that allows stocks to be bought.
+    API endpoint that allows stocks to be sold.
     """
     def put(self, request):
         # Get request data
@@ -30,8 +26,7 @@ class BuyView(APIView):
         transactionNum  = request.data.get("transactionNum")
         command         = request.data.get("command")
 
-
-        # First thing log buy transaction
+        # First thing log sell transaction
         transaction = Transaction(
                 type='userCommand',
                 timestamp=int(time()*1000),
@@ -46,17 +41,18 @@ class BuyView(APIView):
 
         # TODO: Check for quote in cache (if not in cache/is stale perform query)
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
-        quoteQuery = QuoteServer.getQuote(username, stockSymbol)
+        qs = MockQuoteServer
+        quoteQuery = qs.getQuote(username, stockSymbol, transactionNum)
 
-        # Add a new buy command
+        # Set a buy command to the cache
         new_stock = {
             'key': username + 'buy',
-            'stockSymbol':stockSymbol,
-            'price':quoteQuery['price'],
-            'quoteServerTime':quoteQuery['quoteServerTime'],
-            'sharesAmount':amount/float(quoteQuery['price']),
+            'stockSymbol': stockSymbol,
+            'price': quoteQuery['price'],
+            'quoteServerTime': quoteQuery['quoteServerTime'],
+            'sharesAmount': amount/float(quoteQuery['price']),
         }
-        
+
         # Set to cache and set expiration for 60 secondss
         cache.hmset(new_stock['key'], new_stock)
         cache.expire(new_stock['key'], CACHE_TTL)
