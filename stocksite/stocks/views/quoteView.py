@@ -36,7 +36,7 @@ class QuoteView(APIView):
 
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
         # quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)
-        qs = MockQuoteServer()    
+        qs = QuoteServer()    
         quoteQuery = qs.getQuote(username, stockSymbol, transactionNum)
 
         return Response(quoteQuery, status=status.HTTP_200_OK)

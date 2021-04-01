@@ -41,7 +41,7 @@ class BuyView(APIView):
 
         # TODO: Check for quote in cache (if not in cache/is stale perform query)
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
-        qs = MockQuoteServer
+        qs = QuoteServer()
         quoteQuery = qs.getQuote(username, stockSymbol, transactionNum)
 
         # Set a buy command to the cache
