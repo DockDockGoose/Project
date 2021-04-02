@@ -17,7 +17,7 @@ RUN apt-get update \
   && apt-get -y install netcat gcc \
   && apt-get clean
 
-# install python dependencies - upgrade pip
+# install python dependency manager - upgrade pip first
 RUN pip install --upgrade pip
 # Install Poetry
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_HOME=/opt/poetry python && \
@@ -33,6 +33,7 @@ COPY ./app/pyproject.toml ./app/poetry.lock* /app/
 COPY ./app /app
 ENV PYTHONPATH=/app
 
+# Install python dependencies
 RUN poetry install --no-interaction --no-ansi
 
 RUN chmod +x entrypoint.sh

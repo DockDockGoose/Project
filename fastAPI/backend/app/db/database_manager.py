@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import List
 
-from app.db.models import PostDB, OID
+from app.db.models import Account, OID
 
 
 class DatabaseManager(object):
