@@ -5,7 +5,6 @@
         - Change to be a DJango type web server (???) 
         - Make more scalable
         - !!! Add a method to turn off the server (I have no idea, tried signal handler - damon)
-
     REFERENCES: 
         - https://gist.github.com/joncardasis/cc67cfb160fa61a0457d6951eff2aeae
         - https://realpython.com/python-sockets/
@@ -209,9 +208,12 @@ class webServer():
 
 
 if __name__ == '__main__':
-    host_adr    = input("Enter hostname (localhost default): ") or "localhost"
-    port        = int(input("Enter port number ({} default): ".format(SERV_PORT)) or SERV_PORT)
+    if(len(sys.argv) < 3):
+        host_adr    = input("Enter hostname (localhost default): ") or "localhost"
+        port        = int(input("Enter port number ({} default): ".format(SERV_PORT)) or SERV_PORT)
+    else:
+        host_adr    = sys.argv[1]
+        port        = int(sys.argv[2])
 
     server = webServer(port, host_adr)
     server.start()
-
