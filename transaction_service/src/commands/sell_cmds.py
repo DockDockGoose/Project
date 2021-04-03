@@ -36,7 +36,7 @@ class SellCmd():
             'server': cmdDict['server']
         }
         # Create quote server (Note: this is the actual version for VM, use mock quote server for local testing by changing to MockQuoteServer instead)
-        qs = uoteServer()
+        qs = QuoteServer()
 
         # query the quote server
         stock_price = qs.getQuote(cmdDict)      
