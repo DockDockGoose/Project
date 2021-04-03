@@ -32,7 +32,7 @@ class QuoteCmd():
 
         try:
             # Create quote server (Note: this is the actual version for VM, use mock quote server for local testing by changing to MockQuoteServer instead)
-            qs = MockQuoteServer()
+            qs = QuoteServer()
 
             # query the quote server
             quote_data = qs.getQuote(cmdDict)

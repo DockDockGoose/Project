@@ -3,9 +3,10 @@ import time
 import pymongo
 import redis
 
-from .quote_cmd import QuoteCmd
+sys.path.append('../')
+from ..quoteServer import MockQuoteServer, QuoteServer
 
-sys.path.append('../../')
+sys.path.append('../')
 
 from database.src.database import Database
 from database.src.db_log import dbLog
@@ -33,8 +34,11 @@ class BuyCmd():
             'transactionNumber': cmdDict['transactionNumber'],
             'server': cmdDict['server']
         }
+        # Create quote server (Note: this is the actual version for VM, use mock quote server for local testing by changing to MockQuoteServer instead)
+        qs = QuoteServer()
 
-        stock_price = QuoteCmd.execute(quote)
+        # query the quote server
+        stock_price = qs.getQuote(cmdDict)
 
         try:
             # Make sure user exist and has enough funds in account
@@ -44,13 +48,13 @@ class BuyCmd():
                 err = "Invalid cmd. User does not exist." 
                 dbLog.log(cmdDict, ERROR_LOG, err) 
 
-            elif (user_funds >= cmdDict['amount'] * stock_price):
+            elif (user_funds >= float(cmdDict['amount']) * float(stock_price['price'])):
                 # Add buy command to user
                 stock_data = {
                     'timestamp': time.time(),
                     'stockSymbol': cmdDict['stockSymbol'],
                     'amount': cmdDict['amount'],
-                    'price': stock_price
+                    'price': stock_price['price']
                 }
 
                 key = cmdDict['user'] + 'buy'

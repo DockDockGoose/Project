@@ -3,9 +3,11 @@ import time
 import pymongo
 import redis
 
-from .quote_cmd import QuoteCmd
+sys.path.append('../')
+from ..quoteServer import MockQuoteServer, QuoteServer
 
-sys.path.append('../../')
+sys.path.append('../')
+
 from database.src.database import Database
 from database.src.db_log import dbLog
 
@@ -33,8 +35,11 @@ class SellCmd():
             'transactionNumber': cmdDict['transactionNumber'],
             'server': cmdDict['server']
         }
+        # Create quote server (Note: this is the actual version for VM, use mock quote server for local testing by changing to MockQuoteServer instead)
+        qs = uoteServer()
 
-        stock_price = QuoteCmd.execute(quote)
+        # query the quote server
+        stock_price = qs.getQuote(cmdDict)      
         
         try:
             # Check for stock 
@@ -52,7 +57,7 @@ class SellCmd():
                     'timestamp': time.time(),
                     'stockSymbol': cmdDict['stockSymbol'],
                     'amount': cmdDict['amount'],
-                    'price': stock_price
+                    'price': stock_price['price']
                 }
                 key = cmdDict['user'] + 'sell'
                 cache.hmset(key, stock_data)
