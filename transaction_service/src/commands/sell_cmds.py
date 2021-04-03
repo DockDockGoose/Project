@@ -1,6 +1,7 @@
 import sys
 import time
 import pymongo
+import redis
 
 from .quote_cmd import QuoteCmd
 
@@ -8,8 +9,10 @@ sys.path.append('../../')
 from database.src.database import Database
 from database.src.db_log import dbLog
 
-ACCOUNTS_COLLECT = "accounts"
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host='localhost', port=6379, password='dockdockgoose')
+TTL = 60
 
+ACCOUNTS_COLLECT = "accounts"
 
 ERROR_LOG = 'errorEvent'
 CMD_LOG = 'userCommand'
@@ -34,19 +37,16 @@ class SellCmd():
         stock_price = QuoteCmd.execute(quote)
         
         try:
-            user_stock = list(Database.aggregate(ACCOUNTS_COLLECT, [
-                    {'$match': {'_id': cmdDict['user'] }
-                    }, {'$unwind': {'path': '$stocks'}
-                    }, {'$match': {'stocks.stockSymbol': {'$eq': cmdDict['stockSymbol']}}
-                    }, {'$limit': 1}
-                ]))
+            # Check for stock 
+            stock_key = cmdDict['user'] + cmdDict['stockSymbol']
+            user_stock = cache.hgetall(stock_key)
 
             # Check if user has enough of stock in account
             if not user_stock:
                 err = "Invalid cmd. User does not have the specified stock." 
                 dbLog.log(cmdDict, ERROR_LOG, err)
 
-            elif (user_stock[0]['stocks']['amount'] >= cmdDict['amount']):
+            elif float(user_stock['amount']) >= cmdDict['amount']:
                 # Add sell command to user
                 stock_data = {
                     'timestamp': time.time(),
@@ -54,7 +54,9 @@ class SellCmd():
                     'amount': cmdDict['amount'],
                     'price': stock_price
                 }
-                Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$set': { 'sell': stock_data}})
+                key = cmdDict['user'] + 'sell'
+                cache.hmset(key, stock_data)
+                cache.expire(key, TTL)
 
             else:
                 err = "Invalid cmd. User has insufficient amount of stock." 
@@ -73,34 +75,36 @@ class CommitSellCmd():
     
         try:
             # Check for previous sell command 
-            sell_cmd = Database.find_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user'], 'sell': { '$exists': True } }, { 'sell': 1, '_id': 0})
-            
-            if(sell_cmd == None):
+            key = cmdDict['user'] + 'sell'
+            sell_cmd = cache.hgetall(key)
+
+            if not sell_cmd:
                 err = "Invalid cmd. No recent pending buys" 
                 dbLog.log(cmdDict, ERROR_LOG, err) 
             else: 
-                # Check that less than 60s has passed
-                sec_passed = time.time() - float(sell_cmd['sell']['timestamp'])
-                if (sec_passed <= 60):
-                    # Remove stocks from user and update funds
-                    stock_data = {
-                        'stockSymbol': sell_cmd['sell']['stockSymbol'],
-                        'amount': sell_cmd['sell']['amount']
-                    }
-                    
-                    # Decrease the amount of stock in user's account and increase user's fund
-                    Database.update_one(ACCOUNTS_COLLECT, 
-                        { '_id': cmdDict['user'], 'stocks.stockSymbol': sell_cmd['sell']['stockSymbol']},
-                        {'$inc': { 'stocks.$.amount': -sell_cmd['sell']['amount'], 'funds': sell_cmd['sell']['amount'] * sell_cmd['sell']['price']}})
+                # Remove stocks from user and update funds
+                stock_data = {
+                    'stockSymbol': sell_cmd['stockSymbol'],
+                    'amount': float(sell_cmd['amount'])
+                }
+                
+                # Decrease the amount of stock in user's account
+                stock_key = cmdDict['user'] + sell_cmd['stockSymbol']
+                user_stock = cache.hgetall(stock_key)
 
-                    cmdDict['amount'] = sell_cmd['sell']['amount'] * sell_cmd['sell']['price']
-                    dbLog.log(cmdDict, TRANSACT_LOG)
-                else:
-                    err = "Invalid cmd. More than 60 seconds passed." 
-                    dbLog.log(cmdDict, ERROR_LOG, err) 
+                user_stock['amount'] = float(user_stock['amount']) - (float(sell_cmd['amount']) *  float(sell_cmd['price']))
+                cache.hmset(stock_key, user_stock)
+                
+                # Increase user's fund
+                account = cache.hgetall(cmdDict['user'])
+                account['funds'] = float(account['funds']) + (float(sell_cmd['amount']) *  float(sell_cmd['price']))
+                cache.hmset(cmdDict['user'], account)
+
+                cmdDict['amount'] = float(sell_cmd['amount']) * float(sell_cmd['price'])
+                dbLog.log(cmdDict, TRANSACT_LOG)
 
                 #remove sell command   
-                Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'sell': ""}})
+                cache.hdel(*key)
 
         except pymongo.errors.PyMongoError as err:
             print(f"ERROR! Could not complete command {cmdDict['command']} failed with error: {err}")
@@ -116,20 +120,15 @@ class CancelSellCmd():
 
         try:
             # Get previous sell command 
-            sell_cmd = Database.find_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user'], 'sell': { '$exists': True } }, { 'sell': 1, '_id': 0})
+            key = cmdDict['user'] + 'sell'
+            sell_cmd = cache.hgetall(key)
 
-            if (sell_cmd == None):
+            if not sell_cmd:
                 err = "Invalid cmd. No recent pending buys"
                 dbLog.log(cmdDict, ERROR_LOG, err)
             else:
-                # Check that less than 60s has passed
-                sec_passed = time.time() - sell_cmd['sell']['timestamp']
-                if (sec_passed > 60):
-                    err = "Invalid cmd. More than 60 seconds passed."
-                    dbLog.log(cmdDict, ERROR_LOG, err)
-
                 # Remove previous sell command
-                Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'sell': ""}})
+                cache.hdel(*key)
 
         except pymongo.errors.PyMongoError as err:
             print(f"ERROR! Could not complete command {cmdDict['command']} failed with error: {err}")

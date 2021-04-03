@@ -1,6 +1,7 @@
 import sys
 import time
 import pymongo
+import redis 
 
 sys.path.append('../')
 from ..quoteServer import MockQuoteServer, QuoteServer
@@ -10,6 +11,7 @@ sys.path.append('../')
 from database.src.database import Database
 from database.src.db_log import dbLog
 
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host='localhost', port=6379, password='dockdockgoose')
 
 ACCOUNTS_COLLECT = "accounts"
 TRANSACT_COLLECT = "transactions"
@@ -41,8 +43,6 @@ class QuoteCmd():
             quote_data['transactionNumber'] = cmdDict['transactionNumber']
             quote_data['server'] = cmdDict['server']
             quote_data['timestamp'] = str(int(time.time() * 1000))
-
-            dbLog.logQuote(quote_data)
 
             # return the current price of shares
             return float(quote_data['price'])

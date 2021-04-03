@@ -1,6 +1,7 @@
 import sys
 import time
 import pymongo
+import redis
 
 from .quote_cmd import QuoteCmd
 
@@ -8,6 +9,9 @@ sys.path.append('../../')
 
 from database.src.database import Database
 from database.src.db_log import dbLog
+
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host='localhost', port=6379, password='dockdockgoose')
+TTL = 60
 
 ACCOUNTS_COLLECT = "accounts"
 
@@ -34,13 +38,13 @@ class BuyCmd():
 
         try:
             # Make sure user exist and has enough funds in account
-            user_funds = Database.find_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, { 'funds': 1, '_id': 0})
+            user_funds = float(cache.hget(cmdDict['user'], 'funds'))
 
-            if (user_funds == None):
+            if user_funds == None:
                 err = "Invalid cmd. User does not exist." 
                 dbLog.log(cmdDict, ERROR_LOG, err) 
 
-            elif (user_funds['funds'] >= cmdDict['amount'] * stock_price):
+            elif (user_funds >= cmdDict['amount'] * stock_price):
                 # Add buy command to user
                 stock_data = {
                     'timestamp': time.time(),
@@ -48,7 +52,10 @@ class BuyCmd():
                     'amount': cmdDict['amount'],
                     'price': stock_price
                 }
-                Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$set': { 'buy': stock_data}})
+
+                key = cmdDict['user'] + 'buy'
+                cache.hmset(key, stock_data)
+                cache.expire(key, TTL)
                 dbLog.log(cmdDict, TRANSACT_LOG) 
 
             else:
@@ -68,43 +75,39 @@ class CommitBuyCmd:
 
         try:
             # Get previous buy command 
-            buy_cmd = Database.find_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user'], 'buy': { '$exists': True } }, { 'buy': 1, '_id': 0})
+            buy_key = cmdDict['user'] + 'buy'
+            buy_cmd = cache.hgetall(buy_key)
             
-            if (buy_cmd == None):
+            if not buy_cmd:
                 err = "Invalid cmd. No recent pending buys" 
                 dbLog.log(cmdDict, ERROR_LOG, err) 
-            else:
-                # Check that less than 60s has passed
-                sec_passed = time.time() - buy_cmd['buy']['timestamp']
-                if (sec_passed <= 60):
-                
-                    # Add stocks to user and update funds
-                    stock_data = {
-                        'stockSymbol': buy_cmd['buy']['stockSymbol'],
-                        'amount': buy_cmd['buy']['amount']
+            else:                
+                # Check if person already has stock
+                stock_key = cmdDict['user'] + buy_cmd['stockSymbol']
+                user_stock = cache.hgetall(stock_key)
+
+                if not user_stock:
+                    # add new stock
+                    user_stock = {
+                        'stockSymbol': buy_cmd['stockSymbol'],
+                        'amount': float(buy_cmd['amount'])
                     }
-                    # Check if person already has stock
-                    stock_check = Database.find_one(ACCOUNTS_COLLECT, { '_id': cmdDict['user'], 'stocks.stockSymbol': buy_cmd['buy']['stockSymbol']})
-                            
-                    if (stock_check == None):
-                        Database.update_one(ACCOUNTS_COLLECT,
-                            {'_id': cmdDict['user']},
-                            {'$addToSet': { 'stocks': stock_data}, '$inc': {'funds': - buy_cmd['buy']['amount'] * buy_cmd['buy']['price']}})
-                    else:
-                        # else increase their amount of stock
-                        Database.update_one(ACCOUNTS_COLLECT,
-                            { '_id': cmdDict['user'], 'stocks.stockSymbol': buy_cmd['buy']['stockSymbol']},
-                            {'$inc': { 'stocks.$.amount': buy_cmd['buy']['amount'], 'funds': - buy_cmd['buy']['amount'] * buy_cmd['buy']['price']}})
-                    
-                    cmdDict['amount'] = buy_cmd['buy']['amount'] *  buy_cmd['buy']['price']
-                    dbLog.log(cmdDict, TRANSACT_LOG)
-
+                    cache.hmset(stock_key, user_stock)
                 else:
-                    err = "Invalid cmd. More than 60 seconds passed." 
-                    dbLog.log(cmdDict, ERROR_LOG, err) 
+                    # else increase their amount of stock
+                    user_stock['amount'] = float(buy_cmd['amount']) + float(user_stock['amount'])
+                    cache.hmset(stock_key, user_stock)
+                           
+                # Decrease user's funds
+                account = cache.hgetall(cmdDict['user'])
+                account['funds'] = float(account['funds']) - (float(buy_cmd['amount']) *  float(buy_cmd['price']))
+                cache.hmset(cmdDict['user'], account)
 
-                #remove buy command   
-                Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'buy': ""}})
+                cmdDict['amount'] = float(buy_cmd['amount']) *  float(buy_cmd['price'])
+                dbLog.log(cmdDict, TRANSACT_LOG)
+
+                #remove buy command
+                cache.hdel(*buy_key)
 
         except pymongo.errors.PyMongoError as err:
             print(f"ERROR! Could not complete command {cmdDict['command']} failed with error: {err}")
@@ -120,20 +123,16 @@ class CancelBuyCmd:
 
         try: 
             # Get previous buy command 
-            buy_cmd = Database.find_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user'], 'buy': { '$exists': True } }, { 'buy': 1, '_id': 0})
-            
-            if (buy_cmd == None):
+            key = cmdDict['user'] + 'buy'
+            buy_cmd = cache.hgetall(key)
+
+            if not buy_cmd:
                 err = "Invalid cmd. No recent pending buys." 
                 dbLog.log(cmdDict, ERROR_LOG, err)
             
-            else: # Check that less than 60s has passed
-                sec_passed = time.time() - buy_cmd['buy']['timestamp']
-                if (sec_passed > 60):
-                    err = "Invalid cmd. More than 60 seconds passed." 
-                    dbLog.log(cmdDict, ERROR_LOG, err)
-
+            else:
                 # Remove previous buy command
-                Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$unset': { 'buy': ""}}) 
+                cache.hdel(*key)
 
         except pymongo.errors.PyMongoError as err:
             print(f"ERROR! Could not complete command {cmdDict['command']} failed with error: {err}")

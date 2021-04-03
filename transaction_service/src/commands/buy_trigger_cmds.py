@@ -1,11 +1,13 @@
 import sys
 import pymongo
-
+import redis
 
 sys.path.append('../../')
 
 from database.src.database import Database
 from database.src.db_log import dbLog
+
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host='localhost', port=6379, password='dockdockgoose')
 
 ACCOUNTS_COLLECT = "accounts"
 TRIGGER_COLLECT = "triggers"
@@ -39,8 +41,13 @@ class SetBuyAmtCmd():
                     'amount': cmdDict['amount']
                 }
 
-                Database.insert(TRIGGER_COLLECT, buy_trigger)
-                Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$inc': {'funds': -cmdDict['amount']}})
+                key = cmdDict['user'] + cmdDict['stockSymbol'] + 'buy'
+                cache.hmset(key, buy_trigger)
+
+                # Decrease user's funds
+                account = cache.hgetall(cmdDict['user'])
+                account['funds'] = float(account['funds']) - cmdDict['amount']
+                cache.hmset(cmdDict['user'], account)
 
                 dbLog.log(cmdDict, TRANSACT_LOG) 
             else:
@@ -60,18 +67,22 @@ class CancelSetBuyCmd():
 
         try:
             # Check if person has already set buy amount for the stock
-            buy_trigger = Database.find_one(TRIGGER_COLLECT, {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'buy'})
+            key = cmdDict['user'] + cmdDict['stockSymbol'] + 'buy'
+            buy_trigger = cache.hgetall(key)
 
-            if (buy_trigger == None):
+            if not buy_trigger:
                 err = "Invalid cmd. User does not have a buy trigger for that stock." 
                 dbLog.log(cmdDict, ERROR_LOG, err)
 
             else:
                 # Add funds back to user's account and delete set_buy trigger
-                Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$inc': {'funds': buy_trigger ['amount']}})
-                Database.remove(TRIGGER_COLLECT, {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'buy'})
+                account = cache.hgetall(cmdDict['user'])
+                account['funds'] = float(account['funds']) + float(buy_trigger['amount'])
+                cache.hmset(cmdDict['user'], account)
 
-                cmdDict['amount'] = buy_trigger ['amount']
+                # Delete trigger
+                cache.hdel(*key)
+                cmdDict['amount'] = float(buy_trigger['amount'])
                 dbLog.log(cmdDict, TRANSACT_LOG)
 
         except pymongo.errors.PyMongoError as err:
@@ -87,14 +98,17 @@ class SetBuyTriggerCmd():
 
         try:
             # Check if person has already set buy amount for the stock
-            buy_trigger = Database.find_one(TRIGGER_COLLECT, {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'buy'})
-            if  (buy_trigger == None):
+            key = cmdDict['user'] + cmdDict['stockSymbol'] + 'buy'
+            buy_trigger = cache.hgetall(key)
+            
+            if  not buy_trigger:
                 err = "Invalid cmd. User does not have a trigger for that stock." 
                 dbLog.log(cmdDict, ERROR_LOG, err)
             else:
                 # Add trigger point
-                Database.update_one(TRIGGER_COLLECT, {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'buy'}, {'$set': {'triggerPrice': cmdDict['amount']}})
-                
+                buy_trigger['triggerPrice'] = cmdDict['amount']
+                cache.hmset(key, buy_trigger)
+
         except pymongo.errors.PyMongoError as err:
             print(f"ERROR! Could not complete command {cmdDict['command']} failed with error: {err}")
             dbLog.log(cmdDict, ERROR_LOG, err) 

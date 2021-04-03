@@ -1,11 +1,13 @@
 import sys
-
 import pymongo
+import redis
 
 sys.path.append('../../')
 
 from database.src.database import Database
 from database.src.db_log import dbLog
+
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host='localhost', port=6379, password='dockdockgoose')
 
 ACCOUNTS_COLLECT = "accounts"
 TRIGGER_COLLECT = "triggers"
@@ -24,26 +26,23 @@ class SetSellAmtCmd():
 
         try:
             # Get amount of stock from user
-            user_stock = list(Database.aggregate(ACCOUNTS_COLLECT, [
-                    {'$match': {'_id': cmdDict['user'] }
-                    }, { '$unwind': {'path': '$stocks'}
-                    }, {'$match': {'stocks.stockSymbol': {'$eq': cmdDict['stockSymbol']}}
-                    }, {'$limit': 1}
-                ]))
+            stock_key = cmdDict['user'] + cmdDict['stockSymbol']
+            user_stock = cache.hgetall(stock_key)
 
             if not user_stock:
                 err = "Invalid cmd. User does not have the specified stock." 
                 dbLog.log(cmdDict, ERROR_LOG, err) 
 
             # Check if user has enough of stock in account and initialize sell trigger
-            elif (user_stock[0]['stocks']['amount'] >= cmdDict['amount']):
+            elif float(user_stock['amount']) >= cmdDict['amount']:
                 sell_trigger = {
                     'user': cmdDict['user'],
                     'type': 'sell',
                     'stockSymbol': cmdDict['stockSymbol'],
                     'amount': cmdDict['amount']
                 }
-                Database.insert(TRIGGER_COLLECT, sell_trigger)
+                key = cmdDict['user'] + cmdDict['stockSymbol'] + 'sell'
+                cache.hmset(key, sell_trigger)
 
             else:
                 err = "Invalid cmd. User has insufficient amount of stock." 
@@ -63,22 +62,26 @@ class CancelSetSellCmd():
 
         try:
             # Check if person has already set sell amount for the stock
-            sell_trigger = Database.find_one(TRIGGER_COLLECT, {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'sell'})
+            key = cmdDict['user'] + cmdDict['stockSymbol'] + 'sell'
+            sell_trigger = cache.hgetall(key)
 
-            if (sell_trigger == None):
+            if not sell_trigger:
                 err = "Invalid cmd. User does not have a sell trigger for that stock." 
                 dbLog.log(cmdDict, ERROR_LOG, err)
             else:
                 # Re-add funds only if trigger price had been set
                 if ('triggerPrice' in sell_trigger.keys()):
-                    Database.update_one(ACCOUNTS_COLLECT,
-                        { '_id': cmdDict['user'], 'stocks.stockSymbol': cmdDict['stockSymbol']},
-                        {'$inc': { 'stocks.$.amount': sell_trigger['amount']}}
-                    )
-                    cmdDict['amount'] = sell_trigger['amount']
+                    stock_key = cmdDict['user'] + cmdDict['stockSymbol']
+                    user_stock = cache.hgetall(stock_key)
+
+                    user_stock['amount'] = float(user_stock['amount']) + (float(sell_trigger['amount']))
+                    cache.hmset(stock_key, user_stock)
+
+                    cmdDict['amount'] = float(sell_trigger['amount'])
                     dbLog.log(cmdDict, TRANSACT_LOG)
+                    
                 # Delete sell trigger
-                Database.remove(TRIGGER_COLLECT, {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'sell'})
+                cache.hdel(*key)
 
         except pymongo.errors.PyMongoError as err:
             print(f"ERROR! Could not complete command {cmdDict['command']} failed with error: {err}")
@@ -94,25 +97,26 @@ class SetSellTriggerCmd():
 
         try:
             # Check if person has already has set sell amount for the stock
-            sell_trigger = Database.find_one(TRIGGER_COLLECT, {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'sell'})
-            
-            if(sell_trigger == None):
+            key = cmdDict['user'] + cmdDict['stockSymbol'] + 'sell'
+            sell_trigger = cache.hgetall(key)
+
+            if not sell_trigger:
                 err = "Invalid cmd. User does not have a trigger for that stock." 
                 dbLog.log(cmdDict, ERROR_LOG, err)
             
             else:
                 # Add trigger point
-                Database.update_one(TRIGGER_COLLECT,
-                    {'user': cmdDict['user'], 'stockSymbol': cmdDict['stockSymbol'], 'type': 'sell'},
-                    {'$set': {'triggerPrice': cmdDict['amount']}}
-                )
+                sell_trigger['triggerPrice'] = cmdDict['amount']
+                cache.hmset(key, sell_trigger)
                 
                 # Decrease the number of stock shares in user's account 
-                Database.update_one(ACCOUNTS_COLLECT, 
-                    { '_id': cmdDict['user'], 'stocks.stockSymbol': sell_trigger['stockSymbol']},
-                    {'$inc': { 'stocks.$.amount': - sell_trigger['amount']}}
-                )
-                cmdDict['amount'] = sell_trigger['amount']
+                stock_key = cmdDict['user'] + sell_trigger['stockSymbol']
+                user_stock = cache.hgetall(stock_key)
+
+                user_stock['amount'] = float(user_stock['amount']) - (float(sell_trigger['amount']))
+                cache.hmset(stock_key, user_stock)
+
+                cmdDict['amount'] = float(sell_trigger['amount'])
                 dbLog.log(cmdDict, TRANSACT_LOG)
 
         except pymongo.errors.PyMongoError as err:

@@ -1,10 +1,13 @@
 import pymongo
 import sys
+import redis
 
 sys.path.append('../../')
 
 from database.src.database import Database
 from database.src.db_log import dbLog
+
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host='localhost', port=6379, password='dockdockgoose')
 
 ACCOUNTS_COLLECT = "accounts"
 
@@ -22,16 +25,22 @@ class AddCmd:
 
         try:
             # Check if new user
-            if (Database.find_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}) == None):
+            key = cmdDict['user']
+            account = cache.hgetall(key)
+            if not account:
                 # Modify command to get appropriate information for database
                 user_data = {
                     '_id': cmdDict['user'],
                     'funds': cmdDict['amount']
                 }
-                Database.insert(ACCOUNTS_COLLECT, user_data)
+                cache.hmset(key, user_data)
             else:
                 # Update the current user funds
-                Database.update_one(ACCOUNTS_COLLECT, {'_id': cmdDict['user']}, {'$inc': { 'funds': cmdDict['amount']}})
+                user_data = {
+                    '_id': cmdDict['user'],
+                    'funds': float(account['funds']) + cmdDict['amount']
+                }
+                cache.hmset(key, user_data)
 
             dbLog.log(cmdDict, TRANSACT_LOG)
 

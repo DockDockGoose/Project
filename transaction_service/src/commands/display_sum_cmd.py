@@ -1,11 +1,13 @@
 import sys
 import pymongo
-
+import redis
 
 sys.path.append('../../')
 
 from database.src.database import Database
 from database.src.db_log import dbLog
+
+cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host='localhost', port=6379, password='dockdockgoose')
 
 ACCOUNTS_COLLECT = "accounts"
 TRANSACT_COLLECT = "transactions"
