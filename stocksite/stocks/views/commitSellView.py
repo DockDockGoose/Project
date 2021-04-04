@@ -6,11 +6,6 @@ from transactions.models import Transaction
 from .utils import getByStockSymbol
 from time import time
 
-from django.conf import settings
-import redis
-import json
-
-cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
 class CommitSellView(APIView):
     """
@@ -33,16 +28,7 @@ class CommitSellView(APIView):
             )
         transaction.save()
 
-        # Find user account
         account = Account.objects.filter(username=username).first()
-
-        # Get sell command from cache
-        key = username + 'sell'
-
-        sell_cmd = cache.hgetall(key)
-
-        # delete sell command from cache
-        cache.hdel(*key)
 
         # If account is non-existing, log errorEvent to Transaction
         if account is None:
@@ -59,7 +45,7 @@ class CommitSellView(APIView):
             return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
 
         # Check that user has sell command
-        if not sell_cmd:
+        if account.sell is None:
             transaction = Transaction(
                 type='errorEvent',
                 timestamp=int(time()*1000),
@@ -73,11 +59,11 @@ class CommitSellView(APIView):
             return Response("Sell command doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
 
         # Search account for stock
-        stock = getByStockSymbol(account.stocks, sell_cmd['stockSymbol'])
+        stock = getByStockSymbol(account.stocks, account.sell['stockSymbol'])
 
         # Subtract amount from stock sharesAmount & add amount to account funds
-        stock['sharesAmount'] -= float(sell_cmd['sharesAmount'])
-        account.funds += float(sell_cmd['sharesAmount']) * float(sell_cmd['price'])
+        stock['sharesAmount'] -= account.sell['sharesAmount']
+        account.funds += account.sell['sharesAmount'] * account.sell['price']
 
         # Log account transaction 
         transaction = Transaction(
@@ -87,11 +73,12 @@ class CommitSellView(APIView):
                 transactionNum = transactionNum,
                 action='add',
                 username=username,
-                amount= float(sell_cmd['sharesAmount']) * float(sell_cmd['price']),
+                amount=account.sell['sharesAmount'] * account.sell['price'],
             )
         transaction.save()
         
-        # Update account
+        # Remove buy command from user's account
+        account.sell = None
         account.save()
 
         return Response(status=status.HTTP_200_OK)

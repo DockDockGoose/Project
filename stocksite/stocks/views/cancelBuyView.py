@@ -6,13 +6,6 @@ from transactions.models import Transaction
 from .utils import MockQuoteServer, getByStockSymbol
 from time import time
 
-from django.conf import settings
-import redis
-import json
-
-cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
-
-
 class CancelBuyView(APIView):
     """
     API endpoint for cancelling the buy of a stock.
@@ -36,9 +29,39 @@ class CancelBuyView(APIView):
             )
         transaction.save()
 
-        # Delete buy command from the cache
-        key = username + 'buy'
+        # Find user account
+        account = Account.objects.filter(username=username).first()
 
-        cache.hdel(*key)
+        if account is None:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command=command,
+                username=username,
+                stockSymbol=stockSymbol,
+                errorMessage='Account does not exist.',
+            )
+            transaction.save()
+            return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
+        
+        # Check that user has buy command
+        if account.buy is None:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command=command,
+                username=username,
+                errorMessage='Buy command does not exist.',
+            )
+            transaction.save()
+            return Response("Buy command doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Remove buy command from user's account
+        account.buy = None
+        account.save()
     
         return Response(status=status.HTTP_200_OK)

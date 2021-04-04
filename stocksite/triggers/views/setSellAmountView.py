@@ -6,11 +6,6 @@ from transactions.models import Transaction
 from triggers.models import Trigger
 from .utils import getByStockSymbol
 from time import time
-from django.conf import settings
-import redis
-import json
-
-cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
 
 class SetSellAmountView(APIView):
@@ -109,15 +104,16 @@ class SetSellAmountView(APIView):
             return Response("Insufficient amount of stock :(.", status=status.HTTP_412_PRECONDITION_FAILED)
 
         # Check if stock had a previous trigger
-        key = username + stockSymbol + 'sell'
-        trigger_data = cache.hgetall(key)
+        trigger = Trigger.objects.filter(username=username, type='sell', stockSymbol=stockSymbol).first()
 
-        if not trigger_data:
+        if trigger is None:
             # Add new trigger sell command
-            trigger = Trigger(key=key,username=username, type='buy', stockSymbol=stockSymbol, sharesAmount=amount)
+            id = username + stockSymbol + 'sell'
+            trigger = Trigger(id=id, username=username, type='sell', stockSymbol=stockSymbol, sharesAmount=amount)
         else:
             # Update the stocks sell trigger command
-            trigger['sharesAmount'] = amount
-        cache.hmset(key, trigger_data)
+            trigger.sharesAmount = amount
+
+        trigger.save()
 
         return Response(status=status.HTTP_200_OK)

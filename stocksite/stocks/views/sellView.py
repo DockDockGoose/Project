@@ -6,13 +6,7 @@ from transactions.models import Transaction
 from .quoteHandler import QuoteServer
 from .utils import MockQuoteServer, getByStockSymbol
 from time import time
-from django.conf import settings
-import redis
-import json
 
-cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
-
-CACHE_TTL = 60
 
 class SellView(APIView):
     """
@@ -114,17 +108,9 @@ class SellView(APIView):
         qs = QuoteServer()
         quoteQuery = qs.getQuote(username, stockSymbol, transactionNum)
 
-        # Set a sell command to the cache
-        new_stock = {
-            'key': username + 'sell',
-            'stockSymbol': stockSymbol,
-            'price': quoteQuery['price'],
-            'quoteServerTime': quoteQuery['quoteServerTime'],
-            'sharesAmount': amount/float(quoteQuery['price']),
-        }
-
-        # Set to cache and set expiration for 60 secondss
-        cache.hmset(new_stock['key'], new_stock)
-        cache.expire(new_stock['key'], CACHE_TTL)
+        # Set a sell command to the user
+        newStock = {'stockSymbol':stockSymbol, 'price':quoteQuery['price'], 'quoteServerTime':quoteQuery['quoteServerTime'], 'sharesAmount':amount/quoteQuery['price']}
+        account.sell = newStock
+        account.save()
 
         return Response(status=status.HTTP_200_OK)

@@ -7,12 +7,8 @@ from .quoteHandler import QuoteServer
 from .utils import MockQuoteServer, getByStockSymbol
 from time import time
 from django.conf import settings
-import redis
 import json
 
-cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
-
-CACHE_TTL = 60
 
 class BuyView(APIView):
     """
@@ -39,22 +35,50 @@ class BuyView(APIView):
             )
         transaction.save()
 
+        # Find user account
+        account = Account.objects.filter(username=username).first()
+
+        # If account is non-existing, log errorEvent to Transaction
+        if account is None:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command=command,
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+                errorMessage='Account does not exist.',
+            )
+            transaction.save()
+            return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Check if funds permit action, log error event to transaction if not
+        if account.funds < amount:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command=command,
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+                errorMessage='Insufficient funds :(.',
+            )
+            transaction.save()
+            return Response("Insufficient funds :(.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        
         # TODO: Check for quote in cache (if not in cache/is stale perform query)
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
         qs = QuoteServer()
         quoteQuery = qs.getQuote(username, stockSymbol, transactionNum)
 
-        # Set a buy command to the cache
-        new_stock = {
-            'key': username + 'buy',
-            'stockSymbol': stockSymbol,
-            'price': quoteQuery['price'],
-            'quoteServerTime': quoteQuery['quoteServerTime'],
-            'sharesAmount': amount/float(quoteQuery['price']),
-        }
-
-        # Set to cache and set expiration for 60 secondss
-        cache.hmset(new_stock['key'], new_stock)
-        cache.expire(new_stock['key'], CACHE_TTL)
+        # Set a buy command to the user
+        newStock = {'stockSymbol':stockSymbol, 'price':quoteQuery['price'], 'quoteServerTime':quoteQuery['quoteServerTime'], 'sharesAmount':amount/quoteQuery['price']}
+        account.buy = newStock
+        account.save()
 
         return Response(status=status.HTTP_200_OK)

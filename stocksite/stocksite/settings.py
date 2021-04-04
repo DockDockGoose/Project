@@ -56,28 +56,12 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'rest_auth',
     'django_filters',
-    'django_redis',
     'accounts',
     'transactions',
     'stocks',
     'triggers',
 ]
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/2",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
-    }
-}
-
-# Cache time to live is 60s
-CACHE_TTL = 60
-
-REDIS_HOST = 'redis'
-REDIS_PORT = 6379
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,

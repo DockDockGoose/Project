@@ -5,11 +5,6 @@ from accounts.models import Account
 from transactions.models import Transaction
 from triggers.models import Trigger
 from time import time
-from django.conf import settings
-import redis
-import json
-
-cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
 
 class SetBuyAmountView(APIView):
@@ -73,17 +68,16 @@ class SetBuyAmountView(APIView):
             return Response("Insufficient funds for buy trigger :(.", status=status.HTTP_412_PRECONDITION_FAILED)
 
         # Check if stock had a previous trigger
-        key = username + stockSymbol + 'buy'
-        trigger_data = cache.hgetall(key)
+        trigger = Trigger.objects.filter(username=username, type='buy', stockSymbol=stockSymbol).first()
 
-        if not trigger_data:
+        if trigger is None:
             # Add new trigger buy command
-            trigger = Trigger(key=key,username=username, type='buy', stockSymbol=stockSymbol, sharesAmount=amount)
+            id = username + stockSymbol + 'buy'
+            trigger = Trigger(id=id,username=username, type='buy', stockSymbol=stockSymbol, sharesAmount=amount)
         else:
             # Update the stocks buy trigger command
-            trigger['sharesAmount'] = amount
-        cache.hmset(key, trigger_data)
-
+            trigger.sharesAmount = amount
+        trigger.save()
 
         # Remove funds from user account and put into pending
         account.funds -= amount

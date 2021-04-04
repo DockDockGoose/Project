@@ -38,14 +38,6 @@ services:
     networks: 
       - localnet
 
-  redis:
-    restart: always
-    image: redis
-    container_name: redis
-    ports:
-      - 6379:6379
-    networks: 
-      - localnet
 
   web:
     build: ./stocksite
@@ -58,7 +50,6 @@ services:
       - "8000:8000"
     links:
       - mongodb
-      - redis
     networks: 
       - localnet
     env_file: 

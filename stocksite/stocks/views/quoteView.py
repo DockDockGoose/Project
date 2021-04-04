@@ -6,9 +6,6 @@ from transactions.serializers import TransactionSerializer
 from .utils import MockQuoteServer
 from .quoteHandler import QuoteServer
 from time import time
-from django.core.cache import cache
-from django.conf import settings
-from django.core.cache.backends.base import DEFAULT_TIMEOUT
  
  
 class QuoteView(APIView):
@@ -35,7 +32,7 @@ class QuoteView(APIView):
 
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
         # quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)
-        qs = QuoteServer()    
+        qs = QuoteServer()
         quoteQuery = qs.getQuote(username, stockSymbol, transactionNum)
 
         return Response(quoteQuery, status=status.HTTP_200_OK)

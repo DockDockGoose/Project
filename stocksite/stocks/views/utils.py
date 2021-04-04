@@ -5,13 +5,6 @@ import socket
 import sys
 from time import time
 from transactions.models import Transaction
-from django.conf import settings
-import redis
-
-cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT,
-                          db=0)
-
-CACHE_TTL = 60
 
 """ A mock up of the quote server. Will return dummy quote."""
 
@@ -30,39 +23,30 @@ class MockQuoteServer:
             Use intead of getQuote when you are not connected to server
             Will return dummy data.
         """
-        # First check the cache for quote
-        quote_data = cache.hgetall(stockSymbol)
-        
-        if not quote_data:
-            quote_data = {
-                'price': 10.50,
-                'stockSymbol': stockSymbol,
-                'username': username,
-                'quoteServerTime': int(time() * 1000),
-                'cryptoKey': mockCryptoKey
-            }
-            #  Log quoteServer transaction (only increment transactionNum for userCommands?)
-            transaction = Transaction(
-                    type='quoteServer',
-                    timestamp=int(time()*1000),
-                    server='DOCK1',
-                    transactionNum = transactionNum,
-                    price=quote_data['price'],
-                    username=username,
-                    stockSymbol=stockSymbol,
-                    quoteServerTime=int(quote_data['quoteServerTime']),
-                    cryptoKey=quote_data['cryptoKey']
-                )
-            transaction.save()
 
-            cache.hmset(stockSymbol, quote_data)
-            cache.expire(stockSymbol, CACHE_TTL)
+        quote_data = {
+            'price': 10.50,
+            'stockSymbol': stockSymbol,
+            'username': username,
+            'quoteServerTime': int(time() * 1000),
+            'cryptoKey': mockCryptoKey
+        }
+        #  Log quoteServer transaction (only increment transactionNum for userCommands?)
+        transaction = Transaction(
+                type='quoteServer',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                price=quote_data['price'],
+                username=username,
+                stockSymbol=stockSymbol,
+                quoteServerTime=int(quote_data['quoteServerTime']),
+                cryptoKey=quote_data['cryptoKey']
+            )
+        transaction.save()
 
-            return quote_data
-        else:
-            quote_data['price'] = float(quote_data['price'])
-            quote_data['quoteServerTime'] = int(quote_data['quoteServerTime'])
-            return quote_data
+        return quote_data
+
             
 
 def getByStockSymbol(stocks, stockSymbol):

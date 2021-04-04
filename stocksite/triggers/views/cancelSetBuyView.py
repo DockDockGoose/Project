@@ -5,12 +5,6 @@ from accounts.models import Account
 from transactions.models import Transaction
 from triggers.models import Trigger
 from time import time
-from django.conf import settings
-import redis
-import json
-
-cache = redis.StrictRedis(charset="utf-8", decode_responses=True, host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
-
 
 
 class CancelSetBuyView(APIView):
@@ -37,11 +31,10 @@ class CancelSetBuyView(APIView):
         transaction.save()
 
         # Find previous buy trigger
-        key = username + stockSymbol + 'buy'
-        trigger_data = cache.hgetall(key)
+        trigger = Trigger.objects.filter(username=username, type='buy', stockSymbol=stockSymbol).first()
 
         # If account is non-existing, log errorEvent to Transaction
-        if not trigger_data:
+        if trigger is None:
             transaction = Transaction(
                 type='errorEvent',
                 timestamp=int(time()*1000),
@@ -54,17 +47,16 @@ class CancelSetBuyView(APIView):
             )
             transaction.save()
             return Response("Buy trigger doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
-        
         # Find user account
         account = Account.objects.filter(username=username).first()
 
         # Add funds back into user account
-        account.pendingFunds -= float(trigger_data['sharesAmount'])
-        account.funds += float(trigger_data['sharesAmount'])
+        account.pendingFunds -= trigger.sharesAmount
+        account.funds += trigger.sharesAmount
         account.save()
 
         # Delete trigger
-        cache.hdel(*key)
+        trigger.delete()
 
         # Also log account transaction change
         transaction = Transaction(
@@ -75,7 +67,7 @@ class CancelSetBuyView(APIView):
                 action='add',
                 username=username,
                 stockSymbol=stockSymbol,
-                amount=float(trigger_data['sharesAmount']),
+                amount=trigger.sharesAmount,
             )
         transaction.save()
 
