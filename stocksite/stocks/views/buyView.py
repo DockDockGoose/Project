@@ -20,18 +20,20 @@ class BuyView(APIView):
     """
     def put(self, request):
         # Get request data
-        username        = request.data.get("username")
-        stockSymbol     = request.data.get("stockSymbol")
-        amount          = float(request.data.get("amount"))
-        transactionNum  = request.data.get("transactionNum")
-        command         = request.data.get("command")
+        username = request.data.get("username")
+        stockSymbol = request.data.get("stockSymbol")
+        amount = float(request.data.get("amount"))
+        price = float(request.data.get("price"))
+        numT = Transaction.objects.all().count()
+        transactionNum  = request.data.get("transactionNumber", numT)
+        
+        command         = request.data.get("command", "BUY")
 
         # First thing log sell transaction
         # Find user account
         account = Account.objects.filter(username=username).first()
 
         totalPrice = amount * price
-
         # If account is non-existing, log errorEvent to Transaction
         if account is None:
             transaction = Transaction(
@@ -47,7 +49,7 @@ class BuyView(APIView):
             )
             transaction.save()
             return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
-
+        
         # Check if funds permit action, log error event to transaction if not
         if account.funds < totalPrice:
             transaction = Transaction(
@@ -63,8 +65,9 @@ class BuyView(APIView):
             )
             transaction.save()
             return Response("Insufficient funds :(.", status=status.HTTP_412_PRECONDITION_FAILED)
-
+        
         # Log buy transaction
+        transactionNum = int(transactionNum + 1)
         transaction = Transaction(
                 type='userCommand',
                 timestamp=int(time()*1000),
@@ -74,8 +77,9 @@ class BuyView(APIView):
                 username=username,
                 stockSymbol=stockSymbol,
                 amount=amount,
-                price=price,
+                price=price
             )
+        
         transaction.save()
      
         # TODO: Check for quote in cache (if not in cache/is stale perform query)
@@ -92,6 +96,18 @@ class BuyView(APIView):
             'sharesAmount': amount/float(quoteQuery['price']),
         }
 
+        if(not account.stocks):
+            account.stocks[stockSymbol] = {"totalPrice": totalPrice, "sharesAmount": amount, "avgPrice": price}
+        else:
+            if(stockSymbol in account.stocks):
+                account.stocks[stockSymbol]["totalPrice"] = account.stocks[stockSymbol]["totalPrice"] + totalPrice
+                account.stocks[stockSymbol]["sharesAmount"] = account.stocks[stockSymbol]["sharesAmount"] + amount
+                account.stocks[stockSymbol]["avgPrice"] = account.stocks[stockSymbol]["totalPrice"] / account.stocks[stockSymbol]["amount"]
+
+            else:
+                account.stocks[stockSymbol] = {"totalPrice": totalPrice, "sharesAmount": amount, "avgPrice": price}
+        
+        account.save()
         # Set to cache and set expiration for 60 secondss
         cache.hmset(new_stock['key'], new_stock)
         cache.expire(new_stock['key'], CACHE_TTL)
