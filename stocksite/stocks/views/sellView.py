@@ -15,10 +15,11 @@ class SellView(APIView):
         username = request.data.get("username")
         stockSymbol = request.data.get("stockSymbol")
         amount = float(request.data.get("amount"))
+        price = float(request.data.get("price"))
 
         # Find user account
         account = Account.objects.filter(username=username).first()
-
+        print("belh")
         # If account is non-existing, log errorEvent to Transaction
         if account is None:
             transaction = Transaction(
@@ -34,9 +35,9 @@ class SellView(APIView):
             )
             transaction.save()
             return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
-
+        print("Goo")
         # Search Account for stock, log error event to transaction if doesnt exist
-        stock = getByStockSymbol(account.stocks, stockSymbol)
+        '''stock = getByStockSymbol(account.stocks, stockSymbol)
         if stock is None:
             transaction = Transaction(
                 type='errorEvent',
@@ -50,10 +51,10 @@ class SellView(APIView):
                 errorMessage='Stock not owned.',
             )
             transaction.save()
-            return Response("Stock not owned.", status=status.HTTP_412_PRECONDITION_FAILED)
+            return Response("Stock not owned.", status=status.HTTP_412_PRECONDITION_FAILED)'''
 
         # Check if shares amount permit action, og error event to transaction if not 
-        sharesAmount = stock['sharesAmount']
+        '''sharesAmount = stock['sharesAmount']
         if sharesAmount < amount:
             transaction = Transaction(
                 type='errorEvent',
@@ -67,7 +68,7 @@ class SellView(APIView):
                 errorMessage='Not enough shares to sell.',
             )
             transaction.save()
-            return Response("Not enough shares to sell.", status=status.HTTP_412_PRECONDITION_FAILED)
+            return Response("Not enough shares to sell.", status=status.HTTP_412_PRECONDITION_FAILED)'''
 
         # Log sell transaction
         transaction = Transaction(
@@ -81,5 +82,17 @@ class SellView(APIView):
                 amount=amount,
             )
         transaction.save()
+        print("geh")
+
+        fun = float(account.funds)
+        account.funds = fun + ( price * amount )
+        account.stocks[stockSymbol]["amount"] = account.stocks[stockSymbol]["amount"] - amount
+        account.stocks[stockSymbol]["totalPrice"] = account.stocks[stockSymbol]["totalPrice"] - account.stocks[stockSymbol]["avgPrice"] * amount
+        
+        if(account.stocks[stockSymbol]["amount"] == 0):
+            del account.stocks[stockSymbol]
+        
+        account.save()
+        
 
         return Response(status=status.HTTP_200_OK)

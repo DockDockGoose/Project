@@ -72,12 +72,16 @@ class BuyView(APIView):
         fun = float(account.funds)
         account.funds = fun - totalPrice
 
-        if(account.stocks == None):
-            account.stocks = [{'stockSymbol': stockSymbol, 'price': price, 'quoteServerTime': 1, 'sharesAmount': amount}]
+        if(not account.stocks):
+            account.stocks[stockSymbol] = {"totalPrice": totalPrice, "amount": amount, "avgPrice": price}
         else:
-            arr = account.stocks
-            arr.append({'stockSymbol': stockSymbol, 'price': price, 'quoteServerTime': 1, 'sharesAmount': amount})
+            if(stockSymbol in account.stocks):
+                account.stocks[stockSymbol]["totalPrice"] = account.stocks[stockSymbol]["totalPrice"] + totalPrice
+                account.stocks[stockSymbol]["amount"] = account.stocks[stockSymbol]["amount"] + amount
+                account.stocks[stockSymbol]["avgPrice"] = account.stocks[stockSymbol]["totalPrice"] / account.stocks[stockSymbol]["amount"]
+
+            else:
+                account.stocks[stockSymbol] = {"totalPrice": totalPrice, "amount": amount, "avgPrice": price}
         
         account.save()
-
         return Response(status=status.HTTP_200_OK)

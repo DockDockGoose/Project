@@ -34,27 +34,10 @@ def viewMyTransactions(request):
     transaction_list = Transaction.objects.filter(username="daniel")
     myAccount = Account.objects.filter(username="daniel").first()
     
-    stocks = {}
-    if myAccount.stocks == None:
-        print ("none")
-    else:
-        for stock in myAccount.stocks:
-            sym = stock['stockSymbol']
-            if sym in stocks:
-               stocks[sym]["amount"] += int(stock["sharesAmount"])
-               stocks[sym]["totalPrice"] += int(stock["sharesAmount"]) * int(stock["price"])
-            else:
-                stocks[sym] = {}
-                stocks[sym]["amount"] = 0
-                stocks[sym]["totalPrice"] = 0
-    for key in stocks:
-        stocks[key]["avgPrice"] = stocks[key]["totalPrice"] / stocks[sym]["amount"]
-    
-
+    print(myAccount.stocks)
     context = {
         'transaction_list': transaction_list,
-        'account': myAccount,
-        'purchasedStocks': stocks
+        'account': myAccount
     }
     return render(request, 'transactions.html', context)
 
@@ -143,15 +126,12 @@ def sellStock(request, stockSymbol):
     stockFacts["sym"] = stockSymbol
     stockFacts["currentPrice"] = stock.price
     stockFacts["amount"] = 0
-    if myAccount.stocks == None:
+    if not myAccount.stocks:
         print ("none")
     else:
-        for stock in myAccount.stocks:
-            sym = stock['stockSymbol']
-            if sym == stockFacts['sym']:
-               stockFacts["amount"] += int(stock["sharesAmount"])
+        stockFacts["amount"] = myAccount.stocks[stockSymbol]["amount"]
+        stockFacts["currValue"] = stockFacts["amount"] * stockFacts["currentPrice"]
 
-    stockFacts["currValue"] = stockFacts["amount"] * stockFacts["currentPrice"]
     
     context = {
         'stock': stockFacts

@@ -58,14 +58,25 @@
             <h3>Meaning its total value is ${{stock.currValue}}.</h3>
         </div>
 
-        <div class="group">      
-            <input name="amount" type="number" required>
-            <span class="highlight"></span>
-            <span class="bar"></span>
-            <label>Amount</label>
-        </div>
+        <form
+            action="http://localhost:8000/api/stocks/sell/"
+            method="post"
+            target="dummyframe"
+        >
 
-        <button style="width: 200px;" class="btn" type="submit">Confirm Sell</button>
+            <div class="group">      
+                <input name="amount" type="number" required>
+                <span class="highlight"></span>
+                <span class="bar"></span>
+                <label>Amount</label>
+            </div>
+            <input name="username" value="daniel" style="display: none;">
+            <input name="stockSymbol" value="{{stock.sym}}" style="display: none;">
+            <input name="price" type="number" value="{{stock.currentPrice}}" style="display: none;">
+
+            <button style="width: 200px;" class="btn" type="submit">Confirm Sell</button>
+            
+        </form>
 
     </div>
     
