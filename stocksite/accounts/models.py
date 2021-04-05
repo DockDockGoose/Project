@@ -12,7 +12,6 @@ class Account(AbstractUser):
     stocks = djongoModels.ArrayField(
         model_container=Stock
     )
-
     objects = AccountManager()
 
     def __str__(self):
