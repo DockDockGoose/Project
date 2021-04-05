@@ -15,11 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from frontEnd import views
 
 urlpatterns = [
     path('api/stocks/', include('stocks.urls')),
     path('api/accounts/', include('accounts.urls')),
     path('api/', include('transactions.urls')),
+    path('api/', include('frontEndStocks.urls')),
+    path('api/', include('prevPrices.urls')),
+    path('frontEnd/', include('frontEnd.urls')),
+    #path('frontEnd/viewTransactions', views.viewTransactions),
     path('admin/', admin.site.urls),
     # # Additionally, we include login URLs for the browsable API.
     # path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
