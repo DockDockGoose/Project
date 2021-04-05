@@ -69,7 +69,7 @@ class QuoteServer:
                     type='quoteServer',
                     timestamp=int(time()*1000),
                     server='DOCK1',
-                    transactionNum = transactionNum,
+                    transactionNum=transactionNum,
                     price=quote_data['price'],
                     username=username,
                     stockSymbol=stockSymbol,
@@ -91,6 +91,20 @@ class QuoteServer:
                 # close the connection, and the socket
                 self.socket.close()
         else:
+
+            #  Log system event for caching quote
+            transaction = Transaction(
+                type='systemEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum=transactionNum,
+                command='CachedQuote',
+                amount=quote_data['price'],
+                username=username,
+                stockSymbol=stockSymbol,
+            )
+            transaction.save()
+
             quote_data['price'] = float(quote_data['price'])
             quote_data['quoteServerTime'] = int(quote_data['quoteServerTime'])
             return quote_data
