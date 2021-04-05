@@ -17,6 +17,7 @@ import debug_toolbar
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
+from frontEnd import views
 
 urlpatterns = [
     path('api/stocks/', include('stocks.urls')),
@@ -24,6 +25,10 @@ urlpatterns = [
     path('api/triggers/', include('triggers.urls')),
     path('api/', include('transactions.urls')),
     path('__debug__/', include(debug_toolbar.urls)),
+    path('api/', include('frontEndStocks.urls')),
+    path('api/', include('prevPrices.urls')),
+    path('frontEnd/', include('frontEnd.urls')),
+    #path('frontEnd/viewTransactions', views.viewTransactions),
     path('admin/', admin.site.urls),
     # # Additionally, we include login URLs for the browsable API.
     # path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))

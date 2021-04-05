@@ -6,7 +6,6 @@ from transactions.models import Transaction
 from .quoteHandler import QuoteServer
 from .utils import MockQuoteServer, getByStockSymbol
 from time import time
-
 from django.conf import settings
 import redis
 import json
@@ -112,7 +111,8 @@ class SellView(APIView):
 
         # TODO: Check for quote in cache (if not in cache/is stale perform query)
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
-        quoteQuery = QuoteServer.getQuote(username, stockSymbol)
+        qs = QuoteServer()
+        quoteQuery = qs.getQuote(username, stockSymbol, transactionNum)
 
         # Set a sell command to the cache
         new_stock = {

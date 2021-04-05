@@ -2,14 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import Account
-from accounts.serializers import AccountSerializer
-from django.core import serializers
 from transactions.models import Transaction
-from stocks.models import Stock
 from .quoteHandler import QuoteServer
-from .utils import MockQuoteServer
+from .utils import MockQuoteServer, getByStockSymbol
 from time import time
-
 from django.conf import settings
 import redis
 import json
@@ -20,7 +16,7 @@ CACHE_TTL = 60
 
 class BuyView(APIView):
     """
-    API endpoint that allows stocks to be bought.
+    API endpoint that allows stocks to be sold.
     """
     def put(self, request):
         # Get request data
@@ -30,8 +26,45 @@ class BuyView(APIView):
         transactionNum  = request.data.get("transactionNum")
         command         = request.data.get("command")
 
+        # First thing log sell transaction
+        # Find user account
+        account = Account.objects.filter(username=username).first()
 
-        # First thing log buy transaction
+        totalPrice = amount * price
+
+        # If account is non-existing, log errorEvent to Transaction
+        if account is None:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command='BUY',
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+                errorMessage='Account does not exist.',
+            )
+            transaction.save()
+            return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Check if funds permit action, log error event to transaction if not
+        if account.funds < totalPrice:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command='BUY',
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+                errorMessage='Insufficient funds :(.',
+            )
+            transaction.save()
+            return Response("Insufficient funds :(.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Log buy transaction
         transaction = Transaction(
                 type='userCommand',
                 timestamp=int(time()*1000),
@@ -41,22 +74,24 @@ class BuyView(APIView):
                 username=username,
                 stockSymbol=stockSymbol,
                 amount=amount,
+                price=price,
             )
         transaction.save()
-
+     
         # TODO: Check for quote in cache (if not in cache/is stale perform query)
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
-        quoteQuery = QuoteServer.getQuote(username, stockSymbol)
+        qs = QuoteServer()
+        quoteQuery = qs.getQuote(username, stockSymbol, transactionNum)
 
-        # Add a new buy command
+        # Set a buy command to the cache
         new_stock = {
             'key': username + 'buy',
-            'stockSymbol':stockSymbol,
-            'price':quoteQuery['price'],
-            'quoteServerTime':quoteQuery['quoteServerTime'],
-            'sharesAmount':amount/float(quoteQuery['price']),
+            'stockSymbol': stockSymbol,
+            'price': quoteQuery['price'],
+            'quoteServerTime': quoteQuery['quoteServerTime'],
+            'sharesAmount': amount/float(quoteQuery['price']),
         }
-        
+
         # Set to cache and set expiration for 60 secondss
         cache.hmset(new_stock['key'], new_stock)
         cache.expire(new_stock['key'], CACHE_TTL)

@@ -1,0 +1,45 @@
+a{
+  display: block;
+}
+
+.card {
+  /* Add shadows to create the "card" effect */
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+  width: 20%;
+  text-align: center;
+  margin-top: 10px;
+  margin-left: 5px;
+}
+
+/* On mouse-over, add a deeper shadow */
+.card:hover {
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+/* Add some padding inside the card container */
+.card-container {
+  padding: 2px 16px;
+}
+
+.cards-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-left: 20%;
+}
+
+.recent-text {
+  margin-left: 20%;
+}
+.account-details {
+  margin-left: 20%;
+}
+
+.account-details-container {
+  margin-left: 20%;
+}
+
+.stocks-title {
+  margin-left: 20%;
+}

@@ -1,4 +1,3 @@
-
 """ Takes workload file and partitions commands per user (retains transaction number & related info).  
     Writes each users commands in [user].txt. Spawns threads per user (dynamically adjusts port). 
     Reads [user].txt to parse and send requested commands in JSON format to specified server.   """
@@ -46,6 +45,8 @@ GET                 = "GET"
 POST                = "POST"
 PUT                 = "PUT"
 DELETE              = "DELETE"
+
+packetQ = queue.Queue()
 
 def send_requests(*uCmdList):
     for cmd in uCmdList:
@@ -154,7 +155,8 @@ def sendWorkload(line):
         logging.warning(f"Invalid request: {requestInfo}")
 
 def performRequest(url, method, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
-    request = {'method': method, 'transactionNum': transactionNumber, 'command': command}
+
+    request = {'postUrl': url, 'method': method, 'transactionNum': transactionNumber, 'command': command}
     
     if user:
         request['username'] = user
@@ -165,22 +167,33 @@ def performRequest(url, method, transactionNumber, command, user=None, stockSymb
     if filename:
         request['fileName'] = filename
 
-    if method == GET:
-        r = requests.get(url, json=request)
-    elif method == POST:
-        r = requests.post(url, json=request)
-    elif method == PUT:
-        r = requests.put(url, json=request)
-    elif method == DELETE:
-        r = requests.delete(url, json=request)
-    
-    #if (r.status_code >= 400):
-    #    print("\nCMD #: {} STATUS: {}".format(request['transactionNum'], r.status_code))
-    #else:
-    
-    print("CMD #: {}".format(transactionNumber))
+    packetQ.put(request)
+
+def consumerThread():
+    while True:
+        try:
+            # set get to throw exception if no packet in 5 seconds
+            request = packetQ.get(True, 2)
+        except queue.Empty:
+            if packetQ.empty():
+                    break
+
+        if request['method'] == GET:
+            r = requests.get(request['postUrl'], json=request)
+        elif request['method'] == POST:
+            r = requests.post(request['postUrl'], json=request)
+        elif request['method'] == PUT:
+            r = requests.put(request['postUrl'], json=request)
+        elif request['method'] == DELETE:
+            r = requests.delete(request['postUrl'], json=request)
+
+        print("CMD #: {}".format(request['transactionNum']))
+
+        packetQ.task_done()
 
     r.close()
+    print("Consumer Thread Finished!")
+
 
 tasks = []
 threads = []
@@ -217,6 +230,9 @@ if __name__ == '__main__':
                     t.start()
                     threads.append(t)
 
+                cThread = Thread(target=consumerThread)
+                cThread.start()
+
                 for t in threads:
                     t.join()
 
@@ -224,6 +240,8 @@ if __name__ == '__main__':
                 dump_t.start()
                 dump_t.join()
                 user_commands = {}
+
+                cThread.join()
 
                 print("\n\n\nWorkload Generator Finished!!")
 
@@ -233,4 +251,5 @@ if __name__ == '__main__':
 
     except IOError as err:
         print("I/O error: {}".format(err))
+
         sys.exit(2)

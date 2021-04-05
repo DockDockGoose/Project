@@ -1,0 +1,1 @@
+[{"_id":{"$oid":"6049778cac266926080aa363"},"password":"","last_login":null,"is_superuser":false,"first_name":"","last_name":"","email":"","is_staff":false,"is_active":true,"date_joined":{"$date":"2021-03-11T01:51:08.206Z"},"username":"daniel","funds":100,"pendingFunds":50,"stocks":null}]

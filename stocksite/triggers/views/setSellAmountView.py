@@ -114,10 +114,10 @@ class SetSellAmountView(APIView):
 
         if not trigger_data:
             # Add new trigger sell command
-            trigger = Trigger(key=key,username=username, type='buy', stockSymbol=stockSymbol, sharesAmount=amount)
+            trigger_data = Trigger(key=key,username=username, type='buy', stockSymbol=stockSymbol, sharesAmount=amount)
         else:
             # Update the stocks sell trigger command
-            trigger['sharesAmount'] = amount
+            trigger_data['sharesAmount'] = amount
         cache.hmset(key, trigger_data)
 
         return Response(status=status.HTTP_200_OK)

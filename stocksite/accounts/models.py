@@ -6,7 +6,7 @@ from stocks.models import Stock
 
 
 class Account(AbstractUser):
-    username = models.CharField(blank=False, max_length=255, unique=True)
+    username = models.CharField(blank=False, max_length=255, unique=True, primary_key=True)
     funds = models.FloatField(default=0.00)
     pendingFunds = models.FloatField(default=0.00)
     stocks = djongoModels.ArrayField(
