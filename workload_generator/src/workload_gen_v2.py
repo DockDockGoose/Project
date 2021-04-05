@@ -155,6 +155,7 @@ def sendWorkload(line):
         logging.warning(f"Invalid request: {requestInfo}")
 
 def performRequest(url, method, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
+
     request = {'postUrl': url, 'method': method, 'transactionNum': transactionNumber, 'command': command}
     
     if user:
@@ -235,11 +236,11 @@ if __name__ == '__main__':
                 for t in threads:
                     t.join()
 
-
                 dump_t = Thread(target=send_requests, args=tuple([line]))
                 dump_t.start()
                 dump_t.join()
                 user_commands = {}
+
                 cThread.join()
 
                 print("\n\n\nWorkload Generator Finished!!")
@@ -250,4 +251,5 @@ if __name__ == '__main__':
 
     except IOError as err:
         print("I/O error: {}".format(err))
+
         sys.exit(2)

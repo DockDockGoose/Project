@@ -34,8 +34,24 @@ class QuoteView(APIView):
         transaction.save()
 
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
-        # quoteQuery = MockQuoteServer.getQuote(username, stockSymbol)
-        qs = QuoteServer()    
-        quoteQuery = qs.getQuote(username, stockSymbol, transactionNum)
+        quoteQuery = QuoteServer.getQuote(username, stockSymbol)
+        # qs = QuoteServer()    
+        # quoteQuery = qs.getQuote(stockSymbol, username)
+        # TODO: Cache the recently quoted stock price
+
+        #  Log quoteServer transaction (only increment transactionNum for userCommands?)
+        transaction = Transaction(
+                type='quoteServer',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                price=quoteQuery['price'],
+                username=username,
+                stockSymbol=stockSymbol,
+                quoteServerTime=int(quoteQuery['quoteServerTime']),
+                cryptoKey=quoteQuery['cryptoKey']
+            )
+
+        transaction.save()
 
         return Response(quoteQuery, status=status.HTTP_200_OK)
