@@ -165,6 +165,10 @@ For further reference, view the README.md in the stocksite directory. You might 
 
 <em> When developing the app with the docker containers up and running, I find I sometimes have to prune, rebuild and re-up in order to observe all changes. It's not always the case, but it might be worth mentioning. </em>
 
+### Metrics
+https://hub.docker.com/r/sophos/nginx-vts-exporter
+https://github.com/vozlt/nginx-module-vts
+
 #### TODO: 
 - Add env files to gitignore. Keep secret variables secret!
 - Finetune NGINX setup, look into Docker Swarm to deploy replicas of app.

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 import os
+import socket
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -28,6 +29,18 @@ DEBUG = int(os.environ.get("DEBUG", True))
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost 127.0.0.1").split(" ")
 
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
+
+
+def force_show_toolbar(request):
+    return True     # Always show toolbar, remove for demo
+
+
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': force_show_toolbar,    # Force b/c docker container IP's are hard to predict
+}
 
 # Application definition
 
@@ -40,15 +53,34 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'debug_toolbar',
     'rest_auth',
     'django_filters',
+    'django_redis',
     'accounts',
     'transactions',
     'stocks',
+    'triggers',
     'frontEnd',
     'frontEndStocks',
     'prevPrices'
 ]
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/2",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+# Cache time to live is 60s
+CACHE_TTL = 60
+
+REDIS_HOST = 'redis'
+REDIS_PORT = 6379
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -64,6 +96,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

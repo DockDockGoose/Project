@@ -1,0 +1,89 @@
+version: "3.8"
+   
+services:
+  web:
+    image: dckdockgoose/stocksite-webapp:1.5    # Build this image
+    # command: ["gunicorn", "--bind", "0.0.0.0:8000", "stocksite.wsgi:application", "-k", "gevent", "--workers=5"]
+    # workers= num_cpu_cores * 2 + 1
+    command: gunicorn stocksite.wsgi:application --bind 0.0.0.0:8000 -k gevent --worker-connections=1000 --workers=5 --timeout 120 
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+    deploy:
+      replicas: 10
+      restart_policy:
+        condition: on-failure
+      # placement:
+      #   constraints: [node.role == worker]
+    expose:
+      - "8000"
+    env_file: 
+      - ./.env.prod
+    depends_on: 
+      - mongo
+      - redis
+    networks: 
+      - swarmnet
+
+  mongo:
+    image: dckdockgoose/stocksite-mongo:1.2
+    # command: [--auth]
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == manager] 
+    volumes:
+      - ./stocksite/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - data-db:/data/db
+    env_file: 
+      - ./.env.prod.db
+    ports: 
+      - "27017:27017"
+    networks: 
+      - swarmnet
+
+  redis:
+    restart: always
+    image: redis
+    networks: 
+      - swarmnet
+
+  nginx:
+    image: dckdockgoose/stocksite-nginx:1.3
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      # placement:
+      #   constraints: [node.role == worker] 
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+    networks: 
+      - swarmnet
+
+
+  visualizer:
+    image: dockersamples/visualizer:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - swarmnet
+
+    
+volumes:
+  data-db:
+  static_volume:
+
+networks:
+  swarmnet:
+    driver: 'overlay'

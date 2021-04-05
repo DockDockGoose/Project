@@ -13,13 +13,13 @@ import socket
 import logging
 import queue
 import time
-#import requests
+import requests
 from threading import Thread
 
 defaultTestFile = "../workloads/WL_1_USER.txt"
 
 serverAddress   = "localhost"
-serverPort      = "8000"
+serverPort      = "80"
 
 serverURL       = "http://" + serverAddress  + ":" + serverPort + "/"
 
@@ -44,7 +44,13 @@ CANCEL_SET_SELL     = "CANCEL_SET_SELL"
 DUMPLOG             = "DUMPLOG"
 DISPLAY_SUMMARY     = "DISPLAY_SUMMARY"
 
+GET                 = "GET"
+POST                = "POST"
+PUT                 = "PUT"
+DELETE              = "DELETE"
+
 userQ = queue.Queue()
+packetQ = queue.Queue()
 
 class WorkloadGenerator:
     def __init__(self, testFile):
@@ -126,95 +132,95 @@ class WorkloadGenerator:
             transactionNumber   = tokens[0].translate(translation)
             requestInfo         = tokens[1].split(",")
             command             = requestInfo[0]
-            postUrl             = serverURL
+            url             = serverURL
 
             if command == BUY:
-                postUrl += API_STOCKS_PATH + "buy/"
+                url += API_STOCKS_PATH + "buy/"
                 (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
-                self.performRequest(postUrl, transactionNumber, command, user, stockSymbol, amount)
+                self.performRequest(url, PUT, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SELL:
-                postUrl += API_STOCKS_PATH + "sell/"
+                url += API_STOCKS_PATH + "sell/"
                 (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
-                self.performRequest(postUrl, transactionNumber, command, user, stockSymbol, amount)
+                self.performRequest(url, PUT, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_BUY_AMOUNT:
-                postUrl += API_TRIGGERS_PATH +  "setbuyamount/"
+                url += API_TRIGGERS_PATH +  "setbuyamount/"
                 (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
-                self.performRequest(postUrl, transactionNumber, command, user, stockSymbol, amount)
+                self.performRequest(url, POST, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_BUY_TRIGGER :
-                postUrl += API_TRIGGERS_PATH +  "setbuytrigger/"
+                url += API_TRIGGERS_PATH +  "setbuytrigger/"
                 try:
                     amount = float(requestInfo[3].strip("\n"))
                 except ValueError:
                     amount = 0.00
                 stockSymbol = (requestInfo[2])
-                self.performRequest(postUrl, transactionNumber, command, user, stockSymbol, amount)
+                self.performRequest(url, PUT, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_SELL_AMOUNT:
-                postUrl += API_TRIGGERS_PATH + "setsellamount/"
+                url += API_TRIGGERS_PATH + "setsellamount/"
                 (stockSymbol, amount) = (requestInfo[2], float(requestInfo[3].strip("\n")))
-                self.performRequest(postUrl, transactionNumber, command, user, stockSymbol, amount)
+                self.performRequest(url, POST, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == SET_SELL_TRIGGER:
-                postUrl += API_TRIGGERS_PATH + "setselltrigger/"
+                url += API_TRIGGERS_PATH + "setselltrigger/"
                 try:
                     amount = float(requestInfo[3].strip("\n"))
                 except ValueError:
                     amount = 0.00
                 stockSymbol = (requestInfo[2])
-                self.performRequest(postUrl, transactionNumber, command, user, stockSymbol, amount)
+                self.performRequest(url, PUT, transactionNumber, command, user, stockSymbol, amount)
 
             elif command == QUOTE:
-                postUrl += API_STOCKS_PATH + "quote/"
+                url += API_STOCKS_PATH + "quote/"
                 stockSymbol = requestInfo[2].strip("\n")
-                self.performRequest(postUrl, transactionNumber, command, user, stockSymbol)
+                self.performRequest(url, GET, transactionNumber, command, user, stockSymbol)
 
             elif command == CANCEL_SET_BUY:
-                postUrl += API_TRIGGERS_PATH + "cancelsetbuy/"
+                url += API_TRIGGERS_PATH + "cancelsetbuy/"
                 stockSymbol = requestInfo[2].strip("\n")
-                self.performRequest(postUrl, transactionNumber, command, user, stockSymbol)
+                self.performRequest(url, DELETE, transactionNumber, command, user, stockSymbol)
 
             elif command == CANCEL_SET_SELL:
-                postUrl += API_TRIGGERS_PATH + "cancelsetsell/"
+                url += API_TRIGGERS_PATH + "cancelsetsell/"
                 stockSymbol = requestInfo[2].strip("\n")
-                self.performRequest(postUrl, transactionNumber, command, user, stockSymbol)
+                self.performRequest(url, DELETE, transactionNumber, command, user, stockSymbol)
 
             elif command == ADD:
-                postUrl += API_STOCKS_PATH + "add/"
+                url += API_ACCOUNTS_PATH + "add/"
                 amount = float(requestInfo[2].strip("\n"))
-                self.performRequest(postUrl, transactionNumber, command, user, amount=amount)
+                self.performRequest(url, POST, transactionNumber, command, user, amount=amount)
 
             elif command == COMMIT_BUY:
-                postUrl += API_STOCKS_PATH + "commitbuy/"
-                self.performRequest(postUrl, transactionNumber, command, user)
+                url += API_STOCKS_PATH + "commitbuy/"
+                self.performRequest(url, POST, transactionNumber, command, user)
 
             elif command == CANCEL_BUY:
-                postUrl += API_STOCKS_PATH + "cancelbuy/"
-                self.performRequest(postUrl, transactionNumber, command, user)
+                url += API_STOCKS_PATH + "cancelbuy/"
+                self.performRequest(url, DELETE, transactionNumber, command, user)
 
             elif command == COMMIT_SELL:
-                postUrl += API_STOCKS_PATH + "commitsell/"
-                self.performRequest(postUrl, transactionNumber, command, user)
+                url += API_STOCKS_PATH + "commitsell/"
+                self.performRequest(url, POST, transactionNumber, command, user)
 
             elif command == CANCEL_SELL:
-                postUrl += API_STOCKS_PATH + "cancelsell/"
-                self.performRequest(postUrl, transactionNumber, command, user)
+                url += API_STOCKS_PATH + "cancelsell/"
+                self.performRequest(url, DELETE, transactionNumber, command, user)
 
             elif command == DISPLAY_SUMMARY:
-                postUrl += API_ACCOUNTS_PATH + "displaysummary/"
-                self.performRequest(postUrl, transactionNumber, command, user)
+                url += API_ACCOUNTS_PATH + "displaysummary/"
+                self.performRequest(url, GET, transactionNumber, command, user)
 
             elif command == DUMPLOG:
-                postUrl += API_ACCOUNTS_PATH + "dumplog/"
+                url += API_ACCOUNTS_PATH + "dumplog/"
                 if len(requestInfo) == 3:
                     (user, filename) = (requestInfo[1], requestInfo[2])
-                    self.performRequest(postUrl, transactionNumber, command, user, filename=filename)
+                    self.performRequest(url, GET, transactionNumber, command, user, filename=filename)
                     
                 elif len(requestInfo) == 2:
                     filename = requestInfo[1]
-                    self.performRequest(postUrl, transactionNumber, command, filename=filename)
+                    self.performRequest(url, GET, transactionNumber, command, filename=filename)
             
             else:
                 logging.warning(f"Invalid request: {requestInfo}")
@@ -222,24 +228,20 @@ class WorkloadGenerator:
         f.close()
 
 
-    def performRequest(self, postUrl, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
-        request = {'transactionNumber': transactionNumber, 'command': command}
+    def performRequest(self, url, method, transactionNumber, command, user=None, stockSymbol=None, amount=None, filename=None):
+        request = {'postUrl': url, 'method': method, 'transactionNum': transactionNumber, 'command': command}
+        print(request)
 
         if user:
-            request['user'] = user
+            request['username'] = user
         if stockSymbol:
             request['stockSymbol'] = stockSymbol
         if amount:
             request['amount'] = amount
         if filename:
-            request['filename'] = filename
+            request['fileName'] = filename
 
-        print(postUrl)
-        #print(request)
-
-        r = requests.post(postUrl, json=request)
-        # TODO: might need r.close() if get error with too many files open or open sockets. 
-        print("HTTP Status:  {}".format(r.status_code))
+        packetQ.put(request)
 
 
 def spawnHandlers(userList, handler):
@@ -248,7 +250,37 @@ def spawnHandlers(userList, handler):
         t.daemon = True
         t.start()
 
+    cThread = Thread(target=consumerThread)
+    cThread.start()
     print("Started {} user handlers".format(i))
+
+def consumerThread():
+    while True:
+        try:
+            # set get to throw exception if no packet in 5 seconds
+            request = packetQ.get(True, 2)
+        except queue.Empty:
+            if userQ.empty():
+                    break
+
+        
+        if request['method'] == GET:
+            r = requests.get(request['postUrl'], json=request)
+        elif request['method'] == POST:
+            r = requests.post(request['postUrl'], json=request)
+        elif request['method'] == PUT:
+            r = requests.put(request['postUrl'], json=request)
+        elif request['method'] == DELETE:
+            r = requests.delete(request['postUrl'], json=request)
+
+        # TODO: might need r.close() if get error with too many files open or open sockets. 
+        print("HTTP Status:  {}".format(r.status_code))
+        print("Command Number:  {}".format(request['transactionNum']))
+
+        packetQ.task_done()
+
+    r.close()
+    print("Consumer Thread Finished!")
 
 
 if __name__ == '__main__':
@@ -273,4 +305,5 @@ if __name__ == '__main__':
 
     print("\nWaiting for all tasks to finish...")
     userQ.join()
+    packetQ.join()
     print("\n\n\nWorkload Generator Finished!!")

@@ -13,6 +13,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import debug_toolbar
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from frontEnd import views
@@ -20,7 +22,9 @@ from frontEnd import views
 urlpatterns = [
     path('api/stocks/', include('stocks.urls')),
     path('api/accounts/', include('accounts.urls')),
+    path('api/triggers/', include('triggers.urls')),
     path('api/', include('transactions.urls')),
+    path('__debug__/', include(debug_toolbar.urls)),
     path('api/', include('frontEndStocks.urls')),
     path('api/', include('prevPrices.urls')),
     path('frontEnd/', include('frontEnd.urls')),
