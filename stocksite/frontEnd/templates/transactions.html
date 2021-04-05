@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<title>View My Account</title>
+<link rel="stylesheet" href="{% static 'viewMyTransactions/viewMyTransactions.css' %}">
+<link rel="stylesheet" href="{% static 'home/home.css' %}">
+<link rel="stylesheet" href="{% static 'material-style/input.css' %}">
+<link rel="stylesheet" href="{% static 'material-style/button.css' %}">
+<style>
+    html,
+    body,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+        font-family: "Raleway", sans-serif
+    }
+</style>
+
+<body class="light-grey">
+
+    <!-- Sidebar/menu -->
+    <nav class="sidebar collapse animate-left" style="z-index:3;width:300px;" id="mySidebar"><br>
+        <div class="container row">
+            <div class="col s4">
+                <img src="https://img.icons8.com/color/96/000000/user-male-circle--v2.png" class="circle margin-right"
+                    style="width:150px">
+            </div>
+            <span>Welcome, <strong>{{account.username}}</strong></span><br>
+        </div>
+        <hr>
+        <div class="container">
+            <h2>Dashboard</h2>
+        </div>
+        <div class="bar-block">
+            <a href="#" class="bar-item button padding-16 hide-large dark-grey hover-black" onclick="close()"
+                title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
+            <a href="/frontEnd/viewMyTransactions" class="bar-item button padding grey"><img
+                    src="https://img.icons8.com/nolan/64/merchant-account.png" /><i class=""></i>  Account</a>
+            <a href="/frontEnd/viewStocks" class="bar-item button padding"><img src="https://img.icons8.com/nolan/64/stocks.png" /><i
+                    class=""></i>  Stocks</a>
+            <a href="#" class="bar-item button padding"><img src="https://img.icons8.com/nolan/64/settings-3.png" /><i
+                    class=""></i>  Settings</a>
+            <a href="#" class="bar-item button padding"><img src="https://img.icons8.com/nolan/64/help--v1.png" /><i
+                    class=""></i>  Help</a><br><br>
+        </div>
+    </nav>
+
+    <iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>
+    
+    <h1 class="account-details">Account Details</h1>
+    <div class="account-details-container">
+        <h3>Funds available: ${{account.funds}}</h3>
+        <h3>Pending Funds: ${{account.pendingFunds}}</h3>
+        <form
+            action="http://localhost:8000/api/accounts/add/"
+            method="post"
+            target="dummyframe"
+        >
+            <div class="group">      
+                <input name="amount" type="text" required>
+                <span class="highlight"></span>
+                <span class="bar"></span>
+                <label>Funds (CAD)</label>
+            </div>
+            <input name="username" value="daniel" style="display: none;">
+            <button type="submit" class="btn">Add Funds</button>
+        </form>
+
+    </div>
+    
+
+    {% if account.stocks == null %} 
+            <h3>You currently don't own any stocks!</h3>
+        {% else %}
+            <div style="margin-left: 20%;">
+                <h1 class="stocks-title">Your Stocks</h1>
+            </div>
+            <div class="cards-container">
+                {% for key, values in purchasedStocks.items %}
+                
+                <a class="card" href="sellStock/{{key}}">
+                    <div class="card-container">
+                        <h3>Stock: {{key}}</h3>
+                        <h3>Shares owned: {{values.amount}}</h3>
+                        <h3>Average purchase price: {{values.avgPrice}}</h3>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    
+    <h1 class="recent-text">Recent Transactions</h1>
+    <div class="cards-container">
+        {% if transaction_list %}
+            {% for transaction in transaction_list %}
+                {% if transaction.command == "BUY" or transaction.command == "BUY" or transaction.command == "ADDFUNDS" %}
+                    <a class="card" href="transaction/{{transaction.id}}">
+                        <div class="card-container">
+                            {% if transaction.command == "BUY" %}
+                                <h3>You purchased {{transaction.amount}} shares of {{transaction.stockSymbol}}</h3>
+                                <h3>Purchased for: ${{transaction.price}}</h3>
+                                <h3>Date: {{transaction.timestamp}}</h3>
+                                <h3></h3>
+                            {% elif transaction.command == "Sell" %}
+                                <h3>You sold {{transaction.amount}} shares of {{transaction.stockSymbol}}</h3>
+                                <h3>Sold for: ${{transaction.price}}</h3>
+                                <h3>Date: {{transaction.timestamp}}</h3>
+                                <h3></h3>
+                            {% else %}
+                                <h3> You added {{transaction.amount}} to your account</h3>
+                                <h3>Date: {{transaction.timestamp}}</h3>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>No transactions are available.</p>
+        {% endif %}
+    </div>
+
+</body>
+
+</html>
