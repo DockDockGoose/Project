@@ -27,6 +27,44 @@ class BuyView(APIView):
         command         = request.data.get("command")
 
         # First thing log sell transaction
+        # Find user account
+        account = Account.objects.filter(username=username).first()
+
+        totalPrice = amount * price
+
+        # If account is non-existing, log errorEvent to Transaction
+        if account is None:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command='BUY',
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+                errorMessage='Account does not exist.',
+            )
+            transaction.save()
+            return Response("Account doesn't exist.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Check if funds permit action, log error event to transaction if not
+        if account.funds < totalPrice:
+            transaction = Transaction(
+                type='errorEvent',
+                timestamp=int(time()*1000),
+                server='DOCK1',
+                transactionNum = transactionNum,
+                command='BUY',
+                username=username,
+                stockSymbol=stockSymbol,
+                amount=amount,
+                errorMessage='Insufficient funds :(.',
+            )
+            transaction.save()
+            return Response("Insufficient funds :(.", status=status.HTTP_412_PRECONDITION_FAILED)
+
+        # Log buy transaction
         transaction = Transaction(
                 type='userCommand',
                 timestamp=int(time()*1000),
@@ -36,9 +74,10 @@ class BuyView(APIView):
                 username=username,
                 stockSymbol=stockSymbol,
                 amount=amount,
+                price=price,
             )
         transaction.save()
-
+     
         # TODO: Check for quote in cache (if not in cache/is stale perform query)
         # Query the QuoteServer (Try/Catch for systemEvent/errorEvent logging)
         qs = QuoteServer()

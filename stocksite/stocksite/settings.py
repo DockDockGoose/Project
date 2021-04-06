@@ -61,6 +61,9 @@ INSTALLED_APPS = [
     'transactions',
     'stocks',
     'triggers',
+    'frontEnd',
+    'frontEndStocks',
+    'prevPrices'
 ]
 
 CACHES = {

@@ -11,7 +11,7 @@ ENV PYTHONUNBUFFERED=1
 # install dependencies
 RUN pip install --upgrade pip
 COPY ./requirements.dev.txt /code/
-RUN pip install -r requirements.dev.txt
+RUN pip3 install -r requirements.dev.txt
 RUN apt-get update \
     && apt-get install -yyq netcat
 
@@ -24,4 +24,4 @@ RUN chmod +x /code/entrypoint.sh
 COPY . .
 
 # run entrypoint.sh
-ENTRYPOINT ["sh", "/code/entrypoint.sh"]
+# ENTRYPOINT ["sh", "entrypoint.sh"]

@@ -1,0 +1,196 @@
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 400;
+  margin: 10px 0;
+}
+.wide {
+  letter-spacing: 4px;
+}
+
+.light-grey {
+  color: #000 !important;
+  background-color: #f1f1f1 !important;
+}
+
+.dark-grey {
+  color: #fff !important;
+  background-color: #616161 !important;
+}
+
+.black,
+.hover-black:hover {
+  color: #fff !important;
+  background-color: #000 !important;
+}
+
+.grey,
+.hover-grey:hover {
+  color: #fff !important;
+  background-color: #757878 !important;
+}
+
+.sidebar {
+  height: 100%;
+  width: 200px;
+  background-color: #fff;
+  position: fixed !important;
+  z-index: 1;
+  overflow: auto;
+}
+
+.main,
+#main {
+  transition: margin-left 0.5s;
+}
+
+@media (max-width: 992px) {
+  .sidebar.collapse {
+    display: none;
+  }
+  .main {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .auto {
+    max-width: 100%;
+  }
+}
+
+.collapse {
+  display: block !important;
+}
+
+.container,
+.panel {
+  padding: 0.01em 16px;
+}
+
+.bar {
+  width: 100%;
+  overflow: hidden;
+}
+
+.center .bar {
+  display: inline-block;
+  width: auto;
+}
+
+.bar .bar-item {
+  padding: 8px 16px;
+  float: left;
+  width: auto;
+  border: none;
+  display: block;
+  outline: 0;
+}
+
+.bar .dropdown-hover,
+.bar .dropdown-click {
+  position: static;
+  float: left;
+}
+
+.bar .button {
+  white-space: normal;
+}
+
+.bar-block .bar-item {
+  width: 89%;
+  display: flex;
+  flex-shrink: 4;
+  padding: 8px 16px;
+  text-align: left;
+  border: none;
+  white-space: normal;
+  float: none;
+  outline: 0;
+  font-size: x-large;
+  text-decoration: none;
+  align-items: center;
+}
+
+.block {
+  display: block;
+  width: 100%;
+}
+
+.row {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.col.s4 {
+  width: 33.33333%;
+}
+
+.col.s8 {
+  width: 66.66666%;
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+.margin-right {
+  margin-right: 16px !important;
+}
+
+.welcome-padding {
+  text-align: right;
+}
+
+.padding {
+  padding: 8px 16px !important;
+}
+
+.padding-16 {
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+}
+
+.hide-large {
+  display: none !important;
+}
+
+.animate-left {
+  position: relative;
+  animation: animateleft 0.4s;
+}
+@keyframes animateleft {
+  from {
+    left: -300px;
+    opacity: 0;
+  }
+  to {
+    left: 0;
+    opacity: 1;
+  }
+}
+
+.fa {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.fa-fw {
+  width: 1.28571429em;
+  text-align: center;
+}
+
+.fa-remove:before {
+  content: "\f00d";
+}
+
+.fa-cog:before {
+  content: "\f013";
+}
